@@ -1,0 +1,10 @@
+{% extends 'common/results.html' %}
+{% load url from future %}
+{% block columns %}
+    <div class='date'>{{ result.date|date:"Y-m-d" }}</div>
+    <div class='quantity'>{% if result.quantity > 0 %}+{% endif %}{{ result.quantity }}</div>
+    <div class='type'>{{ result.action_type.name|capfirst }}</div>
+    <div class='url'><a href="{{ result.action.get_view_url|default:'#' }}">
+    	View
+    </a></div>
+{% endblock columns %}    

@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+{% load humanize %}
+
+{% block head %}
+<style>
+.contact-card {
+	float: left;
+	margin-top: 15px;
+	margin-left: 30px;
+	width: 400px;
+}
+#location {
+	float: left;
+	margin-top: 15px;
+	margin-left: 30px;
+	width: 200px;
+}
+#location > .name  {
+	font-size: 18px;
+	float: left;
+	margin-right: 1em;
+}
+#document {
+	float: right;
+	padding: 10px;
+	background-color: #CCC;
+	margin: 0px 15px 15px 0px;
+}
+#document > * {
+	margin: 0px 0px 5px 0px;
+}
+#document label {
+	display: block;
+}
+#document .title {
+	font-size: 18px;
+}
+#product-table {
+	clear: both;
+	margin: 15px;
+}
+#product-table div.bullet {
+	width: 10px;
+}
+#product-table div.item {
+	width: 170px;
+}
+#product-table div.description {
+	width: 250px;
+}
+#product-table div.ordered {
+	width: 50px;
+}
+#product-table div.balance {
+	width: 50px;
+}
+#product-table div.quantity {
+	width: 50px;
+}
+#product-table div.price {
+	width: 80px;
+}
+#product-table div.total {
+	width: 80px;
+}
+#product-table li.body div.total {
+	text-align: right;
+}
+#product-table div.actions {
+	width: 10px;
+}
+div#bottom-bar {
+	clear: both;
+	float: left;
+	margin: 0px 0px 0px 15px;
+	padding: 5px 10px;
+	width: 908px;
+	font-weight: bold;
+	border: 1px solid #CCC;
+}
+div#bottom-bar > * {
+	display: inline-block;
+}
+div#total {
+	float: right;
+	font-weight: bold;
+}
+div#total input#amount {
+	font-weight: bold;
+	background-color: #fff;
+	width: 110px;
+	text-align: right;
+	margin-right: 25px;
+}
+</style>
+<script>
+$.validation.total = function(input) {
+	var product = 1;
+	var row = $(input).parent().parent();
+	row.find('input.price, input.quantity').each(function() {
+		product = product * $(this).val();
+	});
+	row.children('.total').html(product.toFixed(2));
+	
+	// total amount of the order			
+	var total = 0;
+	$('#product-table .body .total').each(function() {
+		var li = $(this).closest('li');
+		if (li.children('input.item-cancel').val() != 'True') {		
+			total = total + parseFloat($(this).html());
+		}
+	});
+	$('#amount').val(total.toFixed(2));
+};
+
+$(document).ready(function(){
+	var multiplier = {% block multiplier %}1{% endblock multiplier %};	
+
+	$('#form').validation([{
+		selector: '#id_source',
+		validators: ['required'],	
+	}, {
+		selector: '#id_destination',
+		validators: ['required'],	
+	}, {
+		selector: '#input-date',
+		validators: ['date'],	
+	}, {
+		selector: '#input-code',
+		validators: [],
+	}, {
+		selector: 'input.quantity',
+		validators: ['required', 'decimal', 'total'],	
+	}]);
+
+	$(".button.submit").click(function(){
+		$('#form').submit();
+	});
+});
+</script>
+{% endblock head %}
+
+{% block toolbar %}
+{% endblock toolbar %}
+
+{% block main-title %}
+<span class='iconic'></span> {{title}}
+{% endblock main-title %}
+{% block sub-title %}
+Order No. <a href="{{transfer.order.get_view_url}}">{{transfer.order.reference}}</a>
+{% endblock sub-title %}
+
+{% block content %}
+<form id="form" name="form" method="post" action="">
+	<input type='hidden' name='type' value='{{form.type.value}}'/>
+	<input type='hidden' name='order' value='{{form.order.value}}'/>
+	<input type='hidden' name='origin' value='{{form.origin.value}}'/>
+	<input type='hidden' name='destination' value='{{form.destination.value}}'/>
+	{% include "addressbook/contact_card.html" %}
+    <div id='location'>
+    	<div class="name">LOCATION: <br> <a href="{{ location.get_view_url }}">{{location.name}}</a></div>
+    </div>
+	{% include 'common/document_form.html' %}
+    <ul id='product-table' class='table'>
+        <li class='header'>
+            <div class='bullet'></div>
+            <div class='item'>Item</div>
+            <div class='description'>Description</div>
+            <div class='ordered'>Order</div>
+            <div class='balance'>Balance</div>
+            <div class='quantity'>Quantity</div>
+            <div class='price'>Price</div>
+            <div class='total'>Total</div>
+            <div class='actions'></div>
+        </li>
+{% for item in items %}
+        <li class='body'>
+        	<input type='hidden' name='item-id' value='{{ item.id }}'/>
+            <div class='bullet'><span class='iconic play'></span></div>
+            <div class='item'>{{ item.order.info.name }}</div>
+            <div class='description'>{{ item.order.info.summary }}</div>
+            <div class='ordered'>{{ item.order.quantity }}</div>
+            <div class='balance'>{{ item.order.balance }}</div>
+            <div class='quantity'><input type='text' name='item-quantity' class='quantity' readonly='readonly' required='required' value='{{ item.quantity }}'/></div>
+            <div class='price'><input type='text' class='price' readonly='readonly' value='{{ item.order.price|default:0|floatformat:2|intcomma }}'/></div>
+            <div class='total'></div>
+            <div class='actions'></div>
+        </li>
+{% endfor %}
+    </ul>
+    <div id='bottom-bar'>
+	    <div id='total'>GRAND TOTAL: <input type="text" id='amount' name='amount' readonly="readonly" value='{{form.amount.value|default:0|floatformat:2|intcomma }}'/></div>
+	</div>	    
+    <div style='clear: both; height: 15px;'></div>
+</form>
+{% endblock content %}
+
+{% block context-menu %}
+<div class='button submit'><a><span class='iconic check'></span> Save</a></div>
+{% endblock context-menu %}

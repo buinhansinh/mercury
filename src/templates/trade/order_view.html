@@ -1,0 +1,307 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+{% load humanize %}
+
+{% block head %}
+<style>
+label {
+	display: block;
+	width: 75px;
+}
+div#date {
+	float: right;
+	font-size: 24px;
+}
+.contact-card {
+	float: left;
+	margin-top: 15px;
+	margin-left: 30px;
+	margin-bottom: 15px;
+}
+.contact-card .name {
+	font-size: 24px;
+}
+#document {
+	float: right;
+}
+#product-table {
+	clear: both;
+	margin: 5px 0px;
+}
+#product-table li > * {
+	text-decoration: inherit;
+}
+#product-table div.handle {
+	width: 5px;
+}
+#product-table div.name {
+	width: 200px;
+}
+#product-table div.description {
+	width: 280px;
+}
+#product-table div.quantity {
+	width: 60px;
+}
+#product-table div.balance {
+	width: 60px;
+}
+#product-table div.price {
+	width: 80px;
+}
+#product-table div.total {
+	width: 80px;
+}
+#product-table li.body div.total {
+	text-align: right;
+}
+#product-table div.actions {
+	width: 5px;
+}
+#product-table input {
+	display: block;
+	width: 100%;
+}
+#product-table div.product {
+	width: 910px;
+}
+#product-table div.product > * {
+	display: inline-block;
+}
+#product-table div.product input {
+	width: 200px;
+}
+li.canceled {
+	text-decoration: line-through;
+}
+li.canceled div.balance * {
+	text-decoration: none;
+}
+#div-tabs {
+	margin: 15px;
+}
+#transfer-info {
+	display: inline-block;
+	background-color: #fff;
+	padding: 15px 15px;
+}
+#transfer-info li {
+	padding: 3px 10px;
+}
+#transfer-info li.spacing {
+	background-color: #fff;
+}
+#transfer-info label {
+	display: inline-block;
+	width: 200px;
+	font-weight: bold;
+}
+#transfer-info span {
+	display: inline-block;
+	width: 50px;
+}
+#more-dropdown ul {
+	width: 90px;
+}
+#transfer-locations {
+	background-color: #fff;
+	padding: 15px;
+}
+#transfer-locations label {
+	display: inline-block;
+}
+div#bottom-bar {
+	clear: both;
+	float: left;
+	padding: 5px 10px;
+	width: 908px;
+	font-weight: bold;
+	border: 1px solid #CCC;
+}
+div#bottom-bar > * {
+	display: inline-block;
+}
+div#total {
+	float: right;
+	font-weight: bold;
+}
+div#amount {
+	float: right;
+	display: inline-block;
+	font-weight: bold;
+	background-color: #fff;
+	width: 100px;
+	margin-right: 20px;
+	text-align: right;
+}
+{% if contact == order.supplier %}
+div#title {
+	background-color: #ff55aa;
+}
+{% endif %}
+</style>
+<script>
+$(document).ready(function(){
+	$('#product-table .item-cancel').each(function(i, el) {
+		if ($(this).val() == 'True') {
+			$(this).closest('li').addClass('strikethrough');
+		}
+	});
+	$("ul.tabs").tabs(".pane");
+	
+	$('a.transfer-link').click(function() {
+		transfer_url = $(this).attr('href');
+		overlay("{% url 'trade.views.order.transfer' %}");
+		return false;
+	});
+	
+	$('#overlay').on('click', '#next-button', function() {
+		location_id = $('select#location').val();
+		window.location = transfer_url + '?location_id=' + location_id; 
+	});
+});
+</script>
+{% endblock head %}
+
+{% block toolbar %}
+{% endblock toolbar %}
+
+{% block main-title %} 
+{% if contact == order.customer %}
+	SALES ORDER
+{% endif %}
+{% if contact == order.supplier %}
+	PURCHASE ORDER
+{% endif %}
+{% endblock main-title %} 
+{% block sub-title %}
+<span id='order-number'>No. {{order.reference}}</span>
+{% endblock sub-title %}  
+
+{% block context-menu %}
+	<label>Status: </label><span>{{order.status}}</span>
+	{% if order.servable %}
+		{% if contact == order.customer %}
+			<div class='button'><a class='transfer-link' href='{% url 'trade.views.ordertransfer.serve' order.id %}'><span class='iconic arrow_up'></span> Release</a></div>
+		{% endif %}
+		{% if contact == order.supplier %}
+			<div class='button'><a class='transfer-link' href='{% url 'trade.views.ordertransfer.serve' order.id %}'><span class='iconic arrow_down'></span> Receive</a></div>
+		{% endif %}
+	{% endif %}
+	{% if False %}
+		<div class='button'><a class='transfer-link' href='{% url 'trade.views.ordertransfer.retrn' order.id %}'><span class='iconic undo'></span> Return</a></div>
+	{% endif %}
+	{% if not order.canceled %}
+	<div id='more-dropdown' class='dropdown'>
+	    <div class='button'>
+	    	<a><span class='icon iconic dropdown'></span></a> 
+	    </div>
+		<ul class='menu right'>
+		{% if order.editable %}
+			<li class='right'>
+				<div class='button'><a href="{{order.get_edit_url}}"><span class='iconic pen'></span> Edit</a></div>
+			</li>
+		{% endif %}
+		{% if order.cancelable %}
+			<li class='right'>
+				<div class='button'><a href='{{order.get_cancel_url}}'><span class='iconic minus_alt'></span> Cancel</a></div>
+			</li>
+		{% endif %}
+		</ul>
+	</div>	
+	{% endif %}
+{% endblock context-menu %}
+
+{% block content %}
+<form id="form1" name="form1" method="post" action="">
+	{% with document=order %}
+	{% include "common/document_view.html" %}
+	{% endwith %}
+	{% include "addressbook/contact_card.html" %}
+    <div class='clear'></div>
+    <div id='div-tabs'>
+	    <ul id='ul-tabs' class='tabs'>
+	    	<li><a href="#">Items</a></li>
+	    	<li><a href='#'>Transfers</a></li>
+	    	<!-- <li><a href="#">Revisions</a></li> -->
+	    </ul>
+	    <div class='pane'>
+	    <ul id='product-table' class='table'>
+	    	<li class='header'>
+	        	<div class='handle'>&nbsp;</div>
+	        	<div class='name'>Item</div>
+	        	<div class='description'>Description</div>
+	        	<div class='quantity'>Qty</div>
+	        	<div class='balance'>Balance</div>
+	        	<div class='price'>Price</div>
+				<div class='total'>Total</div>
+	        	<div class='actions'>&nbsp;</div>
+	        </li>
+			{% for item in items %}
+	    	<li class='body'>
+	        	<div class='handle'>
+	        	{% if item.balance == 0 %}
+	        		<span class='iconic check'></span>
+	        	{% else %}
+	        		<span class='iconic play'></span>
+	        	{% endif %}
+	        	</div>
+	        	<div class='name'><a href="{{item.info.get_view_url}}">{{item.info.name}}</a></div>
+	        	<div class='description'>{{item.info.summary}}</div>
+	        	<div class='quantity'>{{item.quantity|floatformat:2}}</div>
+	        	<div class='balance'>
+	        		<a class='trigger' href="{% url 'trade.views.order.item_transfers' item.id %}">{{item.balance|floatformat:2}}</a>
+	        	</div>
+	        	<div class='price'>{{item.price|floatformat:3|intcomma}}</div>
+	        	<div class='total'>{{item.total|floatformat:2}}</div>
+	        	<div class='actions'>&nbsp;</div>
+	        </li>
+			{% endfor %}
+			{% for item in order.items.canceled %}
+	    	<li class='body canceled'>
+	        	<div class='handle'><span class='iconic x'></span></div>
+	        	<div class='name'><a href="{{item.info.get_view_url}}">{{item.info.name}}</a></div>
+	        	<div class='description'><span>{{item.info.summary}}</span></div>
+	        	<div class='quantity'><span>{{item.quantity}}</span></div>
+	        	<div class='balance'>
+	        		<a class='trigger' href="{% url 'trade.views.order.item_transfers' item.id %}">{{item.balance|floatformat:2}}</a>
+	        	</div>
+	        	<div class='price'><span>{{item.price|default:0|floatformat:3|intcomma}}</span></div>
+	        	<div class='total'><span>{{item.total|default:0|floatformat:2|intcomma}}</span></div>
+	        	<div class='actions'></div>
+	        </li>
+			{% endfor %}			
+	    </ul>
+	    <div id='bottom-bar'>
+    		<div id='amount'/>{{order.value|default:0|floatformat:2|intcomma}}</div>
+	    	<div id='total'>GRAND TOTAL:</div>
+		</div>
+		</div>
+	    <ul class='pane'>
+	    {% if order.transfers.all %}
+	    	{% for t in order.transfers.all %}
+	    	<li>
+	    		<div>
+	    			<a href="{{ t.get_view_url }}">{{t.date|date:"Y F d  h:i:s"}}</a> - {{t.status}} 
+	    		</div>
+	    	</li>
+	    	{% endfor %}
+	    {% else %}
+	    	No transfers yet
+	    {% endif %}
+	    </ul>
+	    <!-- <ul class='pane'>
+	    {% if snapshots %}
+	    	{% for s in snapshots %}
+	    	<li><a href="{% url 'trade.views.order.snapshot' s.id %}">{{s.date|date:"Y-m-d h:i:s"}}</a></li>
+	    	{% endfor %}
+	    {% else %}
+	    	No revisions yet
+	    {% endif %}
+	    </ul> -->
+    </div>
+</form>
+<div class='clear' style='height: 15px'></div>
+{% endblock content %}

@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+
+{% block head %}
+<style>
+#contact-container {
+	margin: 15px 15px 15px 30px;
+}
+#contact-container > .title {
+	font-size: 18px;
+	margin-bottom: 15px;
+}
+#contact-container > .contact-card {
+	border: 1px solid #ccc;
+	padding: 15px;
+	margin: 15px 0 15px 0;
+}
+</style>
+<script>
+$(document).ready(function(){
+
+{% if not contact2 %}
+	$("#contact2").autocomplete({
+		source: "{% url 'common.views.search.suggestions' %}?models=Contact",
+		minLength: 2,
+		select: function(e, ui) {
+			var contact_id1 = $("#contact_id1").val();
+			if (contact_id1 == ui.item.id) { 
+				alert("You cannot merge the same contact!");
+			} else {
+				window.location = "?" +	$.param({ contact_id2: ui.item.id });
+			}
+		},
+	}).data("autocomplete")._renderItem = function(ul, item) {
+		var li = null;
+		if (item.more) {
+			li = $("<li class='more suggestion'>").data("item.autocomplete", item)
+				.append("<hr><a><span class='name'>" + item.name + "</span></a>")
+		} 
+		else {
+			li = $("<li class='suggestion'>").data("item.autocomplete", item)
+				.append("<a><span class='type'>" + item.type + 
+						"</span><span class='name'>" + item.name + 
+						"</span> <span class='summary'> " + 
+						item.summary + "</span></a>") 
+		}
+        return li.appendTo( ul );
+	};
+{% endif %}
+
+	$("#merge-button").click(function() {
+		var yes = confirm("Are you sure you want to merge these contacts? This cannot be undone.");
+		if (yes) {
+			$("#merge-button").hide();
+			$("#merge-form").submit();
+		}
+	});
+});
+</script>
+{% endblock head %}
+
+{% block main-title %}
+CONTACT MERGE
+{% endblock main-title %}
+
+{% block sub-title %}
+{% endblock sub-title %}  
+
+{% block context-menu %}
+<div class="button"><a href="{{contact1.get_view_url}}">Cancel</a></div>
+{% endblock context-menu %}
+
+{% block content %}
+
+{% if merged_contact %}
+	<div id="contact-container">
+		<div class="title"> Merge Success </div>
+		{% with contact=merged_contact %}
+			{% include "addressbook/contact_card.html" %}
+		{% endwith %}
+	</div>
+{% else %}
+	<div id="contact-container">
+		{% with contact=contact1 %}
+			{% include "addressbook/contact_card.html" %}
+		{% endwith %}
+		<input type="hidden" id="contact_id1" value="{{contact1.id}}"/>
+		<div class="title">MERGE WITH:</div>
+		
+		{% if contact2 %}
+			{% with contact=contact2 %}
+				{% include "addressbook/contact_card.html" %}
+			{% endwith %}
+			<form id="merge-form" method="post">
+				<input type="hidden" id="contact_id2" name="contact_id2" value="{{contact2.id}}"/>
+			</form>
+			<div id="merge-button" class="button"><a>Continue</a></div>
+		{% else %}
+			<input id="contact2" type="text" placeholder="Search Contact"/>
+		{% endif %}
+	</div>
+{% endif %}
+
+<div class='clear' style='height: 15px;'></div>
+{% endblock content %}

@@ -1,0 +1,29 @@
+{% load url from future %}
+<li class='body'>
+	<input type='hidden' name='item-cancel' class='item-cancel' value='{{ item.canceled }}'/>
+	<input type='hidden' name='item-id' class='item-id' value='{{ item.id }}'/>
+	<input type='hidden' name='item-info-id' class='item-info-id' value='{{ item.info.id }}'/>		
+	<input type='hidden' name='item-info-type-id' class='item-info-type-id' value='{{item.info_type.id}}'/>
+	<div class='handle'>
+		<a href='#'><span class='iconic move_vertical_alt2'></span></a>
+	</div>
+	<div class='name'>
+		<a class='item-info' href="#">{{item.info.name}}</a>
+	</div>
+	<div class='description'>
+		<a class='item-info' href="#">{{ item.info.summary }}</a>
+	</div>
+	<div class='quantity'>
+		<input class='quantity' type='decimal' required='required' name='item-qty' value='{{item.quantity|default:"1"}}'/>
+		<input class='stock' type='hidden' value='{{item.stock}}'/>
+	</div>
+	<div class='price'>
+		<input class='price' type='decimal' required='required' name='item-price' value='{{item.price}}'/>
+		<input class='year_high_purchase' type='hidden' value='{{item.price_year_high_purchase}}'/>
+		<input class='last_purchase' type='hidden' value='{{item.price_last_purchase}}'/>
+	</div>
+	<div class='total'>0.00</div>
+	<div class='actions'>
+		<a class='trash' href='#'><span class='iconic trash_stroke'></span></a>
+	</div>
+</li>

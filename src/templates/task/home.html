@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+
+{% block head %}
+<style>
+div#content {
+	margin: 15px;
+}
+#left {
+	float: left;
+}
+#right {
+	float: right;
+}
+#left > div {
+	margin-top: 15px;
+	float: left;
+	clear: left;
+}
+#right > div {
+	margin-top: 15px;
+	float: right;
+	clear: right;
+}
+div.title {
+	font-size: large;
+	margin: 3px 5px;
+}
+
+.table div.id {
+	width: 75px;
+}
+.table div.code {
+	width: 75px;
+}
+.table div.date {
+	width: 75px;
+}
+.table div.amount {
+	width: 75px;
+	display: none;	
+}
+.table div.customer {
+	width: 150px;
+	white-space: nowrap;
+	overflow: hidden;
+}
+.table div.supplier {
+	width: 150px;
+	white-space: nowrap;
+	overflow: hidden;
+}
+.table div.type { 
+	display: none;
+}
+
+.table div.item {
+	width: 100px;
+}
+.table div.summary {
+	width: 175px;
+	white-space: nowrap;
+	overflow: hidden;
+}
+.table div.quantity {
+	width: 50px;
+}
+
+#outstanding-purchases div.customer {
+	display: none;
+}
+
+#for-preparation div.supplier {
+	display: none;
+}
+
+#for-release div.supplier {
+	display: none;
+}
+
+</style>
+<script>
+$(function(){
+	$('ul.tabs').tabs('.pane');
+ });	
+</script>
+{% endblock head %}
+
+{% block toolbar %}
+{% endblock toolbar %}
+
+{% block main-title %}
+TODAY'S TASKS
+{% endblock main-title %}
+
+{% block sub-title %}
+{% endblock sub-title %}  
+
+{% block content %}
+<div id='content'>
+	<ul class='tabs'>
+		{% if 'sales' in request.user.groups or request.user.is_superuser %}
+		<li><a href="#">Sales</a></li>
+		{% endif %}
+		{% if 'purchasing' in groups or request.user.is_superuser %}
+		<li><a href="#">Purchasing</a></li>
+		{% endif %}
+		{% if 'inventory' in groups or request.user.is_superuser %}
+		<li><a href="#">Inventory</a></li>
+		{% endif %}
+		{% if 'accounting' in groups or request.user.is_superuser %}
+		<li><a href="#">Receivables</a></li>
+		<li><a href="#">Payables</a></li>
+		{% endif %}
+		{% if 'management' in groups or request.user.is_superuser %}
+		<li><a href="#">Management</a></li>
+		{% endif %}
+	</ul>
+	<div class='clear'></div>
+	{% if 'sales' in groups or request.user.is_superuser %}
+	<div class='pane'>
+		{% include 'task/sales.html' %}
+	</div>
+	{% endif %}
+	{% if 'purchasing' in groups or request.user.is_superuser %}
+	<div class='pane'>
+		{% include 'task/purchasing.html' %}
+	</div>
+	{% endif %}
+	{% if 'inventory' in groups or request.user.is_superuser %}
+	<div class='pane'>
+		{% include 'task/inventory.html' %}
+	</div>
+	{% endif %}
+	{% if 'accounting' in groups or request.user.is_superuser %}
+	<div class='pane'>
+		{% include 'task/receivable.html' %}
+	</div>
+	<div class='pane'>
+		{% include 'task/payable.html' %}
+	</div>	
+	{% endif %}	
+	{% if 'management' in groups or request.user.is_superuser %}
+	<div class='pane'>
+		{% include 'task/management.html' %}
+	</div>
+	{% endif %}	
+</div>
+<div class='clear' style='height: 15px;'></div>
+{% endblock content %}

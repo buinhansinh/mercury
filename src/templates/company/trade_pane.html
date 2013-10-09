@@ -1,0 +1,23 @@
+{% load url from future %}
+{% load humanize %}
+<a class='edit-link' href="{% url 'company.views.trade.edit' account.id %}">
+	<span class='iconic pen'></span> Edit
+</a>
+<span class='label'>Cash Discount:</span>
+<span class='value'>{{ account.cash_discount_string|default:'0' }} ({{account.cash_discount|default:'0'}}%)</span>
+<span class='label'>Credit Discount:</span>
+<span class='value'>{{ account.credit_discount_string|default:'0' }} ({{account.credit_discount|default:'0'}}%)</span>
+<div class='spacer'></div>
+<span class='label'>Credit Limit:</span>
+<span class='value'>{{ account.credit_limit|default:'0.00'|floatformat:2|intcomma }}</span>
+<span class='label'>Credit Period:</span>
+<span class='value'>{{ account.credit_period|default:'0'|floatformat:0|intcomma }} Days</span>
+<div class='spacer'></div>
+<span class='label'>Balance:</span>
+<span class='value'>{{ account.debt|default:'0.00'|floatformat:2|intcomma }}</span>
+<span class='label'>Credit:</span>
+<span class='value'>{{ account.credit|default:'0.00'|floatformat:2|intcomma }}</span>
+<div class='spacer'></div>
+<span class='label'>Rank:</span>
+<span class='value'></span>    
+

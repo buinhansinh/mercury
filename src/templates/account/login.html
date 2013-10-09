@@ -1,0 +1,55 @@
+{% extends 'blank.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+
+{% block head %}
+<style>
+#signin-box {
+	display: block;
+	width: 200px;
+	margin-top: 100px;
+	margin-left: auto;
+	margin-right: auto;
+	padding: 10px 10px 0 10px;
+	border: 1px solid #ccc;
+	text-align: center;
+	background-color: #ccff00;
+}
+#signin {
+}
+label {
+	display: block;
+	margin-bottom: 5px;
+}
+input {
+	margin-bottom: 10px;
+}
+</style>
+<script>
+$(function() {
+	$("#id_username").focus();
+});
+</script>
+<!-- InstanceEndEditable -->
+{% endblock head %}
+
+{% block body %}
+<form method="post" action="{% url 'django.contrib.auth.views.login' %}">
+	{% csrf_token %}
+	<div id="signin-box">
+		{% if form.errors %}
+		<p>Your username and password didn't match. Please try again.</p>
+		{% endif %}		
+		<div id="signin">
+			{{ form.username.label_tag }}
+			{{ form.username }}
+		    {{ form.password.label_tag }}
+		    {{ form.password }}
+		    <br>
+			<input type="submit" value="Login"/>
+			<input type="hidden" name="next" value="{{ next }}" />
+		</div>
+	</div>
+</form>
+{% endblock body %}

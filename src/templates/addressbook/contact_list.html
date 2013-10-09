@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+
+{% block head %}
+<style>
+#title div.dropdown {
+	display: none;
+}
+</style>
+<script>
+</script>
+<!-- InstanceEndEditable -->
+{% endblock head %}
+
+{% block toolbar %}
+{% endblock toolbar %}
+
+{% block main-title %}
+<span class='iconic'></span> ADDRESSBOOK <!-- InstanceEndEditable --> </span>
+{% endblock main-title %}
+
+{% block sub-title %}
+{% endblock sub-title %}  
+
+{% block content %}
+	{% for c in contacts %}
+		<a href='{{ c.get_view_url }}'>{{ c.name }}</a><br>
+	{% endfor %}
+{% endblock content %}

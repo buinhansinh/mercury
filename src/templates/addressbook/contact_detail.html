@@ -1,0 +1,5 @@
+<input type="hidden" class="id" name='detail-id' value='{{ d.id|default:"None" }}'/>
+<input type="hidden" class="delete" name='detail-delete' value='false'/>
+<input type="hidden" class="type" name='detail-type' value="{{ d.type|default:'' }}"/>
+<input type="text" class="label" name='detail-label' value="{{ d.label|default:'' }}"/>
+<input type="text" class="value" name='detail-value' value="{{ d.value|default:'' }}"/>

@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+
+{% block main-title %}
+PURCHASING TASKS
+{% endblock main-title %}
+
+{% block sub-title %}
+{% endblock sub-title %}
+
+{% block stylesheets %}
+{{ block.super }}
+<link rel="stylesheet" type="text/css" href="{% get_static_prefix %}css/task.css"/>
+{% endblock stylesheets %}
+
+{% block context-menu %}
+<div class="button"><a href="{% url 'task.views.purchasing.order' %}">Order</a></div>
+<div class='button'><a class='collapse iconic minus'></a></div>
+<div class='button'><a class='expand iconic plus'></a></div>
+{% endblock context-menu %}
+
+{% block content %}
+<div id='left' class='column'>
+	{% include 'task/purchasing/urgent.html' %}
+	{% include 'task/inventory/low.html' %}
+</div>
+<div id='right' class='column'>
+	{% include 'task/purchasing/incoming.html' %}
+</div>
+<div class='clear' style='height: 15px'></div>
+{% endblock content %}

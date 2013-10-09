@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+
+{% block head %}
+<style>
+#main {
+	margin: 15px;
+}
+div.searchbar {
+	float: right;
+	line-height: 2em;
+}
+ul.item-ul div.bullet {
+	width: 10px;
+}
+ul.item-ul div.name {
+	width: 270px;
+}
+ul.item-ul li.body div.name {
+	text-align: left;
+}
+ul.item-ul div.summary {
+	width: 400px;
+}
+ul.item-ul li.body div.summary {
+	text-align: left;
+}
+ul.item-ul div.price {
+	width: 100px;
+}
+ul.item-ul div.price > input {
+	width: 70%;
+}
+ul.item-ul div.edit {
+	width: 50px;
+}
+</style>
+<script>
+$(document).ready(function(){
+	$("#ul-tabs").tabs("div.pane");
+	
+	div_in_edit = null;
+	editor = $('#editor-input').detach();
+	
+	$('#main').validation([{
+		selector: '#editor-input', 
+		validators: ['required', 'positive_decimal'],
+	}]);
+	
+	$('#main').on('keyup', 'input', function(e) {
+		if (e.which == KEYCODES.ENTER) {
+			var account_id = div_in_edit.next().val(); 
+			var price = editor.val();
+			$.post(
+				"{% url 'trade.views.pricelist.price' %}", 
+				{ account_id: account_id, price: price },
+				function(data) {
+					div_in_edit.html(price)
+					div_in_edit = null;
+				});
+			e.preventDefault();
+  		} else if (e.which == KEYCODES.ESCAPE) {
+  			div_in_edit.html(old_value);
+  			div_in_edit = null;
+    		e.preventDefault();
+  		}
+	});
+	
+	$("#main").on('click', 'div.price',function(e) {
+		if (div_in_edit) {
+			div_in_edit.html(old_value);
+		}
+		div_in_edit = $(this);
+		old_value = $(this).html();
+		$(this).html('');
+		editor.val(old_value);
+		$(this).append(editor);
+		editor.select();
+	});
+ });
+ </script>
+{% endblock head %}
+
+{% block main-title %}
+{{contact.name}} Pricelist
+{% endblock main-title %}
+
+{% block sub-title %}
+{% endblock sub-title %}  
+
+{% block context-menu %}
+{% endblock context-menu %}  
+
+{% block content %}
+<form id='main'>
+	<div class='searchbar'>
+		<span class='iconic magnifying_glass'></span>
+		<input type='text'/>
+	</div>    
+    <ul id='ul-tabs' class='tabs'>
+    	<li><a href="#">Products</a></li>
+    	<li><a href="#">Services</a></li>
+    </ul>
+	<div class='pane'>
+		<ul id='product-ul' class='item-ul table'>
+			<li class='header'>
+				<div class='bullet'></div>
+				<div class='name'>Name</div>
+				<div class='summary'>Summary</div>
+				<div class='price'>Price</div>
+				<div class='edit'></div>
+			</li>		
+			<a class='autoloader' href="{% url 'trade.views.pricelist.products' contact.id %}">Loading...</a>
+		</ul>
+	</div>
+	<div class='pane'>
+		<ul id='service-ul' class='item-ul table'>
+			<li class='header'>
+				<div class='bullet'></div>
+				<div class='name'>Name</div>
+				<div class='summary'>Summary</div>
+				<div class='price'>Price</div>
+				<div class='edit'></div>
+			</li>		
+			<a class='autoloader' href="{% url 'trade.views.pricelist.services' contact.id %}">Loading...</a>
+		</ul>
+	</div>
+	<div class='clear' style='height: 15px;'>
+	</div>
+	<input id='editor-input'/>
+</form>
+{% endblock content %}

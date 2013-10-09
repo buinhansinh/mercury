@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+
+{% block main-title %}
+PAYABLE TASKS
+{% endblock main-title %}
+
+{% block sub-title %}
+{% endblock sub-title %}
+
+{% block stylesheets %}
+{{ block.super }}
+<link rel="stylesheet" type="text/css" href="{% get_static_prefix %}css/task.css"/>
+{% endblock stylesheets %}
+
+{% block content %}
+<div id='left'>
+	{% include 'task/accounting/payable_overdue.html' %}
+</div>
+<div id='right'>
+	{% include 'task/accounting/payable_soon.html' %}
+</div>
+<div class='clear' style='height: 15px'></div>
+{% endblock content %}

@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+
+{% block head %}
+<style>
+#document {
+	float: right;
+}
+#location-section {
+	float: left;
+	margin: 15px 15px 15px 30px;
+}
+#location-section label {
+	display: inline-block;
+	margin-right: 1em; 
+}
+#location-section > * {
+	font-size: 18px;
+	float: left;
+	margin-top: 15px;
+}
+#location-section .destination {
+	margin-left: 8em;
+}
+#product-table {
+	clear: both;
+	margin: 15px;
+}
+#product-table div.handle {
+	width: 10px;
+}
+#product-table div.item {
+	width: 200px;
+}
+#product-table div.description {
+	width: 300px;
+}
+#product-table div.spacer {
+	width: 220px;
+}
+#product-table div.quantity {
+	width: 100px;
+}
+div#item-bar {
+	clear: both;
+	margin: 15px 15px 15px 15px;
+	padding: 5px 10px;
+	width: 908px;
+	text-align: left;
+	border: 1px solid #CCC;
+	font-weight: bold;
+}
+div#item-bar > * {
+	display: inline-block;
+}
+div#item-bar input {
+	width: 200px;
+}
+</style>
+<script>
+
+$(document).ready(function(){
+	$('#form').validation([{
+		selector: '#input-date',
+		validators: ['date'],
+	}, {
+		selector: '#input-code',
+		validators: [],
+	},])	
+	
+	$(".button.submit").click(function(){
+		$('#form').submit();
+	});	
+});
+</script>
+{% endblock head %}
+
+{% block main-title %}
+STOCK TRANSFER FORM
+{% endblock main-title %}
+{% block sub-title %}
+{% endblock sub-title %}  
+
+{% block context-menu %}
+<div class='button submit'>
+	<a><span class='iconic check'></span> Save</a>
+</div>
+{% endblock context-menu %}
+
+{% block content %}
+<form id="form" name="form" method="post" action="">
+	{% include 'common/document_form.html' %}
+    <div id='location-section'>
+        <div class="origin">
+            <label for="origin">From:</label>
+            <input type='hidden' id='origin_id' name='origin' value='{{origin.id}}'/>
+            <a href="{{origin.get_view_url}}">{{origin.name}}</a>
+        </div>
+        <div class="destination">
+            <label for="destination">To:</label>
+            <input type='hidden' id='destination_id' name='destination' value='{{destination.id}}'/>
+            <a href="{{destination.get_view_url}}">{{destination.name}}</a>
+        </div>
+    </div>
+    <ul id='product-table' class='table'>
+        <li class='header'>
+	       	<div class='handle'></div>
+            <div class='item'>Item</div>
+            <div class='description'>Description</div>
+            <div class='spacer'></div>
+            <div class='quantity'>Quantity</div>
+        </li>
+		{% for item in items %}
+        <li class='body'>
+        	<div class='handle'>
+        		<span class='iconic play'></span>
+        	</div>        
+            <div class='item'>{{item.product.name}}</div>
+            <div class='description'>{{item.product.summary}}</div>
+            <div class='spacer'></div>
+            <div class='quantity'>{{item.quantity}}</div>
+        </li>
+		{% endfor %}
+    </ul>
+</form>
+<div class='clear' style='height:15px'></div>
+{% endblock content %}

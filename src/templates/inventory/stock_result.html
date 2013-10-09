@@ -1,0 +1,15 @@
+{% extends 'common/results.html' %}
+{% load url from future %}
+{% block columns %}
+{% with stock=result %}
+	<input type='hidden' id="stock-{{stock.id}}"/>
+    <div class='handle'></div>
+    <div class='item'><a href="{{stock.product.get_view_url}}">{{stock.product.name}}</a></div>
+    <div class='description'>{{stock.product.summary}}</div>
+    <div class='spacer'></div>
+    <div class='quantity'>{{stock.quantity}}</div>
+    <div class='total'>{{stock.aggregated|floatformat:0}}</div>
+    <div class='last-physical'><a class="physical trigger" href="{% url 'inventory.views.stock.physical' stock.id %}">{{stock.last_physical|date:"M d, Y"|default:"None"}}</a></div>
+    <div class='actions'></div>
+{% endwith %}
+{% endblock columns %}    

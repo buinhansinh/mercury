@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+
+{% block head %}
+<style>
+label {
+	display: block;
+	width: 75px;
+}
+div#date {
+	float: right;
+	font-size: 24px;
+}
+#contact {
+	float: left;
+	margin-top: 15px;
+	margin-left: 30px;
+	margin-bottom: 15px;
+}
+#contact .name {
+	font-size: 24px;
+}
+#document {
+	float: right;
+	padding: 10px;
+	background-color: #CCC;
+	margin-top: 15px;
+	margin-right: 15px;	
+	margin-bottom: 15px;
+}
+#document > * {
+	margin: 0px 0px 5px 0px;
+}
+#document label {
+	display: block;
+}
+#document .title {
+	font-size: 18px;
+}
+#product-table {
+	clear: both;
+	margin: 5px 15px;
+}
+#product-table li > * {
+	text-decoration: inherit;
+}
+#product-table div.handle {
+	width: 5px;
+}
+#product-table div.name {
+	width: 210px;
+}
+#product-table div.description {
+	width: 320px;
+}
+#product-table div.quantity {
+	width: 70px;
+}
+#product-table div.price {
+	width: 90px;
+}
+#product-table div.total {
+	width: 90px;
+}
+#product-table div.actions {
+	width: 5px;
+}
+#product-table input {
+	display: block;
+	width: 100%;
+}
+#product-table div.product {
+	width: 910px;
+}
+#product-table div.product > * {
+	display: inline-block;
+}
+#product-table div.product input {
+	width: 200px;
+}
+#div-tabs {
+	margin: 15px;
+}
+#transfer-info {
+	display: inline-block;
+	background-color: #fff;
+	padding: 15px 15px;
+}
+#transfer-info li {
+	padding: 3px 10px;
+}
+#transfer-info li.spacing {
+	background-color: #fff;
+}
+#transfer-info label {
+	display: inline-block;
+	width: 200px;
+	font-weight: bold;
+}
+#transfer-info span {
+	display: inline-block;
+	width: 50px;
+}
+</style>
+<script>
+$(document).ready(function(){
+	$('#product-table .item-cancel').each(function(i, el) {
+		if ($(this).val() == 'True') {
+			$(this).closest('li').addClass('strikethrough');
+		}
+	});
+});
+</script>
+{% endblock head %}
+
+{% block toolbar %}
+{% endblock toolbar %}
+
+{% block main-title %} 
+{% if contact == order.source.customer %}
+	REVISION - SALES ORDER
+{% endif %}
+{% if contact == order.source.supplier %}
+	REVISION - PURCHASE ORDER
+{% endif %}
+{% endblock main-title %} 
+{% block sub-title %}
+<span id='order-number'>No. {{order.date|date:"ymd"}}-{{order.id|stringformat:"08d"}}</span>
+{% endblock sub-title %}  
+
+{% block context-menu %}
+<div class='button'><a href="{% url 'trade.views.order.order_view' order.source.id %}"><span class='iconic arrow_left'></span> Back To Order</a></div>
+{% endblock context-menu %}
+
+{% block content %}
+<form id="form1" name="form1" method="post" action="">
+    <div id='document' class=''>
+        <div class='title'>Document</div>
+        <div>
+            <label for="date">Date</label>
+            <input type="text" name="date" id="date" readonly='readonly' value='{{order.date|date:"M d, Y"}}'/>
+        </div>
+        <div>
+            <label for="ref-no">Ref. No.</label>
+            <input type="text" name="ref-no" id="ref-no" readonly='readonly' value='{{order.code}}'/>
+        </div>
+    </div>
+    <div id='contact' class='curved'>
+        <div class="name">{{contact.name}}</div>
+        <div class='phone'>Contact No(s): {% for n in contact.numbers %}{{ n.value }};{% endfor %}</div>
+        <div class='address'>Address: {{ contact.address.value }}</div>
+        <div class='email'>Email: {{ contact.email.value }}</div>
+    </div>
+    <div class='clear'></div>
+    <ul id='product-table' class='table pane'>
+    	<li class='header'>
+        	<div class='handle'>&nbsp;</div>
+        	<div class='name'>Item</div>
+        	<div class='description'>Description</div>
+        	<div class='quantity'>Qty</div>
+        	<div class='price'>Price</div>
+			<div class='total'>Total</div>
+        	<div class='actions'>&nbsp;</div>
+        </li>
+		{% for item in items %}
+    	<li class='body'>
+    		<input class='item-cancel' type='hidden' value='{{item.canceled}}'>
+        	<div class='handle'><span class='iconic play'></span></div>
+			{% if item.info_type.name == "product" %}
+        	<div class='name'>{{item.info.brand}} {{item.info.model}}</div>
+    		{% else %}
+        	<div class='name'>{{item.info.name}} </div>
+    		{% endif %}
+        	<div class='description'>{{item.info.summary}}</div>
+        	<div class='quantity'>
+        		{{item.quantity|floatformat:2}}
+        	</div>
+        	<div class='price'>
+        		{{item.price|floatformat:2}}
+        	</div>
+        	<div class='total'>
+        		{{item.value|floatformat:2}}
+        	</div>
+        	<div class='actions'>&nbsp;</div>
+        </li>
+		{% endfor %}
+    </ul>
+</form>
+<div class='clear' style='height: 15px'></div>
+{% endblock content %}

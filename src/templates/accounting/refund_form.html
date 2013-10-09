@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+{% load humanize %}
+
+{% block head %}
+<style>
+#left {
+	float: left;
+	border-right: 1px solid #ccc;
+}
+#payment {
+	width: 300px;
+	float: left;
+	clear: left;
+	margin: 15px;
+	border: 1px solid #ccc;
+}
+.contact-card {
+	float: left;
+	width: 300px;
+	padding-top: 15px;
+	padding-left: 30px;
+	padding-bottom: 15px;
+}
+#document {
+	float: right;
+}
+div#refund {
+	float:left;
+	width: 300px;
+	padding: 30px;
+}
+div#refund > * {
+	margin-right: 15px;
+	margin-bottom: 15px;
+}
+div#refund label {
+	display: inline-block;
+	width: 100px;
+	font-weight: bold;	
+}
+div#refund select {
+}
+div#refund input {
+	width: 100px;
+}
+#buttons {
+	clear: both;
+	text-align: center;
+	margin-top: 20px;
+}
+{% if title == 'Disbursement' %}
+div#title {
+	background-color: #ff55aa;
+}
+{% endif %}
+</style>
+<script>
+$(document).ready(function(){
+	$(".button.submit").click(function(){
+		submit($('#form'));
+	});
+});
+</script>
+{% endblock head %}
+
+{% block main-title %}Refund{% endblock main-title %}  
+{% block sub-title %}{% endblock sub-title %}  
+
+{% block context-menu %}
+<div class='button submit'><a><span class='iconic check'></span> Submit</a></div>
+{% endblock context-menu %}
+
+{% block content %} 
+<form id="form" name="form" method="post" action="">
+	<input type='hidden' name='payment' value='{{payment.id}}'>
+    <div id='left'>
+		{% include 'addressbook/contact_card.html' %}
+		<table id="payment" class='data'>
+			<thead>
+				<th colspan='2'>Payment No. <a href="{{ payment.get_view_url }}">{{payment.reference}}</a></th>
+			</thead>
+			<tr>
+				<td align='right'>Date</td>
+				<td align='left'>{{payment.date|date:'m/d/Y'}}</td>
+			</tr>
+			<tr>
+				<td align='right'>Amount:</td>
+				<td align='left'>{{payment.amount}}</td>
+			</tr>
+			<tr>
+				<td align='right'>Total:</td>
+				<td align='left'>{{payment.total}}</td>
+			</tr>
+		</table>
+    </div>
+    <div id="refund">
+        <label for="type">Refund Mode:</label>
+    	<select class='type' name='mode'>
+			{% for value, label in modes.items %}
+			<option value='{{value}}'>{{label}}</option>
+			{% endfor %}
+    	</select>
+        <label for="amount">Amount:</label>
+        <input type="number" id="amount" name='amount' required='required' value='{{form.amount.value}}'/>
+    </div>
+	{% include 'common/document_form.html' %}
+    <div class="clear"></div>
+</form>
+{% endblock content %}

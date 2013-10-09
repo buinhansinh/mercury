@@ -1,0 +1,8 @@
+{% extends 'common/results.html' %}
+{% load url from future %}
+{% block columns %}
+	<div class='item'><a href="{{result.get_view_url}}">{{ result.name }}</a></div>
+	<div class='summary'>{{ result.summary }}</div>
+	<div class='quantity'>{{ result.required|floatformat:0 }}</div>
+	<div class='quantity'>{{ result.stock|floatformat:0 }}</div>
+{% endblock columns %}

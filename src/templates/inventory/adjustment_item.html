@@ -1,0 +1,17 @@
+{% load url from future %}
+<li class='body'>
+	<div class='handle'><a href='#'><span class='iconic move_vertical_alt2'></span></a></div>
+	<div class='name'>{{ item.product.name }}</div>
+	<div class='description'>{{ item.product.summary }}</div>
+	<div class='before'>{{ item.before|floatformat:2 }}</div>
+	<div class='delta'>
+		<input class='delta' type='decimal' required='required' min='{{item.cost}}' name='item-delta' value='{{item.delta}}'/>
+	</div>
+	<div class='after'>0.00</div>
+	<div class='actions'>
+		<a class='trash' href='#'><span class='iconic trash_stroke'></span></a>
+		<input type='hidden' name='item-id' class='item-id' value='{{ item.id }}'/>
+		<input type='hidden' name='item-product-id' value='{{ item.product.id }}'/>
+		<input type='hidden' name='item-cancel' class='item-cancel' value='{{ item.cancel }}'/>
+	</div>
+</li>

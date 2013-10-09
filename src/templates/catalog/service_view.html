@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+
+{% block head %}
+<style>
+#left {
+	float: left;
+	margin: 15px;
+}
+#right {
+	float: right;
+	margin: 15px;
+}
+#left > * {
+	float: left;
+	clear: left;
+	width: 350px;
+	margin-bottom: 10px;
+}
+#right > * {
+	float: left;
+	clear: left;
+	width: 550px;
+	margin-bottom: 10px;
+}
+#left li.empty {
+	width: 348px;
+}
+#left li.more {
+	width: 348px;
+}
+#right li.empty {
+	width: 548px;
+}
+#right li.more {
+	width: 548px;
+}
+.section .content {
+	margin: 1em;
+}
+.section .title {
+	font-weight: bold;
+	font-size: larger;
+	border-bottom: 1px solid #ccc;
+	line-height: 2em;
+}
+.section .title a.toggler {
+	display: block;
+	text-decoration: none;
+	color: #333;
+	padding: 0 10px;
+}
+.section .title .toggler-icon {
+	float: right;
+	font-weight: normal;
+}
+#product-summary label {
+	width: 75px;
+	display: inline-block;
+}
+#product-summary input {
+	text-align: left;
+	font-weight: bold;
+}
+#edit-about {
+	float: right;
+	margin-right: 0px;
+	margin-top: 0em;
+}
+#stock-section {
+}
+#price-section {
+}
+div#price-section div.label {
+	width: 130px;
+	text-align: left;
+} 
+div#price-section div.price {
+	width: 150px;
+	text-align: right;
+}
+div#price-section div.actions {
+	width: 10px;
+	text-align: left;
+}
+#transaction-section {
+}
+#transaction-table div.id {
+	width: 100px;
+}
+#transaction-table div.code {
+	width: 100px;
+}
+#transaction-table div.contact {
+	width: 170px;
+}
+#transaction-table div.date {
+	width: 100px;
+}
+#alarms-form label {
+	display: inline-block;
+	width: 75px;
+	margin-bottom: 10px;
+}
+</style>
+<script>
+$(function() {
+	// setup ul.tabs to work as tabs for each div directly under div.panes
+	$("#tabs-section ul.tabs").tabs("#tabs-section div.pane");
+	$("#about-section ul.tabs").tabs("#about-section div.pane");
+	$("#details-section .toggler").collapse();
+	$('body').on('click', 'div.transactions a', function() {
+		$('#transaction-section').hide();
+		var stock_id = $(this).attr('title');
+		$.get("{% url 'catalog.views.product.transactions' %}",
+			{ stock_id: stock_id }, 
+			function(data) {
+				$('#transaction-table li.body').remove();
+				$('#transaction-table').append(data);
+				$('#transaction-section').fadeIn();
+			});
+		return false;
+	});
+});
+</script>
+{% endblock head %}
+
+{% block main-title %}
+<span class='iconic cog'></span> {{ service.name }} </span>
+{% endblock main-title %}
+ 
+{% block content %}
+<div id="left">
+	<div id='about-section' class='section'>
+		<div class='title'>
+			<a href='#product-summary' class='toggler'>Summary</a>
+		</div>
+		<div id='product-summary' class='content'>
+			<a id='edit-about' class='trigger' href="{{service.get_edit_url}}">
+				<span class="iconic pen"></span> Edit
+			</a>
+	    	<div>
+	    		<label>Name:</label>
+	    		<input readonly="readonly" value="{{service.name}}"/>
+	    	</div>
+	    	<div>
+	    		<label>Summary:</label>
+	    		<input readonly="readonly" value="{{service.summary}}"/>
+	    	</div>
+	    </div>
+	</div>
+	<div id='details-section' class='section'>
+	    <div class='title'><a href="#details" class='toggler'>Details</a></div>
+	    <div id='details' class='content'>{{ product.description|default:"None" }}</div>    
+	</div>	
+	<div id='price-section' class='section'>
+	    <div class='title'><a href="#price-content" class='toggler'>Prices</a></div>
+	    <div id='price-content'>
+	    	<ul class='table'>
+		    	<li class='header'> 
+		    		<div class='label'>Account</div>
+		    		<div class='price'></div>
+		    		<div class='actions'></div>
+		    	</li>
+		    	<li> 
+		    		<div class='label'>List Price</div>
+		    		<div class='price'><a href="#">{{account.price|floatformat:2}}</a></div>
+		    		<div class='actions'>
+		    			<a id='edit-price' class='iconic pen trigger' href="{% url 'company.views.item.price' account.id %}"></a>
+		    		</div> 
+		    	</li>
+	    	</ul>
+	    	{% with item=account %}
+			{% include 'company/price_table.html' %}
+			{% endwith %}
+		</div>
+	</div>
+</div>
+<div id="right">
+	<div id='transaction-section' class='section'>
+	    <div class='title'><a href="#transaction-table" class='toggler'>Transactions</a></div>
+	    <ul id='transaction-table' class='table'>
+			<li class='header'>
+				<div class='id'>No.</div>
+				<div class='code'>Doc No.</div>
+				<div class='contact'>Contact</div>
+				<div class='date'>Date</div>
+		    </li>
+	    <a class='autoloader' href="{% url 'catalog.views.service.transactions' %}?service_id={{service.id}}">Loading...</a> 
+	    </ul>
+	</div>
+</div>
+<div class="clear"></div>
+{% endblock content %}

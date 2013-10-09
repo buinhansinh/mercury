@@ -1,0 +1,20 @@
+{% load url from future %}
+<div class='toolbar'>
+	<select id='collection-status'>
+		<option value='ANY'>ANY</option>
+		<option value='UNALLOCATED' selected>UNALLOCATED</option>
+		<option value='ALLOCATED'>ALLOCATED</option>
+		<option value='OVERALLOCATED'>OVERALLOCATED</option>
+		<option value='CANCELED'>CANCELED</option>
+	</select>
+	<input id='collection-date' class='date' readonly='readonly' placeholder='Today'/>
+</div>
+<ul id='collection-table' class='table payment'>
+	<li class='header'>
+		<div class='id'>No.</div>
+		<div class='code'>Doc No.</div>
+		<div class='date'>Date</div>
+		<div class='amount'>Amount</div>
+		<div class='status'>Status</div>
+	</li>				
+</ul>

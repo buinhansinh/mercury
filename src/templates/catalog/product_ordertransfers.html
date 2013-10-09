@@ -1,0 +1,15 @@
+{% extends 'common/results.html' %}
+{% load url from future %}
+{% block columns %}
+    <div class='code'><a href="{{result.transfer.get_view_url}}">{{ result.transfer.code }}</a></div>
+    <div class='date'>{{ result.date|date:"Y-m-d" }}</div>
+    {% if result.transfer.origin.owner == request.user.account.company %}
+	    <div class='partner' title="{{ result.transfer.destination.owner }}">{{ result.transfer.destination.owner }}</div>
+	    <div class='quantity'>-{{ result.quantity }}</div>
+    {% endif %}
+    {% if result.transfer.destination.owner == request.user.account.company %}
+	    <div class='partner' title="{{ result.transfer.origin.owner }}">{{ result.transfer.origin.owner }}</div>
+	    <div class='quantity'>+{{ result.quantity }}</div>
+    {% endif %}
+    <div class='status'>{{ result.transfer.status }}</div>
+{% endblock columns %}    

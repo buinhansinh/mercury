@@ -1,0 +1,11 @@
+<div id='document' class=''>
+    <div id='document-title'>Document</div>
+    <div>
+        <label for="document-date">Date</label>
+        <input name="date" id="document-date" readonly="readonly" value='{{document.date|date:"m/d/Y"}}'/>
+    </div>
+    <div>
+        <label for="document-code">Ref. No.</label>
+        <input type="text" name="code" id="document-code" readonly="readonly" value='{{document.code|default:""}}'/>
+    </div>
+</div>

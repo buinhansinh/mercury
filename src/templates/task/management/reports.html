@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+{% load humanize %}
+
+{% block main-title %}
+MONTHLY REPORTS
+{% endblock main-title %}
+
+{% block sub-title %}
+{% endblock sub-title %}
+
+{% block stylesheets %}
+{{ block.super }}
+<link rel="stylesheet" type="text/css" href="{% get_static_prefix %}css/task.css"/>
+{% endblock stylesheets %}
+
+{% block head %}
+<style>
+.column {
+	width: 100px;
+	margin: 15px;
+	float: left;
+}
+.column.firstcol {
+	margin-left: 30px;
+}
+div.column div.title {
+	margin-top: 0px;
+}
+ul.table.statement div.account {
+	width: 100px;
+	text-align: left;
+}
+ul.table.statement div.value {
+	width: 100px;
+	text-align: right;
+}
+#older-link {
+	float: right;
+	margin: 15px 30px 0 0;
+}
+#newer-link {
+	float: left;
+	margin: 15px 0 0 30px;
+}
+</style>
+{% endblock head %}
+
+{% block context-menu %}
+<div class='button'>
+	<a href="{% url 'task.views.management.view' %}">Annual</a>
+</div>
+{% endblock context-menu %}
+
+{% block content %}
+	{% if newer %}
+	<div id='newer-link' class='button'>
+		<a href="?month={{newer.month}}&year={{newer.year}}">
+			<span class='iconic arrow_left'></span> Newer
+		</a>
+	</div>
+	{% endif %}
+	
+	{% if older %}
+	<div id='older-link' class='button'>
+		<a href="?month={{older.month}}&year={{older.year}}">
+			Older <span class='iconic arrow_right'></span>
+		</a>
+	</div>
+	{% endif %}
+<div class='clear'></div>
+<div class='column firstcol'>
+	<ul id='income' class='table statement'>
+		<li class='header'>
+			<div class='account'>Month</div>
+		</li>
+		<li class='body'>
+			<div class='account'>Sales</div>
+		</li>
+		<li class='body'>
+			<div class='account'>COGS</div>
+		</li>
+		<li class='body'>
+			<div class='account'>Gross Profit</div>
+		</li>
+		<li class='body'>
+			<div class='account'>Expenses</div>
+		</li>
+		<li class='body'>
+			<div class='account'>Profit</div>
+		</li>
+		<li class='body'>
+			<div class='account'>Collections</div>
+		</li>
+		<li class='body'>
+			<div class='account'>Disbursements</div>
+		</li>
+		<li class='body'>
+			<div class='account'>Net Cash Flow</div>
+		</li>
+	</ul>
+</div>
+{% for month, sales, cogs, profit in report %}
+<div class='column'>
+	<ul id='income' class='table statement'>
+		<li class='header'>
+			<div class='value'>{{month|date:"M Y"}}</div>
+		</li>
+		<li class='body'>
+			<div class='value'>{{sales|default:0|floatformat:0|intcomma}}</div>
+		</li>
+		<li class='body'>
+			<div class='value'>{{cogs|default:0|floatformat:0|intcomma}}</div>
+		</li>
+		<li class='body'>
+			<div class='value'>{{profit|default:0|floatformat:0|intcomma}}</div>
+		</li>
+		<li class='body'>
+			<div class='value'>{{expenses|default:0|floatformat:0|intcomma}}</div>
+		</li>
+		<li class='body'>
+			<div class='value'>{{net_profit|default:0|floatformat:0|intcomma}}</div>
+		</li>
+		<li class='body'>
+			<div class='value'>{{collections|default:0|floatformat:0|intcomma}}</div>
+		</li>
+		<li class='body'>
+			<div class='value'>{{disbursements|default:0|floatformat:0|intcomma}}</div>
+		</li>
+		<li class='body'>
+			<div class='value'>{{net_cash|default:0|floatformat:0|intcomma}}</div>
+		</li>
+	</ul>
+</div>
+{% endfor %}
+<div class='clear'></div>
+{% endblock content %}

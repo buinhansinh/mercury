@@ -1,0 +1,19 @@
+{% load url from future %}
+{% for b in bills %}
+<li class='body'>
+	<div class='id'>
+		<a href="{% url 'accounting.views.bill.view' b.id %}">{{b.date|date:"ymd"}}-{{b.id|stringformat:"04d"}}</a>
+	</div>
+	<div class='type'>{{b.type}}</div>
+	<div class='code'>{{b.code}}</div>
+	<div class='date'>{{b.date|date:'F d, Y'}}</div>
+	<div class='amount'>{{b.amount|floatformat:2}}</div>
+</li>
+{% endfor %}
+{% if more %}
+<li class='body'>
+	<a class='clickloader' href="{% url 'accounting.views.bill.search' contact_id %}?offset={{offset}}&limit={{limit}}">
+	Show More
+	</a>
+</li>
+{% endif %}

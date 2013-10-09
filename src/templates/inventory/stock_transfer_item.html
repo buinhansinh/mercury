@@ -1,0 +1,16 @@
+<li class='body'>
+	<div class='handle'><span class='iconic move_vertical_alt2'></span></div>
+  	<div class='item'>{{item.product.name}}</div>
+	<div class='description'>{{ item.product.summary }}</div>
+    <div class='origin-quantity'>{{ item.origin_quantity }}</div>
+    <div class='destination-quantity'>{{ item.destination_quantity }}</div>
+	<div class='quantity'>
+		<input class='quantity' type="decimal" required='required' name='item-qty' value='{{ item.quantity }}'/>
+	</div>
+	<div class='actions'>
+		<span class='iconic trash_stroke'></span>
+		<input type='hidden' name='item-id' value='{{ item.id }}'/>
+		<input type='hidden' name='item-product-id' value='{{ item.product.id }}'/>
+		<input class='item-cancel' type='hidden' name='item-cancel' value='{{ item.is_canceled }}'/>
+	</div>
+</li>

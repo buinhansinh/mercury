@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+{% load humanize %}
+
+{% block head %}
+<style>
+.contact-card {
+	float: left;
+	margin-top: 15px;
+	margin-left: 30px;
+	margin-bottom: 15px;
+}
+#document {
+	float: right;
+}
+#product-table {
+	clear: both;
+	margin: 15px;
+}
+#product-table div.bullet {
+	width: 10px;
+}
+#product-table div.item {
+	width: 170px;
+}
+#product-table div.description {
+	width: 300px;
+}
+#product-table div.ordered {
+	width: 60px;
+}
+#product-table div.quantity {
+	width: 60px;
+}
+#product-table div.price {
+	width: 80px;
+}
+#product-table div.total {
+	width: 80px;
+}
+#product-table li.body div.total {
+	text-align: right;
+}
+#product-table div.actions {
+	width: 10px;
+}
+a.trash {
+	color: #000;
+}
+#product-table div.actions a:hover{
+	cursor: pointer;
+}
+div#bottom-bar {
+	clear: both;
+	float: left;
+	margin: 0px 0px 0px 15px;
+	padding: 5px 10px;
+	width: 908px;
+	font-weight: bold;
+	border: 1px solid #CCC;
+}
+div#bottom-bar > * {
+	display: inline-block;
+}
+div#total {
+	float: right;
+	font-weight: bold;
+}
+div#total input#amount {
+	font-weight: bold;
+	background-color: #fff;
+	width: 110px;
+	text-align: right;
+	margin-right: 25px;
+}
+</style>
+<script>
+
+MAX_TRANSFER_ITEMS = 20;
+
+// caculate the total
+$.validation.total = function(input) {
+	var product = 1;
+	var row = $(input).parent().parent();
+	row.find('input.price, input.quantity').each(function() {
+		product = product * $(this).val();
+	});
+	row.children('.total').html(product.toFixed(2));
+	
+	// total amount of the order			
+	var total = 0;
+	$('#product-table .body .total').each(function() {
+		var li = $(this).closest('li');
+		if (li.children('input.item-cancel').val() != 'True') {		
+			total = total + parseFloat($(this).html());
+		}
+	});
+	$('#amount').val(total.toFixed(2));
+};
+
+$.validation.quantity = function(input) {
+	var value = $(input).val();
+	if (value < 1) {
+		$(input).invalidate($.validation.ERROR, 'The minimum quantity is 1');
+		return false;
+	}
+	var returnable = Number($(input).nextAll('input.returnable').val());
+	if (value > returnable) {
+		$(input).invalidate($.validation.ERROR, 'Cannot return more than was served: ' + returnable);
+		return false;
+	}
+}
+
+$(document).ready(function(){
+	$('#form').validation([{
+		selector: '#document-date',
+		validators: ['date'],	
+	}, {
+		selector: '#document-code',
+		validators: [],
+	}, {
+		selector: 'input.quantity',
+		validators: ['required', 'decimal', 'quantity', 'total'],	
+	}]);
+
+	$(".button.submit").click(function(){
+		var item_count = $('#product-table li.body').length;
+		if (item_count < 1) {
+			alert('You have not returned anything!');
+			return false;
+		} else if (item_count > MAX_TRANSFER_ITEMS) {
+			alert('Transfered items cannot be more than ' + MAX_TRANSFER_ITEMS + ' so they can fit into an invoice.');
+			return false;
+		} else {
+			$('#form').submit();
+		}
+	});
+	
+	$('#remove-empty-icon').click(function(e) {
+		$('input.quantity').each(function(i) {
+			if ($(this).val() == '') {
+				$(this).closest('li').remove();
+			}
+		});
+		$("#form").validate();
+	});
+
+    // make the items cancellable
+	$('#product-table').on('click', '.actions a.trash', function(e) {
+		$(this).closest('li').remove();
+		$("#form").validate();
+	});
+});
+</script>
+{% endblock head %}
+
+{% block main-title %}
+<span class='iconic undo'></span> RETURN
+{% endblock main-title %}
+{% block sub-title %}
+Transfer No. <a href="{{transfer.get_view_url}}">{{transfer.reference}}</a>
+{% endblock sub-title %}
+
+{% block context-menu %}
+<div class='button submit'><a><span class='iconic check'></span> Save</a></div>
+{% endblock context-menu %}
+
+{% block content %}
+<form id="form" name="form" method="post" action="">
+	<input type='hidden' name='transfer' value='{{transfer.id}}'/>
+	{% include "addressbook/contact_card.html" %}
+	{% include 'common/document_form.html' %}
+    <ul id='product-table' class='table'>
+        <li class='header'>
+            <div class='bullet'></div>
+            <div class='item'>Item</div>
+            <div class='description'>Description</div>
+            <div class='ordered'>Returnable</div>
+            <div class='quantity'>Quantity <a id='remove-empty-icon' class='iconic trash_stroke' href='#' title='remove empty'></a></div>
+            <div class='price'>Price</div>
+            <div class='total'>Total</div>
+            <div class='actions'></div>
+        </li>
+	{% for item in transfer.items.all %}
+        <li class='body'>
+        	<input type='hidden' name='transfer-id' value='{{ item.id }}'/>
+            <div class='bullet'><span class='iconic play'></span></div>
+            <div class='item'><a href="{{item.order.info.get_view_url}}">{{ item.order.info.name }}</a></div>
+            <div class='description'>{{ item.order.info.summary }}</div>
+            <div class='ordered'>{{ item.net_quantity }}</div>
+            <div class='quantity'>
+            	<input type='decimal' name='return-quantity' class='quantity' required='required'/>
+            	<input type='hidden' class='returnable' value='{{item.net_quantity}}'/>
+            </div>
+            <div class='price'>{{ item.order.price|floatformat:2 }}
+            	<input type='hidden' name='item-price' class='price' required='required' value='{{ item.order.price }}'/>
+            </div>
+            <div class='total'></div>
+            <div class='actions'><a class='trash' href='#'><span class='iconic trash_stroke'></span></a></div>
+        </li>
+	{% endfor %}
+    </ul>
+    <div id='bottom-bar'>
+	    <div id='total'>GRAND TOTAL: <input type="text" id='amount' name='amount' readonly="readonly" value='{{form.amount.value}}'/></div>
+	</div>	
+    <div style='clear: both; height: 15px;'></div>
+</form>
+{% endblock content %}

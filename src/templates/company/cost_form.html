@@ -1,0 +1,10 @@
+{% load url from future %}
+<form id='price-form' class="ajax" action="{{request.path}}">
+	<div class='title'>Cost</div>
+	<div class='content'>
+		<input type="decimal" name='cost' value="{{ account.cost }}"/>
+	</div>
+	<div class='buttons'>
+		<div class='button submit'><a>Save</a></div>
+	</div>
+</form>

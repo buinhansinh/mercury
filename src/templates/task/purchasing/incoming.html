@@ -1,0 +1,13 @@
+{% load url from future %}
+<div class='title'>
+	<a href='#purchasing-outstanding' class='toggler'>INCOMING PURCHASES</a>
+</div>
+<ul id='purchasing-outstanding' class='table order purchase'>
+	<li class='header'>
+		<div class='item'>Item</div>
+		<div class='summary'>Summary</div>
+		<div class='supplier'>Supplier</div>
+		<div class='order'>Order</div>
+	</li>		
+	<a class='autoloader' href="{% url 'task.views.purchasing.incoming' %}">Loading...</a>
+</ul>

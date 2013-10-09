@@ -1,0 +1,17 @@
+{% load url from future %}
+
+<ul id='transfer-info' class='table'>
+	<li class='header'>{{ item.info.name }}</li>
+	<li class='body'>
+		<label>Balance:</label>
+		<span></span>
+		<span>{{ item.balance|floatformat:"0" }}</span>
+	</li>
+	{% for t in transfers %}
+	<li class='body'>
+		<label><a href="{{ t.transfer.get_view_url }}">{{ t.transfer.date|date:"y-m-d h:m:s" }}</a></label> 
+		<span>{{ t.type }}</span>
+		<span>{{ t.quantity }}</span>
+	</li>
+	{% endfor %}
+</ul>

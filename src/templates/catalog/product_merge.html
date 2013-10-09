@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+
+{% block head %}
+<style>
+#product-container {
+	margin: 15px 15px 15px 30px;
+}
+#product-container > .title {
+	font-size: 18px;
+	margin-bottom: 15px;
+}
+#product-container > .product-card {
+	border: 1px solid #ccc;
+	padding: 15px;
+	margin: 15px 0 15px 0;
+}
+</style>
+<script>
+$(document).ready(function(){
+
+{% if not product2 %}
+	$("#product2").autocomplete({
+		source: "{% url 'common.views.search.suggestions' %}?models=Product",
+		minLength: 2,
+		select: function(e, ui) {
+			var product_id1 = $("#product_id1").val();
+			if (product_id1 == ui.item.id) { 
+				alert("You cannot merge the same product!");
+			} else {
+				window.location = "?" +	$.param({ product_id2: ui.item.id });
+			}
+		},
+	}).data("autocomplete")._renderItem = function(ul, item) {
+		var li = null;
+		if (item.more) {
+			li = $("<li class='more suggestion'>").data("item.autocomplete", item)
+				.append("<hr><a><span class='name'>" + item.name + "</span></a>")
+		} 
+		else {
+			li = $("<li class='suggestion'>").data("item.autocomplete", item)
+				.append("<a><span class='type'>" + item.type + 
+						"</span><span class='name'>" + item.name + 
+						"</span> <span class='summary'> " + 
+						item.summary + "</span></a>") 
+		}
+        return li.appendTo( ul );
+	};
+{% endif %}
+
+	$("#merge-button").click(function() {
+		var yes = confirm("Are you sure you want to merge these products? This cannot be undone.");
+		if (yes) {
+			$("#merge-button").hide();
+			$("#merge-form").submit();
+		}
+	});
+});
+</script>
+{% endblock head %}
+
+{% block main-title %}
+PRODUCT MERGE
+{% endblock main-title %}
+
+{% block sub-title %}
+{% endblock sub-title %}  
+
+{% block context-menu %}
+<div class="button"><a href="{{product1.get_view_url}}">Cancel</a></div>
+{% endblock context-menu %}
+
+{% block content %}
+
+{% if merged_product %}
+	<div id="product-container">
+		<div class="title"> Merge Success </div>
+		{% with product=merged_product %}
+			{% include "catalog/product_card.html" %}
+		{% endwith %}
+	</div>
+{% else %}
+	<div id="product-container">
+		{% with product=product1 %}
+			{% include "catalog/product_card.html" %}
+		{% endwith %}
+		<input type="hidden" id="product_id1" value="{{product1.id}}"/>
+		<div class="title">MERGE WITH:</div>
+		
+		{% if product2 %}
+			{% with product=product2 %}
+				{% include "catalog/product_card.html" %}
+			{% endwith %}
+			<form id="merge-form" method="post">
+				<input type="hidden" id="product_id2" name="product_id2" value="{{product2.id}}"/>
+			</form>
+			<div id="merge-button" class="button"><a>Continue</a></div>
+		{% else %}
+			<input id="product2" type="text" placeholder="Search Contact"/>
+		{% endif %}
+	</div>
+{% endif %}
+
+<div class='clear' style='height: 15px;'></div>
+{% endblock content %}

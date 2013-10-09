@@ -1,0 +1,12 @@
+{% extends 'common/results.html' %}
+{% load url from future %}
+{% block columns %}
+{% with stock=result %}
+    <div class='location'><a href="{{ stock.location.get_view_url }}">{{ stock.location.name }}</a></div>
+    <div class='quantity'>{{stock.quantity|floatformat:2}}</div>
+    <div class='quantity'><a class='trigger' href="{% url 'inventory.views.stock.alarms' stock.id %}">{{stock.floor|floatformat:2}}</a></div>
+    <div class='quantity'><a class='trigger' href="{% url 'inventory.views.stock.alarms' stock.id %}">{{stock.ceiling|floatformat:2}}</a></div>
+    <div class='last-physical'><a class="trigger" href="{% url 'inventory.views.stock.physical' stock.id %}">{{stock.last_physical.date|date:"M d, Y"|default:"None"}}</a></div>
+    <div class='transactions'><a href="#" title='{{ stock.id }}'>Show</a></div>
+{% endwith %}
+{% endblock columns %}    

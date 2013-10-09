@@ -1,0 +1,17 @@
+{% load url from future %}
+<div class='product-card'>
+	<div class="name"><a href="{{ product.get_view_url }}">{{ product.name }}</a></div>
+	<div class="brand">
+		<label>Brand</label> 
+		<div>{{product.brand}}</div>
+	</div>
+	<div class='model'>
+		<label>Model</label>
+		<div>{{product.model}}</div>
+	</div>
+	<div class='summary'>
+		<label>Summary</label>
+		<div>{{product.summary}}</div>
+	</div>
+</div>
+

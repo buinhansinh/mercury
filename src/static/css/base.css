@@ -1,0 +1,346 @@
+div#top-bar {
+	position: fixed;
+	top: 0px;
+	left: 0em;
+	right: 0em;
+	line-height: 2.5em;
+	height: 2.5em;
+	background-color: #333;
+	color: #FFF;
+	min-width: 960px;
+	z-index: 99999;
+}
+div#top-bar > * {
+	float: left;
+}
+div#top-bar .dropdown {
+	line-height: inherit;
+	height: inherit;
+}
+div#top-bar .button {
+	display: block;
+	line-height: inherit;
+	height: inherit;
+	background-color: #333;
+	color: #CCC;
+}
+div#top-bar .button:hover {
+	color: #FFF;
+}
+div#top-bar .button.depressed {
+	background-color: #333;
+	color: #666;
+}
+div#top-bar input[type=text] {
+	margin-top: 4px;
+}
+div#top-bar .separator {
+	border-left: 1px solid #666;
+	width: 0px;
+}
+div#main-menu {
+}
+input#search {
+	width: 200px;
+}
+div#account-menu {
+	float: right;
+}
+div#toolbar {
+	height: inherit;
+	line-height: inherit;
+	padding-left: 10px;
+	padding-right: 10px;
+}
+div#toolbar > * {
+	float: left;
+}
+div#account-menu ul {
+	width: 100px;
+}
+li.logout {
+	border-top: 1px solid #999;
+	width: 100%;
+}
+div#border {
+	width: 960px;
+	border: 1px solid #ddd;
+	margin: 37px auto 75px auto;
+}
+div#title {
+	background-color: #ccff00;
+	color: #333;
+	padding: 0px 0px 0px 0px;
+	text-overflow: elipsis;
+}
+div#title .main {
+	margin: 0px auto 0px 20px;
+	line-height: 45px;
+	font-size: 22px;
+	font-weight: normal;
+}
+div#title .sub {
+	margin: 0px auto 0px auto;
+	line-height: 37px;
+}
+div#title .dropdown {
+	display: inline-block;
+}
+div#title .context-menu {
+	float: right;
+	margin: 10px 15px 0 0;
+}
+div#title .context-menu > label {
+	display: inline;
+	font-weight: bold;
+	line-height: 2em;
+}
+div#title .context-menu > span {
+	margin-right: 15px;
+	
+}
+div#message {
+	margin: 0px auto 0px auto;
+	background-color: #FFB200;
+}
+div#message .iconic.info {
+}
+div#container {
+	position: relative;
+	width: 960px;
+	background-color: #FFF;
+	margin: 0px;
+	padding: 0px;
+}
+div#footer {
+	display: none; /* off by default */
+	background-color: #CCC;
+	text-align: center;
+	padding: 5px 0;
+}
+div#footer > * {
+	margin: 0 2px;
+}
+li.suggestion.more {
+	text-align: center;
+}
+li.suggestion span.type {
+	display: inline-block;
+	width: 65px;
+	color: #999;
+	font-size: smaller;
+}
+li.suggestion hr {
+	margin: 3px;
+}
+li.suggestion {
+	white-space: nowrap;
+	overflow: hidden;	
+}
+li.suggestion span.name {
+	display: inline-block;
+	width: 200px;
+	font-weight: bold;
+	font-size: smaller;
+}
+li.suggestion span.summary {
+	display: inline-block;
+	font-size: x-small;
+	color: #999;
+}
+/**********************************************************************/
+/* Overlay and Ajax Form */
+/**********************************************************************/
+div#overlay {
+	display: none;
+	background-color: #fff;
+}
+div#overlay div.title {
+	background-color: #ccff00;
+	line-height: 2em;
+	font-weight: bold;
+	padding: 0 10px;
+}
+div#overlay div.message {
+	background-color: #FFB200;
+}
+div#overlay div.content {
+	margin: 0px auto;
+	padding: 10px;
+}
+div#overlay div.buttons {
+	margin: 10px;
+	float: right;
+}
+form.ajax label {
+	display: block;
+}
+form.ajax input {
+	margin-bottom: 10px;	
+}
+div.errorlist {
+	font-weight: bold;
+	padding: 15px;
+}
+ul.errorlist {
+	list-style-type:none;
+	margin:0;
+	padding:0;
+}
+ul.errorlist li {
+	display: block;
+	margin: 5px 15px;
+	font-weight: bold;
+}
+ul.errorlist ul.errorlist {
+	display: inline-block;
+}
+ul.errorlist ul.errorlist li {
+	display: inline-block;
+	margin: 3px 10px;
+	font-weight: normal;
+}
+#product-form input {
+	width: 300px;
+}
+#product-form textarea.description {
+	width: 300px;
+}
+#service-form input {
+	width: 300px;
+}
+#service-form textarea.description {
+	width: 300px;
+}
+/**********************************************************************/
+/* Two column layout
+/**********************************************************************/
+#left.column {
+	float: left;
+	width: 450px;
+	margin-left: 15px;
+}
+#right.column {
+	float: right;
+	width: 450px;
+	margin-right: 15px;
+}
+div.column > * {
+	float: left;
+	clear: left;
+}
+div.column > div.title {
+	background-color: #fff;
+	height: 2.5em;
+	width: 100%;
+	margin-top: 10px;
+	border-bottom: 1px solid #ccc;
+}
+div.column > div.title a.toggler {
+	display: block;
+	line-height: 2.5em;
+	margin-left: 10px;
+	margin-right: 10px;
+	font-size: 16px;
+	text-decoration: none;
+	color: #333;
+}
+div.column > div.title .toggler-icon  {
+	float: right;
+	font-weight: normal;
+}
+div.column ul.table li.empty {
+	width: 448px;
+}
+div.column ul.table li.more {
+	width: 448px;
+}
+/**********************************************************************/
+/* Table Empty + More */
+/**********************************************************************/
+ul.table li.empty {
+	border: 1px solid #ccc;
+	background-color: #fff;
+	line-height: 2em;
+	text-align: center;
+}
+ul.table li.more {
+	border: 1px solid #ccc;
+	background-color: #fff;
+	line-height: 2em;
+	text-align: center;
+}
+ul.table li.more a {
+	display: block;
+	width: 100%;
+}
+/**********************************************************************/
+/* Contact card */
+/**********************************************************************/
+div.contact-card {
+	max-width: 500px;
+}
+div.contact-card label {
+	display: inline-block;
+	width: 100px;
+	float: left;
+	font-weight: bold;
+}
+div.contact-card div.name {
+	font-size: 18px;
+}
+div.contact-card > div {
+	margin-bottom: 5px;
+}
+div.contact-card > div > div {
+	display: inline-block;
+	max-width: 500px;
+}
+/**********************************************************************/
+/* Product card */
+/**********************************************************************/
+div.product-card {
+	max-width: 500px;
+}
+div.product-card label {
+	display: inline-block;
+	width: 100px;
+	float: left;
+	font-weight: bold;
+}
+div.product-card div.name {
+	font-size: 18px;
+}
+div.product-card > div {
+	margin-bottom: 5px;
+}
+div.product-card > div > div {
+	display: inline-block;
+	max-width: 500px;
+}
+/**********************************************************************/
+/* Document code and date */
+/**********************************************************************/
+div#document {
+	padding: 10px;
+	background-color: #ccc;
+	margin-top: 15px;
+	margin-right: 15px;	
+	margin-bottom: 15px;
+}
+div#document-title {
+	font-size: 18px;
+}
+div#document > * {
+	margin: 0px 0px 5px 0px;
+}
+div#document label {
+	display: block;
+}
+input#document-date {
+	width: 140px;
+}
+input#document-date[readonly=readonly] {
+	width: inherit;
+	margin-right: inherit;
+}

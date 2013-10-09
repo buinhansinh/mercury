@@ -1,0 +1,13 @@
+{% load url from future %}
+<div class='title'>Choose Location</div>
+<div id="transfer-locations" class='content'>
+    <label for="location">Location: </label>
+    <select id='location' name='location' required>
+		{% for loc in locations %}
+    	<option value='{{loc.id}}'>{{loc.name}}</option>
+		{% endfor %}
+    </select>
+</div>
+<div class='buttons'>
+	<div id='next-button' class='button next'><a>Next</a></div>
+</div>

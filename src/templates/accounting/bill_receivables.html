@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+{% load humanize %}
+
+{% block head %}
+<style>
+#left.column {
+	width: 400px;
+	border-right: 1px solid #ddd;
+	padding-right: 15px;
+}
+#right.column {
+	width: 500px;
+}
+.contact-card {
+	float: left;
+	margin: 15px;
+}
+.contact-card .name {
+	font-size: 24px;
+}
+#account-details {
+	float:left;
+	margin: 15px 0;
+}
+#account-details div.label {
+	width: 120px;
+	text-align: left;
+}
+#account-details div.value {
+	width: 240px;
+	text-align: right;
+}
+#bill-table {
+	float: right;
+	margin-top: 0px;
+}
+#bill-table div.id {
+	width: 100px;
+}
+#bill-table li.body div.id {
+	text-align: left;
+}
+#bill-table div.withholding {
+	width: 10px;
+}
+#bill-table div.code {
+	width: 80px;
+}
+#bill-table div.date {
+	width: 80px;
+}
+#bill-table div.amount {
+	width: 100px;
+	text-align: right;
+}
+#bill-table div.url {
+	width: 10px;
+}
+#bill-table li.empty {
+	width: 498px;
+}
+#bill-table div.empty {
+	width: 498px;
+}
+#bill-table-title {
+	font-size: 16px;
+	margin: 10px;
+	margin-top: 15px;
+}
+</style>
+<script>
+
+intfloat = function(x) {
+	return Math.round(parseFloat(x) * 100);
+}
+
+currency = function(x) {
+	return x / 100;
+}
+
+$(document).ready(function(){
+	$('.paid-checkbox').attr('checked', false);
+
+	$('.paid-checkbox').change(function() {
+		var credit_available = intfloat($('#credit-available-input').val());
+		var credit_used = intfloat($('#credit-used-input').val());
+		var bill = intfloat($(this).next('.bill-total').val());
+		var use = credit_used + bill;
+		console.log("a: " + credit_available + " u: " + credit_used + " b: " + bill + " use: " + use);
+		if ($(this).is(":checked")) {
+			if (credit_available >= (credit_used + bill)) {
+				credit_used = currency(credit_used + bill);
+				$('#credit-used-div').html(asCurrency(credit_used));
+				$('#credit-used-input').val(credit_used);
+			} else {
+				$(this).attr('checked', false);
+				alert("There isn't enough credit to pay for this bill.");
+				return false;
+			}
+		} else {
+			credit_used = currency(credit_used - bill);
+			$('#credit-used-div').html(asCurrency(credit_used));
+			$('#credit-used-input').val(credit_used);
+		}
+	});
+	
+	$('.withholding-checkbox').change(function() {
+		$('#withholding-input').val($(this).val());
+		$('#withholding-form').submit();
+	});	
+	
+	$('.button.submit').click(function() {
+		submit($('#form'));
+	});
+});
+</script>
+{% endblock head %}
+
+{% block main-title %}{{title}} PAYMENT{% endblock main-title %}  
+{% block sub-title %}{% endblock sub-title %}
+
+{% block context-menu %}
+	<div class='button submit'><a><span class='iconic check'></span> Save</a></div>
+{% endblock context-menu %}
+
+{% block content %}
+<div id="left" class='column'>
+	{% include "addressbook/contact_card.html" %}
+	<ul id='account-details' class='table'>
+		<li class='header'>
+			<div class='label'>ACCOUNT</div>
+			<div class='value'></div>
+		</li>
+		<li>
+			<div class='label'>Credit Available:</div>
+			<div id="credit-available-div" class='value'>{{account.credit|default:0|floatformat:2|intcomma}}</div>
+			<input type="hidden" id='credit-available-input' value="{{account.credit}}"/>
+		</li>
+		<li>
+			<div class='label'>Credit Used:</div>
+			<div id='credit-used-div' class='value'>0.00</div>
+     		<input type="hidden" id='credit-used-input' value="0"/>
+		</li>
+		<li>
+			<div class='label'>Debt Outstanding:</div>
+			<div class='value'>{{account.debt|default:0|floatformat:2|intcomma}}</div>
+		</li>
+	</ul>
+</div>
+<div id="right" class='column'>
+	<div id='bill-table-title'>{{title}}S</div>
+	<form id="form" name="form" method="post" action="">
+		<ul id='bill-table' class='table'>
+			<li class="header">
+				<div class='id'>No.</div>
+				<div class='code'>Code</div>
+				<div class='date'>Date</div>
+				<div class='amount'>Amount</div>
+				<div class='withholding' title="Withholding Tax">W</div>				
+				<div class='url'>&nbsp;</div>
+			</li>
+			{% for b in bills %}
+			<li class="body">
+				<div class='id'>
+					<input type="checkbox" id="checkbox-{{b.id}}" class="paid-checkbox" name="bill-id" value="{{b.id}}"/> 
+					<input type="hidden" class="bill-total" value="{{b.total}}"/> 
+					<label for="checkbox-{{b.id}}">{{b.reference}}</label>
+				</div>
+				<div class='code'>{{b.code}}</div>
+				<div class='date'>{{b.date|date:"m/d/Y"}}</div>
+				<div class='amount'>{{b.total|default:0|floatformat:2|intcomma}}</div>
+				<div class='withholding' >
+					<input type="checkbox" class="withholding-checkbox" name="bill-id" value="{{b.id}}" {% if b.has_withholding %}checked{% endif %}/>				
+				</div>
+				<div class='url'><a href="{{b.get_view_url}}"><span class='iconic arrow_right_alt1'></span></a></div>
+			</li>
+			{% empty %}
+			<li class='empty'><div class='empty'>None</div></li>
+			{% endfor %}
+		</ul>
+	</form>
+	<form id="withholding-form" action="{% url 'accounting.views.bill.toggle_withholding' %}" method="POST">
+		<input type="hidden" id="withholding-input" name='bill_id'></input>
+	</form>
+</div>
+<div class="clear" style=""></div>
+{% endblock content %}

@@ -1,0 +1,17 @@
+.hint {
+	display: none;
+	position: fixed;
+	bottom: 10px;
+	left: 50%;
+	margin: 0 0 0 -401px;
+	width: 800px;
+	background-color: #FFFF66;
+	color: black;
+	text-align: left;
+	opacity: 0.80;
+	border: 1px solid #FFD633;
+	padding: 10px;
+	z-index: 99999;
+	-moz-border-radius: 6px;
+	-webkit-border-radius: 6px;		
+}

@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+
+{% block head %}
+<style>
+#item-input {
+	margin-top: 15px;
+	margin-left: 15px;
+}
+ul.search {
+	margin: 15px;
+}
+ul.search > li {
+	padding: 0;
+}
+ul.search > li > div {
+}
+ul.search div.id {
+	padding-left: 15px;
+	text-align: left;
+	width: 100px;
+}
+ul.search div.date {
+	width: 100px;
+	text-align: center;
+}
+ul.search div.description {
+	width: 540px;
+	text-align: center;
+}
+ul.search div.quantity {
+	width: 100px;
+	text-align: right;
+	padding-right: 15px;
+}
+ul.search a.clickloader {
+}
+li.more {
+	width: 928px;
+}
+</style>
+<script>
+$(document).ready(function(){
+	var doSearch = function() {
+		var item_id = $('#item-id').val();
+		var item_type = $('#item-type').val();
+		var terms = $('#item-input').val();
+		window.location = "{% url 'addressbook.views.contact.transaction_search' contact.id %}?" +
+			$.param({ terms: terms, item_id: item_id, item_type: item_type });
+	}
+
+	$("#item-input").autocomplete({
+		source: "{% url 'common.views.search.suggestions' %}?models=Product&models=Service",
+		minLength: 2,
+		select: function(e, ui) {
+			$("#item-id").val(ui.item.id);
+			$("#item-type").val(ui.item.type_id);
+			doSearch();
+		},
+	}).keypress(function(e) {
+		if (e.which == KEYCODES.ENTER) {
+			var terms = $('#item-input').val();
+			if (terms.length >= 2) {
+				$("#item-input").autocomplete("disable");
+				doSearch();
+			} else {
+				$("#item-input").autocomplete("enable");
+			}
+		}
+	}).data("autocomplete")._renderItem = function(ul, item) {
+		var li = null;
+		if (item.more) {
+			li = $("<li class='more suggestion'>").data("item.autocomplete", item)
+				.append("<hr><a><span class='name'>" + item.name + "</span></a>")
+		} 
+		else {
+			li = $("<li class='suggestion'>").data("item.autocomplete", item)
+				.append("<a><span class='type'>" + item.type + 
+						"</span><span class='name'>" + item.name + 
+						"</span> <span class='summary'> " + 
+						item.summary + "</span></a>") 
+		}
+        return li.appendTo( ul );
+	};
+	
+	$("#search-button").click(function() {
+		doSearch();
+	});
+	
+	$("#item-input").focus();
+});
+</script>
+{% endblock head %}
+
+{% block main-title %}
+<span class='iconic magnifying_glass'></span> {{contact.name}} TRANSACTIONS
+{% endblock main-title %}
+
+{% block sub-title %}
+{% endblock sub-title %}  
+
+{% block context-menu %}
+<div class="button"><a href="{{contact.get_view_url}}">Back to Profile</a></div>
+{% endblock context-menu %}
+
+{% block content %}
+<input id="item-input" type="text" placeholder="Search Product or Service"/>
+<input id="item-id" type="hidden" value="None"/>
+<input id="item-type" type="hidden" value="None"/>
+<div class='button'><a id="search-button">Search</a></div>
+<ul class='search table'>
+	<li class="header">
+		<div class='id'>No.</div>
+		<div class='date'>Date</div>
+		<div class='description'>Description</div>
+		<div class='quantity'>Quantity</div>
+	</li>
+	<a class='autoloader' href="{% url 'addressbook.views.contact.transaction_search_results' contact.id %}?item_id={{item_id}}&item_type={{item_type}}&terms={{terms}}">Loading...</a>
+</ul>
+<div class='clear' style='height: 15px;'></div>
+{% endblock content %}

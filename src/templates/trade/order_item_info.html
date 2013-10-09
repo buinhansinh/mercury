@@ -1,0 +1,92 @@
+<div id='item-info-apply' class='button'><a><span class='iconic check'></span> Apply</a></div>
+<div id='item-info-title' class='title'> 
+	{{ item_info.name }} 
+</div>
+<div class='content'>
+<div id='stock-info'>
+	<label>Quantity: </label>
+	<input type='text' readonly='readonly'/>
+	{% if item.item_type.model == "product" %}
+	<ul id='stock-table' class='table'>
+		<li class='header'>
+			<div class='label'>Stock</div>
+			<div class='quantity'></div>
+		</li>
+		<li>
+			<div class='label'>Total:</div>
+			<div class='quantity'>
+				<a class='quantity' href="#">{{ item.stock|floatformat:2 }}</a>
+			</div>
+		</li>
+		{% for s in item.stocks %}
+		<li>
+			<div class='label'>{{ s.location.name }}:</div> 
+			<div class='quantity'><a class='quantity' href="#">{{ s.quantity|floatformat:2 }}</a></div>
+		</li>
+		{% endfor %}
+	</ul>
+	{% endif %}
+</div>
+<div id='price-info'>
+	<label>Price: </label>
+	<input type='text' readonly='readonly'/>
+	<div id='price-tables'>
+		<ul class='table'>
+			<li class='header'>
+				<div class='label'>This Partner</div>
+				<div class='price'></div>
+				<div class='actions'></div>
+			</li>	
+			{% if mode == 'sale' %}
+			<li>
+				<div class='label'>Most Recent:</div>
+				<div class='price'>
+					<a class="price" href="#">{{ recent_partner_purchase.price|floatformat:2|default:'None' }}</a>
+				</div>
+				<div class='actions'>
+					<a class='price-details' href="{{ recent_partner_purchase.order.get_view_url }}" target="_blank">
+						<span class='iconic arrow_right_alt1'></span>
+					</a>
+				</div>
+			</li>
+			{% endif %}	
+			{% if mode == 'purchase' %}
+			<li>
+				<div class='label'>Most Recent:</div>
+				<div class='price'>
+					<a class="price" href="#">{{ recent_partner_sale|floatformat:2|default:'None' }}</a>
+				</div>
+				<div class='actions'>
+					<a class='price-details' href="{{ recent_partner_sale.order.get_view_url }}" target="_blank">
+						<span class='iconic arrow_right_alt1'></span>
+					</a>
+				</div>
+			</li>
+			{% endif %}			
+			<li>
+				<div class='label'>List Price:</div>
+				<div class='price'>
+					<a class="price" href="#">{{ list_price|floatformat:2|default:'None' }}</a>
+				</div>
+				<div class='actions'></div>
+			</li>
+			<li>
+				<div class='label'>Cash Price:</div>
+				<div class='price'>
+					<a class="price" href="#">{{ cash_price|floatformat:2|default:'None' }}</a>
+				</div>
+				<div class='actions'></div>
+			</li>			
+			<li>
+				<div class='label'>Credit Price:</div>
+				<div class='price'>
+					<a class="price" href="#">{{ credit_price|floatformat:2|default:'None' }}</a>
+				</div>
+				<div class='actions'></div>
+			</li>
+			<li class='spacing'></li>
+		</ul>
+		{% include 'company/price_table.html' %}
+	</div>
+</div>
+</div>

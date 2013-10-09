@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+
+{% block head %}
+<style>
+#document {
+	float: right;
+}
+#location-section {
+	float: left;
+	margin: 15px 15px 15px 30px;
+}
+#location-section label {
+	display: inline-block;
+	margin-right: 1em; 
+}
+#location-section > * {
+	font-size: 18px;
+	float: left;
+	margin-top: 15px;
+}
+#location-section .destination {
+	margin-left: 8em;
+}
+#product-table {
+	margin: 15px;
+	clear: both;
+}
+#product-table div.handle {
+	width: 10px;
+}
+#product-table div.item {
+	width: 170px;
+}
+#product-table div.description {
+	width: 300px;
+}
+#product-table div.spacer {
+	width: 220px;
+}
+#product-table div.quantity {
+	width: 100px;
+}
+#product-table div.origin-quantity {
+	width: 100px;
+}
+#product-table div.destination-quantity {
+	width: 100px;
+}
+#product-table div.actions {
+	width: 10px;
+}
+div#item-bar {
+	clear: both;
+	margin: 15px 15px 15px 15px;
+	padding: 5px 10px;
+	width: 908px;
+	text-align: left;
+	border: 1px solid #CCC;
+	font-weight: bold;
+}
+div#item-bar > * {
+	display: inline-block;
+}
+div#item-bar input {
+	width: 300px;
+}
+</style>
+<script>
+
+$.validation.quantity = function(input) {
+	var origin_quantity = parseInt($(input).parent().siblings('div.origin-quantity').html());
+	if ($(input).val() > origin_quantity) {
+		$(input).invalidate($.validation.ERROR, 'You cannot transfer more stock than available.');
+		return false;
+	}
+};
+
+$(document).ready(function(){
+	$('#form').validation([{
+		selector: '#input-date',
+		validators: ['date'],
+	}, {
+		selector: '#input-code',
+		validators: [],
+	},{
+		selector: 'input.quantity',
+		validators: ['required', 'positive_decimal', 'quantity'],
+	}])	
+	
+	$(".button.submit").click(function(){
+		$('#form').submit();
+	});	
+	
+	$("input#item").autocomplete({
+		source: "{% url 'catalog.views.product.suggestions' %}",
+		minLength: 2,
+		select: function(e, ui) {
+			fr_id = $('#origin_id').val();
+			to_id = $('#destination_id').val();
+			$.post(
+				"{% url 'inventory.views.stocktransfer.item' %}", 
+				{
+					origin_id: fr_id,
+					destination_id: to_id,
+					item_id: ui.item.id,
+				},
+				function(data) {
+			        $("#product-table").append(data);
+			    }, 
+			    'html'
+			);
+			$(this).val('');
+			return false;
+		},
+	}).data( "autocomplete" )._renderItem = function( ul, item ) {
+		var li = null;
+		if (item.more) {
+			li = $("<li class='more'>").data( "item.autocomplete", item )
+				.append( "<a><span>" + item.name + "</span></a>" )
+		} 
+		else {
+			li = $("<li class='suggestion'>").data( "item.autocomplete", item )
+				.append( "<a><span class='name'>" + item.name + "</span> <span class='summary'>" + item.summary + "</span></a>" ) 
+		}
+        return li.appendTo( ul );
+	};
+	
+	$('#product-table').sortable({
+		handle: '.handle .iconic',
+		items: '.body',
+	});
+	$('#product-table').on('click', '.actions .iconic', function(e) {
+		$(this).next().val('True');
+		$(this).closest('li').remove();
+	});
+	$('#product-table .item-cancel').each(function(i, el) {
+		if ($(this).val() == 'True') {
+			$(this).closest('li').hide();
+		}
+	});	
+});
+</script>
+{% endblock head %}
+
+{% block main-title %}
+STOCK TRANSFER FORM
+{% endblock main-title %}
+{% block sub-title %}
+{% endblock sub-title %}  
+
+{% block context-menu %}
+<div class='button submit'>
+	<a><span class='iconic check'></span> Save</a>
+</div>
+{% endblock context-menu %}
+
+{% block content %}
+<form id="form" name="form" method="post" action="">
+	{% include 'common/document_form.html' %}
+    <div id='location-section'>
+        <div class="origin">
+            <label for="origin">From:</label>
+            <input type='hidden' id='origin_id' name='origin' value='{{origin.id}}'/>
+            <a href="{{origin.get_view_url}}">{{origin.name}}</a>
+        </div>
+        <div class="destination">
+            <label for="destination">To:</label>
+            <input type='hidden' id='destination_id' name='destination' value='{{destination.id}}'/>
+            <a href="{{destination.get_view_url}}">{{destination.name}}</a>
+        </div>
+    </div>
+    <ul id='product-table' class='table'>
+        <li class='header'>
+            <div class='handle'></div>
+            <div class='item'>Item</div>
+            <div class='description'>Description</div>
+            <div class='origin-quantity'>{{origin.name}}</div>
+            <div class='destination-quantity'>{{destination.name}}</div>
+            <div class='quantity'>Quantity</div>
+            <div class='actions'></div>
+        </li>
+{% for item in items %}
+{% include "inventory/stock_transfer_item.html" with item=item %}
+{% endfor %}
+    </ul>
+    <div id='item-bar'>
+        <span class='iconic plus'></span>
+    	<div>ADD ITEM: </div>
+        <input id="item" type="text"></input>
+    </div>
+</form>
+<div class='clear'></div>
+{% endblock content %}

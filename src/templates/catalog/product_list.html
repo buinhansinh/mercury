@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+
+{% block head %}
+<style>
+</style>
+<script>
+</script>
+<!-- InstanceEndEditable -->
+{% endblock head %}
+
+{% block toolbar %}
+{% endblock toolbar %}
+
+{% block main-title %}
+<span class='iconic'></span> PRODUCT LIST <!-- InstanceEndEditable --> </span>
+{% endblock main-title %}
+
+{% block sub-title %}
+{% endblock sub-title %}  
+
+{% block content %}
+	{% for p in products %}
+		<a href='{% url catalog.views.product_view p.id %}'>{{ p.brand }} {{ p.model }}</a><br>
+	{% endfor %}
+{% endblock content %}

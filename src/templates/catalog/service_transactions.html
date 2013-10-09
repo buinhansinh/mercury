@@ -1,0 +1,14 @@
+{% extends 'common/results.html' %}
+{% load url from future %}
+{% block columns %}
+    <div class='id'><a href="{{ result.get_view_url|default:'#' }}">{{result.reference}}</a></div>
+    <div class='code'>{{result.code}}</div>
+    <div class='contact'>
+    	{% if request.user.account.company == result.order.customer %}
+    		<a href="{{result.order.supplier.get_view_url}}">{{ result.order.supplier }}</a>
+    	{% else %}
+    		<a href="{{result.order.customer.get_view_url}}">{{ result.order.customer }}</a>
+    	{% endif %}
+    </div>
+    <div class='date'>{{ result.date|date:"Y-m-d" }}</div>
+{% endblock columns %}    

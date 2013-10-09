@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+{% load humanize %}
+
+{% block stylesheets %}
+{{ block.super }}
+<link rel="stylesheet" type="text/css" href="{% get_static_prefix %}css/task.css"/>
+{% endblock stylesheets %}
+
+{% block head %}
+<style>
+.column {
+	width: 205px;
+	margin: 15px;
+	float: left;
+}
+.column.firstcol {
+	margin-left: 30px;
+}
+ul.table li.header div.value {
+	width: 207px;
+}
+ul.table div.rank {
+	width: 10px;
+}
+ul.table div.name {
+	width: 97px;
+	text-align: left;
+}
+ul.table div.value {
+	width: 60px;
+	text-align: right;
+}
+</style>
+{% endblock head %}
+
+{% block main-title %}
+RECEIVABLE AGING
+{% endblock main-title %}
+
+{% block sub-title %}
+{% endblock sub-title %}
+
+{% block context-menu %}
+<div class='button'>
+	<a href="{% url 'task.views.billing.view' %}">Back</a>
+</div>
+{% endblock context-menu %}
+
+{% block content %}
+	{% if newer %}
+	<div id='newer-link' class='button'>
+		<a href="?month={{newer.month}}&year={{newer.year}}">
+			<span class='iconic arrow_left'></span> Newer
+		</a>
+	</div>
+	{% endif %}
+	
+	{% if older %}
+	<div id='older-link' class='button'>
+		<a href="?month={{older.month}}&year={{older.year}}">
+			Older <span class='iconic arrow_right'></span>
+		</a>
+	</div>
+	{% endif %}
+<div class='clear'></div>
+<div class='column'>
+	<ul id='income' class='table statement'>
+		<li class='header'>
+			<div class='value'>120 Days</div>
+		</li>
+		<a class="autoloader" href="{% url 'task.views.billing.receivables_per_customer' %}?supplier_id={{ request.user.account.company.id }}&age=120"></a>
+	</ul>
+</div>
+<div class='column'>
+	<ul id='income' class='table statement'>
+		<li class='header'>
+			<div class='value'>90 Days</div>
+		</li>
+		<a class="autoloader" href="{% url 'task.views.billing.receivables_per_customer' %}?supplier_id={{ request.user.account.company.id }}&age=90"></a>
+	</ul>
+</div>
+<div class='column'>
+	<ul id='income' class='table statement'>
+		<li class='header'>
+			<div class='value'>60 Days</div>
+		</li>
+		<a class="autoloader" href="{% url 'task.views.billing.receivables_per_customer' %}?supplier_id={{ request.user.account.company.id }}&age=60"></a>
+	</ul>
+</div>
+<div class='column'>
+	<ul id='income' class='table statement'>
+		<li class='header'>
+			<div class='value'>30 Days</div>
+		</li>
+		<a class="autoloader" href="{% url 'task.views.billing.receivables_per_customer' %}?supplier_id={{ request.user.account.company.id }}&age=30"></a>
+	</ul>
+</div>
+<div class='clear'></div>
+{% endblock content %}

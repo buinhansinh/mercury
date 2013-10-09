@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+
+{% block head %}
+<style>
+ul.search {
+	padding: 0px;
+	margin: 20px;
+}
+ul.search > li {
+	list-style: none;
+	margin-bottom: 15px;
+}
+ul.search div.name {
+	font-size: larger;
+}
+</style>
+<script>
+</script>
+{% endblock head %}
+
+{% block main-title %}
+COSTING REQUIRED
+{% endblock main-title %}
+
+{% block sub-title %}
+{% endblock sub-title %}  
+
+{% block content %}
+<ul class='search'>
+	<a class='autoloader' href="{% url 'task.views.management.costing_items' %}">Loading...</a>
+</ul>
+<div class='clear' style='height: 1px;'></div>
+{% endblock content %}

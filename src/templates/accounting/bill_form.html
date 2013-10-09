@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+
+{% block head %}
+<style>
+.contact-card {
+	float: left;
+	width: 300px;
+	height: 135px;
+	padding-top: 15px;
+	padding-left: 30px;
+	padding-bottom: 15px;
+	border-right: 1px solid #ccc;
+}
+.contact-card .name {
+	font-size: 24px;
+}
+#document {
+	float: right;
+}
+#details {
+	float:left;
+	width: 300px;
+	padding: 30px;
+}
+#details > * {
+	display: block-inline;
+	float: left;
+	margin-bottom: 10px;
+}
+#details label {
+	clear: left;
+	width: 100px;
+	font-weight: bold;
+}
+#details input {
+	width: 150px;
+}
+.context-menu label {
+	font-weight: bold;
+}
+.context-menu > span {
+	margin-right: 15px;
+}
+</style>
+<script>
+$(document).ready(function(){
+	submitted = false;
+	$('#save-button').click(function() {
+		submit($('#form'));
+	});
+});
+</script>
+{% endblock head %}
+
+{% block main-title %}{{title|upper}}{% endblock main-title %}  
+{% block sub-title %}{% endblock sub-title %}
+
+{% block context-menu %}
+<div id='save-button' class='button submit'><a><span class="iconic check"></span> Save</a></div>
+{% endblock context-menu %}
+
+{% block content %}
+{% include "addressbook/contact_card.html" %}
+<form id="form" name="form" method="post" action="">
+<input type='hidden' name='customer' value='{{customer.id}}'/>
+<input type='hidden' name='supplier' value='{{supplier.id}}'/>
+<div id='details'>
+	<label>Amount:</label>
+	{% if bill.transfer %}
+	<div>{{bill.amount|floatformat:2}}</div>
+	<input type='hidden' name='amount' value='{{bill.amount|floatformat:2}}'/>
+	{% else %}
+	{{ form.amount }}
+	{% endif %}
+</div>
+{% include 'common/document_form.html' %}
+</form>
+<div class="clear"></div>
+{% endblock content %}

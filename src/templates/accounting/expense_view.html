@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+{% load humanize %}
+
+{% block head %}
+<style>
+.contact-card {
+	float: left;
+	width: 300px;
+	height: 135px;
+	padding-top: 15px;
+	padding-left: 30px;
+	padding-bottom: 15px;
+	border-right: 1px solid #ccc;
+}
+#document {
+	float: right;
+}
+div#expense {
+	float:left;
+	width: 300px;
+	padding: 30px;
+}
+div#expense > * {
+	margin-right: 15px;
+	margin-bottom: 15px;
+}
+div#expense label {
+	display: inline-block;
+	width: 100px;
+	font-weight: bold;	
+}
+div#expense select {
+}
+div#expense div {
+	display: inline-block;
+	width: 120px;
+}
+#buttons {
+	clear: both;
+	text-align: center;
+	margin-top: 20px;
+}
+</style>
+<script>
+</script>
+{% endblock head %}
+
+{% block main-title %}EXPENSE FORM{% endblock main-title %}  
+{% block sub-title %}No. {{expense.reference}}{% endblock sub-title %}  
+
+{% block content %} 
+<form id="form" name="form" method="post" action="">
+	{% if contact %}
+	{% include 'addressbook/contact_card.html' %}
+	{% else %}
+	<div class='contact-card'>
+		<div class='name'>General Expense</div>
+	</div>
+	{% endif %}
+    <div id="expense">
+	    <label>Label:</label>
+	    <div>{{expense.name}}</div>
+	    <label for="tags">Tags:</label>
+	    <div>{% for tag in expense.tags.all %}{{tag.name}},{% endfor %}</div>
+	    <label for="amount">Amount:</label>
+	    <div>{{expense.amount|default:0|floatformat:2|intcomma}}</div>
+    </div>
+    {% with document=expense %}
+    {% include 'common/document_view.html' %}
+    {% endwith %}
+</form>
+<div class="clear"></div>
+{% endblock content %}
+
+{% block context-menu %}
+<div class='button'><a href="{{expense.get_edit_url}}"><span class='iconic pen'></span> Edit</a></div>
+{% endblock context-menu %}

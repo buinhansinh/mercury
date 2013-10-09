@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+{% load humanize %}
+
+{% block main-title %}
+MANAGEMENT TASKS
+{% endblock main-title %}
+
+{% block sub-title %}
+{% endblock sub-title %}
+
+{% block stylesheets %}
+{{ block.super }}
+<link rel="stylesheet" type="text/css" href="{% get_static_prefix %}css/task.css"/>
+{% endblock stylesheets %}
+
+{% block head %}
+<style>
+.column {
+	width: 227px;
+	margin-left: 10px;
+	margin-bottom: 15px;
+	float: left;
+}
+div.column div.title {
+	margin-top: 0px;
+}
+ul.table.statement div.account {
+	width: 87px;
+	text-align: left;
+}
+ul.table.statement div.value {
+	width: 100px;
+	text-align: right;
+}
+ul.table div.rank {
+	width: 10px;
+}
+ul.table li.body div.rank {
+	text-align: right;
+}
+ul.table div.name {
+	width: 97px;
+	text-align: left;
+}
+ul.table div.value {
+	width: 60px;
+}
+ul.table li.body div.value {
+	text-align: right;
+}
+div.column ul.table li.empty {
+	width: 225px;
+}
+div.column ul.table li.more {
+	width: 225px;
+}
+</style>
+{% endblock head %}
+
+{% block context-menu %}
+<div class='button'>
+	<a href="{% url 'task.views.management.reports' %}">Monthly</a>
+</div>
+<div class='button'><a class='collapse iconic minus'></a></div>
+<div class='button'><a class='expand iconic plus'></a></div>
+{% endblock context-menu %}
+
+{% block content %}
+<div class='column'>
+	<div class='title'>
+		<a href='#balance' class='toggler'>Balance Sheet</a>
+	</div>
+	<ul id='balance' class='table statement'>
+		<li class='header'>
+			<div class='account'>Account</div>
+			<div class='value'>&nbsp;</div>
+		</li>
+		<li class='body'>
+			<div class='account'>Inventory</div>
+			<div class='value'>{{inventory|default:0|floatformat:0|intcomma}}</div>
+		</li>
+		<li class='body'>
+			<div class='account'>Adjustments</div>
+			<div class='value'>{% if adjustments > 0 %}+{% endif %}{{adjustments|default:0|floatformat:0|intcomma}}</div>
+		</li>
+	</ul>
+	<div class='title'>
+		<a href='#income' class='toggler'>Income Statement</a>
+	</div>
+	<ul id='income' class='table statement'>
+		<li class='header'>
+			<div class='account'>Account</div>
+			<div class='value'>&nbsp;</div>
+		</li>
+		<li class='body'>
+			<div class='account'>Sales</div>
+			<div class='value'>{{sales|default:0|floatformat:0|intcomma}}</div>
+		</li>
+		<li class='body'>
+			<div class='account'>COGS</div>
+			<div class='value'>{{cogs|default:0|floatformat:0|intcomma}}</div>
+		</li>
+		<li class='body'>
+			<div class='account'>Gross Profit</div>
+			<div class='value'>{{gross_profit|default:0|floatformat:0|intcomma}}</div>
+		</li>
+		<li class='body'>
+			<div class='account'>Expenses</div>
+			<div class='value'>{{expenses|default:0|floatformat:0|intcomma}}</div>
+		</li>
+		<li class='body'>
+			<div class='account'>Profit</div>
+			<div class='value'>{{net_profit|default:0|floatformat:0|intcomma}}</div>
+		</li>
+	</ul>
+	<div class='title'>
+		<a href='#cash' class='toggler'>Cash Flow</a>
+	</div>
+	<ul id='cash' class='table statement'>
+		<li class='header'>
+			<div class='account'>Account</div>
+			<div class='value'>&nbsp;</div>
+		</li>
+		<li class='body'>
+			<div class='account'>Collections</div>
+			<div class='value'>{{collections|default:0|floatformat:0|intcomma}}</div>
+		</li>
+		<li class='body'>
+			<div class='account'>Disbursements</div>
+			<div class='value'>{{disbursements|default:0|floatformat:0|intcomma}}</div>
+		</li>
+		<li class='body'>
+			<div class='account'>Net Cash Flow</div>
+			<div class='value'>{{net_cash|default:0|floatformat:0|intcomma}}</div>
+		</li>
+	</ul>
+</div>
+<div class='column'>
+	<div class='title'>
+		<a href='#items' class='toggler'>Best-Selling Items</a>
+	</div>
+	<ul id='items' class='table'>
+		<li class='header'>
+			<div class='rank'>#</div>
+			<div class='name'>Name</div>
+			<div class='value'>Sales</div>
+		</li>
+		<a class='autoloader' href="{% url 'task.views.management.items' %}"></a>
+	</ul>
+</div>
+<div class='column'>
+	<div class='title'>
+		<a href='#customers' class='toggler'>Top Customers</a>
+	</div>
+	<ul id='customers' class='table'>
+		<li class='header'>
+			<div class='rank'>#</div>
+			<div class='name'>Name</div>
+			<div class='value'>Profit</div>
+		</li>
+		<a class='autoloader' href="{% url 'task.views.management.customers' %}"></a>
+	</ul>
+</div>
+<div class='column'>
+	<div class='title'>
+		<a href='#suppliers' class='toggler'>Top Suppliers</a>
+	</div>
+	<ul id='suppliers' class='table'>
+		<li class='header'>
+			<div class='rank'>#</div>
+			<div class='name'>Name</div>
+			<div class='value'>Bought</div>
+		</li>
+		<a class='autoloader' href="{% url 'task.views.management.suppliers' %}"></a>
+	</ul>
+</div>
+<div class='clear'></div>
+{% endblock content %}

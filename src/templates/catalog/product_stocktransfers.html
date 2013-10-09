@@ -1,0 +1,9 @@
+{% extends 'common/results.html' %}
+{% load url from future %}
+{% block columns %}
+    <div class='code'><a href="{{ result.transfer.get_view_url|default:'#' }}">{{ result.transfer.code }}</a></div>
+    <div class='date'>{{ result.date|date:"Y-m-d" }}</div>
+    <div class='direction' title="{{ result.transfer.origin.name }} -> {{ result.transfer.destination }}">{{ result.transfer.origin.name }} <span class="iconic arrow_right"></span> {{ result.transfer.destination }}</div>
+    <div class='quantity'>{{ result.quantity }}</div>
+    <div class='status'>{{ result.transfer.status }}</div>
+{% endblock columns %}    

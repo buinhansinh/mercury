@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+
+{% block head %}
+<style>
+#location {
+	float: left;
+	margin-top: 15px;
+	margin-left: 30px;
+	margin-bottom: 15px;
+}
+#location div.name {
+	font-size: 24px;
+}
+#adjustment-type {
+	float: left;
+	clear: left;
+	margin-top: 70px;
+	margin-left: 30px;
+	font-size: 16px;
+}
+#document {
+	float: right;
+}
+#product-table {
+	clear: both;
+	margin: 15px 15px;
+}
+#product-table li > * {
+	text-decoration: inherit;
+}
+#product-table div.handle {
+	width: 10px;
+	text-align: center;
+}
+#product-table div.name {
+	width: 200px;
+}
+#product-table div.description {
+	width: 300px;
+}
+#product-table div.spacer {
+	width: 190px;
+}
+#product-table div.delta {
+	width: 100px;
+}
+#product-table div.actions {
+	width: 10px;
+	text-align: center;
+}
+</style>
+<script>
+
+$.validation.delta = function(input) {
+	var delta = parseInt($(input).val());
+	var before = parseInt($(input).parent().siblings('div.before').html());
+	$(input).parent().siblings('div.after').html(before + delta);
+};
+
+$(document).ready(function(){
+	$('#save-button').click(function() {
+		$('#form').submit();
+	});
+	
+	$("#form").validation([{
+		selector: '#input-code', 
+		validators: [],
+	}, {
+		selector: '#input-date',
+		validators: ['date'],
+	}, ]);
+	
+	// make the cancelled items hidden
+	$('#product-table .item-cancel').each(function(i, el) {
+		if ($(this).val() == 'True') {
+			$(this).closest('li').hide();
+		}
+	});
+});
+</script>
+{% endblock head %}
+
+{% block main-title %} Adjustment Form {% endblock main-title %}
+{% block sub-title %}
+{% endblock sub-title %}  
+
+{% block context-menu %}
+<div id='save-button' class='button submit'><a href="#"><span class="iconic check"></span> Save</a></div>
+{% endblock context-menu %}
+
+{% block content %}
+<form id="form" name="form" method="post" action="">
+	{% include 'common/document_form.html' %}
+	<div id='location'>
+		<div class='name'><a href="{% url 'inventory.views.location.view' location.id %}">{{ location.name }}</a></div>
+		<div class='address'>{{ location.address }}</div>
+		<input type='hidden' name='location' value='{{ location.id }}'/>
+	</div>
+	<div id="adjustment-type">
+		TYPE: 
+		{% if type == types.ASSEMBLY %}ASSEMBLY{% endif %}
+		{% if type == types.EXPENSE %}EXPENSE{% endif %}
+	</div>
+    <ul id='product-table' class='table'>
+    	<li class='header'>
+        	<div class='handle'>&nbsp;</div>
+        	<div class='name'>Name</div>
+        	<div class='description'>Description</div>
+        	<div class='spacer'>&nbsp;</div>
+        	<div class='delta'>Delta</div>
+        	<div class='actions'>&nbsp;</div>
+        </li>
+		{% for item in items %}
+    	<li class='body'>
+        	<div class='handle'><span class='iconic play'></span></div>
+        	<div class='name'>{{item.product.name}}</div>
+        	<div class='description'>{{item.product.summary}}</div>
+        	<div class='spacer'>&nbsp;</div>
+        	<div class='delta'>{% if item.delta > 0 %}+{% endif %}{{item.delta}}</div>
+        	<div class='actions'>&nbsp;</div>
+        </li>
+		{% endfor %}
+    </ul>
+</form>
+<div class="clear" style="height: 30px;"></div>
+{% endblock content %}
+

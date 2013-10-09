@@ -1,0 +1,14 @@
+{% load url from future %}
+<form id='alarms-form' class="ajax" action="{{request.path}}">
+	<div class='title'>{{stock.product.name}} @ {{stock.location.name}}</div>
+	<div class='content'>
+		<label>Ceiling: </label>
+		<input type="decimal" name='ceiling' value="{{ stock.ceiling }}"/>
+		<br>
+		<label>Floor: </label>
+		<input type="decimal" name='floor' value="{{ stock.floor }}"/>
+	</div>
+	<div class='buttons'>
+		<div class='button submit'><a>Save</a></div>
+	</div>
+</form>

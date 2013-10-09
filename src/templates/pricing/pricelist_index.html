@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+
+{% block head %}
+<style>
+#title div.dropdown {
+	display: none;
+}
+</style>
+<script>
+$(function(){
+	$('#new-button').click(function(e) {
+		var name = prompt("Enter a name for the new pricelist:");
+		if (name != null && name != "")
+		{
+			$('#pricelist-ul').load("{% url 'pricing.views.new' %}", { name:name });
+		}
+	});
+ });
+</script>
+{% endblock head %}
+
+{% block toolbar %}
+{% endblock toolbar %}
+
+{% block main-title %}
+<span class='iconic'></span> Pricelists
+{% endblock main-title %}
+
+{% block sub-title %}
+{% endblock sub-title %}  
+
+{% block context-menu %}
+<div id='new-button' class='button'><span class='iconic plus'></span> New</div>
+{% endblock context-menu %}  
+
+
+{% block content %}
+	<ul id='pricelist-ul'>
+	{% for p in pricelists %}
+		<li><a href="{% url 'pricing.views.edit' p.id %}">{{ p.name }}</a></li>
+	{% endfor %}
+	</ul>
+{% endblock content %}

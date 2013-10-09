@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+
+
+{% block head %}
+<style>
+#form {
+	padding: 15px;
+	float: left;
+}
+#form > div {
+	float: left;
+	clear: left;
+	margin-bottom: 5px;
+}
+#form > div > label {
+	width: 150px;
+	display: inline-block;
+	font-weight: bold;
+}
+.contact-card {
+	width: 300px;
+	margin: 15px 15px 0 30px;
+	float: left;
+}
+</style>
+<script>
+$.validation.discount = function(input) {
+	var re = /^((\+|\-)\d{1,2})*$/
+	if ($(input).val().search(re) == -1) {
+		$(input).invalidate($.validation.ERROR, 'Please enter a valid discount (e.g. -20-10-5).');
+		return false;
+	}
+}
+$(document).ready(function(){
+	$('#submit').click(function(){
+		$('#form').submit();
+	});
+	
+	$("#form").validation([{
+		selector: '#id_cash_discount_string', 
+		validators: ['discount'],
+	}, {
+		selector: '#id_credit_discount_string',
+		validators: ['discount']
+	}]);		
+});
+</script>
+{% endblock head %}
+
+{% block main-title %}
+	{{title}} - {{contact.name}}
+{% endblock main-title %} 
+{% block sub-title %}{% endblock sub-title %} 
+
+{% block context-menu %}
+<div id='submit' class='button'><a><span class="iconic check"></span> Save</a></div>
+{% endblock context-menu %}
+
+{% block content %}
+{% include "addressbook/contact_card.html" %}
+<form id='form' method='POST'>
+	<div>
+		<label>Cash Discount:</label>
+		{{form.cash_discount_string}}
+	</div>
+	<div>
+		<label>Credit Discount:</label>
+		{{form.credit_discount_string}}
+	</div>
+	<div>
+		<label>Credit Limit:</label>
+		{{form.credit_limit}}
+	</div>
+	<div>
+		<label>Credit Period:</label>
+		{{form.credit_period}}
+	</div>	
+</form>
+<div class='clear' style='height: 0px;'>
+{% endblock content %}

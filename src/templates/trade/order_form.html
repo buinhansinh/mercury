@@ -1,0 +1,447 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+{% load humanize %}
+
+{% block head %}
+<style>
+div#date {
+	float: right;
+	font-size: 24px;
+}
+div.contact-card {
+	float: left;
+	margin-top: 15px;
+	margin-left: 30px;
+	margin-bottom: 15px;
+	max-width: 700px;
+}
+div#document {
+	float: right;
+}
+#product-table {
+	clear: both;
+	margin: 0px 15px 15px 15px;
+}
+#product-table li > * {
+	text-decoration: inherit;
+}
+#product-table div.handle {
+	width: 5px;
+	text-align: center;
+}
+#product-table div.name {
+	width: 200px;
+}
+#product-table div.description {
+	width: 295px;
+}
+#product-table div.quantity {
+	width: 70px;
+}
+#product-table div.price {
+	width: 100px;
+}
+#product-table div.total {
+	width: 110px;
+}
+#product-table li.body div.total {
+	text-align: right;
+}
+#product-table div.actions {
+	width: 10px;
+	text-align: center;
+}
+#product-table a:link .iconic, #product-table a:visited .iconic {
+	color: #000;
+}
+#product-table div.handle a:hover{
+	cursor: move;
+}
+#product-table div.actions a:hover{
+	cursor: pointer;
+}
+#product-table span.iconic.info:hover {
+	cursor: pointer;
+}
+#product-table input {
+	width: 80%;
+}
+div#bottom-bar {
+	clear: both;
+	margin: 15px 0px 0px 15px;
+	padding: 5px 10px;
+	width: 908px;
+	font-weight: bold;
+	border: 1px solid #CCC;
+}
+div#bottom-bar > * {
+	display: inline-block;
+}
+div#bottom-bar input {
+	width: 500px;
+}
+div#total {
+	font-weight: bold;
+	float: right;
+}
+div#total input#amount {
+	font-weight: bold;
+	background-color: #fff;
+	width: 110px;
+	text-align: right;
+	margin-right: 25px;
+}
+#div-search-dialog {
+	width: 800px;
+	height: 400px;
+	background-color: #fff;
+	padding: 10px;
+}
+div#overlay {
+	background-color: #fff;
+}
+li.spacing {
+	background-color: #fff;
+	height: 5px;
+}
+div#item-info-title {
+	font-size: large;
+}
+div#stock-info {
+	margin: 0 15px 15px 0px;
+}
+div#stock-info, div#price-info {
+	float: left;
+}
+div#stock-info input {
+	width: 100px;
+	margin-bottom: 10px;
+	border: 1px solid #ccc;
+}
+div#stock-info ul.table {
+}
+div#stock-info ul.table div.label {
+	width: 100px;
+	text-align: left;
+}
+div#stock-info ul.table div.quantity {
+	width: 50px;
+	text-align: right;
+}
+div#price-info {
+	margin: 0 0 10px 0;
+}
+div#price-info label {
+	margin-left: 15px;
+}
+div#price-info input {
+	margin-bottom: 10px;
+	border: 1px solid #ccc;
+}
+div#price-tables ul.table {
+	margin-left: 15px;
+}
+div#price-tables div.label {
+	width: 100px;
+	text-align: left;
+} 
+div#price-tables div.price {
+	width: 50px;
+	text-align: right;
+}
+div#price-tables div.actions {
+	width: 10px;
+	text-align: left;
+}
+div#item-info-apply.button {
+	float: right;
+	margin-right: .5em;
+	margin-top: .4em;
+}
+.ui-autocomplete {
+    max-height: 200px;
+    overflow-y: auto;
+}
+{% if mode == 'purchase' %}
+div#title {
+	background-color: #ff55aa;
+}
+{% endif %}
+</style>
+<script>
+
+
+// caculate the total
+$.validation.total = function(input) {
+	var product = 1;
+	var row = $(input).parent().parent();
+	row.find('input.price, input.quantity').each(function() {
+		product = product * $(this).val();
+	});
+	row.children('.total').html(product.toFixed(2));
+	
+	// total amount of the order			
+	var total = 0;
+	$('#product-table .body .total').each(function() {
+		var li = $(this).closest('li');
+		if (li.children('input.item-cancel').val() != 'True') {		
+			total = total + parseFloat($(this).html());
+		}
+	});
+	$('#amount').val(total.toFixed(2));
+};
+
+
+$.validation.price = function(input) {
+	var value = Number($(input).val());
+	if (value <= 0) {
+		$(input).invalidate($.validation.ERROR, 'The price cannot be less than or zero.');
+		return false;
+	}
+	var year_high_purchase = Number($(input).nextAll('input.year_high_purchase').val());
+	if (value < year_high_purchase) {
+		$(input).invalidate($.validation.WARNING, 'Year high purchase price was: ' + year_high_purchase);
+		return false;
+	}
+	var last_purchase = Number($(input).nextAll('input.last_purchase').val());
+	if (value < last_purchase) {
+		$(input).invalidate($.validation.WARNING, 'The last purchase price was: ' + last_purchase);
+		return false;
+	}
+}
+
+$.validation.quantity = function(input) {
+	var value = $(input).val();
+	if (value < 0.01) {
+		$(input).invalidate($.validation.ERROR, 'The minimum quantity is 1');
+		return false;
+	}
+	{% if mode == 'sale' %}
+	var stock = Number($(input).nextAll('input.stock').val());
+	if (value > stock) {
+		$(input).invalidate($.validation.WARNING, 'The quantity on stock is: ' + stock);
+		return false;
+	}	
+	{% endif %}
+}
+
+$(document).ready(function(){
+	$('#order-button').click(function() {
+		$('#form').first().submit();
+		return false;
+	});
+	$('#inquiry-button').click(function() {
+		$('input#action').val('draft');
+		$('#form').submit();
+	});
+	
+	// form validation
+	$("#form").validation([{
+		selector: '#document-code', 
+		validators: [],
+	}, {
+		selector: '#document-date',
+		validators: ['date']
+	}, {
+		selector: "input.quantity",
+		validators: ['required', 'positive_decimal', 'quantity', 'total'],
+	}, {
+		selector: "input.price",
+		validators: ['required', 'positive_decimal', 'price', 'total'],
+	}, ], function() {
+		if($('#product-table li.body').length < 1) {
+			alert("But you haven't ordered anything!");
+			return false;
+		}	
+	});	
+	
+	open_item_info = function() {
+		var item_id = selected_li.children('input.item-info-id').val();	
+		var item_type_id = selected_li.children('input.item-info-type-id').val();
+		$('#overlay').load("{% url 'trade.views.order.item_info' %}", 
+			{
+				partner_id: {{contact.id}},
+				mode: "{{mode}}",
+				item_id: item_id,
+				item_type_id: item_type_id,
+			},
+			function() {
+				$('#overlay').overlay().load();
+				var price = selected_li.find('input.price').val()
+				var quantity = selected_li.find('input.quantity').val();
+				$('div#price-info input').val(price);
+				$('div#stock-info input').val(quantity);
+			});	
+	};
+	
+	// enable selection of items
+	$("input#item").autocomplete({
+		source: "{% url 'catalog.views.suggestions' %}",
+		minLength: 2,
+		select: function(e, ui) {
+			$.post(
+				"{% url 'trade.views.order.item' %}", 
+				{
+					contact_id: {{ contact.id }},
+					info_id: ui.item.id,
+					info_type: ui.item.type,
+					info_type_id: ui.item.type_id,
+					mode: "{{mode}}",
+				},
+				function(data) {
+			        $("#product-table").append(data);
+			        selected_li = $('#product-table li.body').last();
+			        //open_item_info();
+			        $('#form').validate();
+			        $('#form input.quantity').last().focus();
+			    }, 
+			    'html'
+			);
+			$(this).val(''); // clear the input
+			return false; // prevent default
+		},
+	}).data( "autocomplete" )._renderItem = function( ul, item ) {
+		var li = null;
+		if (item.more) {
+			li = $("<li class='more'>").data( "item.autocomplete", item )
+				.append( "<a><span>" + item.name + "</span></a>" )
+		} 
+		else {
+			li = $("<li class='suggestion'>").data( "item.autocomplete", item )
+				.append( "<a><span class='name'>" + item.name + "</span> <span class='summary'>" + item.summary + "</span></a>" ) 
+		}
+        return li.appendTo( ul );
+	};
+	
+	// make the table sortable
+	$('#product-table').sortable({
+		handle: '.handle .iconic',
+		items: '.body',
+	});
+	
+	// make the items cancellable
+	$('#product-table').on('click', '.actions a.trash', function(e) {
+		var li = $(this).closest('li');
+		var item_name = li.find('div.name a').html();
+		var yes = confirm('Are you sure you want to cancel item:\n\n\t' + item_name + '?');
+		if (yes) {
+			var item_id = li.children('input.item-id').val();
+			if (item_id == 'None') {
+				li.remove();
+			}
+			else {
+				li.hide();
+				li.children('input.item-cancel').val('True');
+			}
+			$('#form').validate();
+		}
+	});
+	
+	// make the cancelled items hidden
+	$('#product-table .item-cancel').each(function(i, el) {
+		if ($(this).val() == 'True') {
+			$(this).closest('li').hide();
+		}
+	});
+	
+	// show item info dialog box
+	$('#product-table').on('click', 'a.item-info', function(e) {
+		selected_li = $(this).closest('li');
+		open_item_info();
+		e.preventDefault();
+	});
+	
+	// allow clicking on prices to populate the input field
+	$('div#overlay').on('click', 'div#price-info a.price', function(e) {
+		var value = $(this).html();
+		if (value != "None") {
+			$('div#price-info input').val(value);
+		}
+	});
+
+	// allow clicking on stock quantities to populate the input field
+	$('div#overlay').on('click', 'div#stock-info a.quantity', function(e) {
+		var value = $(this).html();
+		if (value != "None") {
+			$('div#stock-info input').val(value);
+		}
+	});
+	
+	// push the input values from the dialog into the item row fields
+	$('div#overlay').on('click', '#item-info-apply.button', function(e) {
+		var price = $('div#price-info input').val(); 
+		var quantity = $('div#stock-info input').val(); 
+		selected_li.find('input.price').val(price)
+		selected_li.find('input.quantity').val(quantity);
+		$('#overlay').overlay().close();		
+	});
+});
+</script>
+{% endblock head %}
+
+{% block main-title %} {{ title }} {% endblock main-title %}
+{% block sub-title %}
+{% if form.instance.id %}
+<span id='order-number'>No. {{form.instance.reference}}</span>
+{% endif %}
+{% endblock sub-title %}  
+
+{% block context-menu %}
+<div id='order-button' class='button submit'>
+	<a href='#'>
+		<span class="iconic check"></span> Save
+	</a>
+</div>
+<div id='more-dropdown' class='dropdown'>
+    <div class='button'>
+    	<a href='#'>
+	    	<span class='icon iconic dropdown'></span>
+    	</a> 
+    </div>
+	<ul class='menu right'>
+		<li class='right'>
+			<div id='inquiry-button' class='button submit'>
+				<a>
+					<span class="iconic curved_arrow"></span> Save as Draft
+				</a>
+			</div>
+		</li>
+	</ul>
+</div>
+{% endblock context-menu %}
+
+{% block content %}
+<form id="form" name="form" method="post" action="">
+	<input id='mode' type='hidden' value='{{mode}}'/>
+	<input id='action' type='hidden' name='action' value=''/>
+	<input type='hidden' name='type' value='{{form.type.value}}'/>
+	<input type='hidden' name='customer' value='{{form.customer.value}}'/>
+	<input type='hidden' name='supplier' value='{{form.supplier.value}}'/>
+	{% include "common/document_form.html" %}
+	{% include "addressbook/contact_card.html" %}
+    <ul id='product-table' class='table'>
+    	<li class='header'>
+        	<div class='handle'>&nbsp;</div>
+        	<div class='name'>Name</div>
+        	<div class='description'>Description</div>
+        	<div class='quantity'>Qty</div>
+        	<div class='price'>Price</div>
+        	<div class='total'>Total</div>
+        	<div class='actions'>&nbsp;</div>
+        </li>
+{% for item in items %}
+{% include "trade/order_item.html" with item=item %}
+{% endfor %}
+    </ul>
+    <div id='bottom-bar'>
+        <span class='iconic plus'></span> 
+    	<div>ADD ITEM: </div>
+        <input id="item" type="text" placeholder="Search"></input>
+    <div id='total'>GRAND TOTAL: <input type="text" id='amount' name='amount' readonly="readonly" value='{{form.amount.value|default:0|floatformat:2|intcomma}}'/></div>	
+    </div>
+</form>
+<div class="clear" style="height: 15px;"></div>
+{% endblock content %}
+

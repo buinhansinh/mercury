@@ -1,0 +1,92 @@
+<ul class='table'>
+	<li class='header'>
+		<div class='label'>Sales</div>
+		<div class='price'></div>
+		<div class='actions'></div>
+	</li>
+	<li>
+		<div class='label'>Year High:</div>
+		<div class='price'>
+			<a class="price" href="#">{{ item.year_high_sale.price|floatformat:2|default:'None' }}</a>
+		</div>
+		<div class='actions'>
+			{% if item.year_high_sale %}
+			<a class='price-details' href="{{ item.year_high_sale.order.get_view_url }}" target="_blank">
+				<span class='iconic arrow_right_alt1'></span>
+			</a>
+			{% endif %}
+		</div>
+	</li>
+	<li>
+		<div class='label'>Year Low:</div>
+		<div class='price'>
+			<a class="price" href="#">{{ item.year_low_sale.price|floatformat:2|default:'None' }}</a>
+		</div>
+		<div class='actions'>
+			{% if item.year_low_sale %}
+			<a class='price-details' href="{{ item.year_low_sale.order.get_view_url|default:"#" }}" target="_blank">
+				<span class='iconic arrow_right_alt1'></span>
+			</a>
+			{% endif %}
+		</div>
+	</li>
+	<li>
+		<div class='label'>Last Known:</div>
+		<div class='price'>
+			<a class="price" href="#">{{ item.last_sale.price|floatformat:2|default:'None' }}</a>
+		</div>
+		<div class='actions'>
+			{% if item.last_sale %}
+			<a class='price-details' href="{{ item.last_sale.order.get_view_url|default:"#" }}" target="_blank">
+				<span class='iconic arrow_right_alt1'></span>
+			</a>
+			{% endif %}
+		</div>
+	</li>
+	<li class='spacing'></li>
+	<li class='header'>
+		<div class='label'>Purchases</div>
+		<div class='price'></div>
+		<div class='actions'></div>
+	</li>
+
+	<li>
+		<div class='label'>Year High:</div>
+		<div class='price'>
+			<a class="price" href="#">{{ item.year_high_purchase.price|floatformat:2|default:'None' }}</a>
+		</div>
+		<div class='actions'>
+			{% if item.year_high_purchase %}
+			<a class='price-details' href="{{ item.year_high_purchase.order.get_view_url|default:"#" }}" target="_blank">
+				<span class='iconic arrow_right_alt1'></span>
+			</a>
+			{% endif %}
+		</div>
+	</li>
+	<li>
+		<div class='label'>Year Low:</div> 
+		<div class='price'>
+			<a class="price" href="#">{{ item.year_low_purchase.price|floatformat:2|default:'None' }}</a>
+		</div>
+		<div class='actions'>
+			{% if item.year_low_purchase %}
+			<a class='price-details' href="{{ item.year_low_purchase.order.get_view_url|default:"#" }}" target="_blank">
+				<span class='iconic arrow_right_alt1'></span>
+			</a>
+			{% endif %}
+		</div>
+	</li>
+	<li>
+		<div class='label'>Last Known:</div>
+		<div class='price'>
+			<a class="price" href="#">{{ item.last_purchase.price|floatformat:2|default:'None' }}</a>
+		</div>
+		<div class='actions'>
+			{% if item.last_purchase %}
+			<a class='price-details' href="{{ item.last_purchase.order.get_view_url|default:"#" }}" target="_blank">
+				<span class='iconic arrow_right_alt1'></span>
+			</a>
+			{% endif %}
+		</div>
+	</li>			
+</ul>

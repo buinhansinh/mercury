@@ -1,0 +1,207 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+
+{% block head %}
+<style>
+div#left.column {
+	width: 550px;
+}
+div#right.column {
+	width: 350px;
+}
+#search-bar {
+	padding: 5px 15px 5px 15px;
+	border-top: 1px solid #CCC;
+	border-bottom: 1px solid #CCC;
+}
+#search-bar > * {
+	display: inline-block;
+}
+#search-bar div.spacer {
+	width: 400px;
+}
+div#sorting {
+	marigin-left: 70px;
+}
+ul.table {
+}
+ul.table div.item {
+	width: 150px;
+	text-align: left;
+}
+ul.table div.description {
+	width: 160px;
+	text-align: left;
+}
+ul.table div.quantity {
+	width: 80px;
+}
+ul.table div.reference {
+	width: 100px;
+}
+ul.table div.date {
+	width: 100px;
+}
+ul.table div.status {
+	width: 90px;
+}
+
+.column .content > input {
+	margin: 5px;
+}
+input.date {
+	border: 1px solid #999;
+	width: 100px;
+}
+#left li.empty {
+	width: 548px;
+}
+#left li.more {
+	width: 548px;
+}
+#right li.empty {
+	width: 348px;
+}
+#right li.more {
+	width: 348px;
+}
+</style>
+<script>
+search = function() {
+	var terms = $("#input-search").val();
+	var location = $("#select-location").val();
+	var sort = $("select#sort").val();
+	var offset = 0;
+	$.get(
+		"", 
+		{
+			terms: terms,
+			location_id: {{location.id}},
+			sort: sort,
+			offset: offset,
+		}, 
+		function(data) {
+			$("#ul-stock li.header").nextAll().remove();
+			$("#ul-stock li.header").after(data);
+	  	}
+	);
+}
+
+$(document).ready(function(){
+	$("#overlay").on("click", "#transfer-locations-next", function() {
+		var origin_id = $('#select-sender').val();
+		var destination_id = $('#select-recipient').val();
+		if (origin_id == destination_id) {
+			alert('The transfer source and destination cannot be the same!');
+			return;
+		}
+		window.location.href = '{% url 'inventory.views.stocktransfer.new' %}?' + $.param({
+			origin_id: origin_id,
+			destination_id: destination_id,
+		});
+	});
+	
+	$('#stock-search').keyup(function(e) {
+		if(e.which == KEYCODES.ENTER) {
+			$.get("{% url 'inventory.views.location.stocks' %}",
+				{ location_id: $("#location_id").val(), terms: $('#stock-search').val(), }, 
+				function(data) {
+					$('#stocks-table li.body').remove();
+					$('#stocks-table').append(data);
+				});
+		}
+	});
+	
+	$('input.date').datepicker({
+		format: "mm/dd/yyyy",
+		buttonText: "...",
+		showOn: "button",
+	});
+	
+	$('#transfer-date').change(function() {
+		$.get("{% url 'inventory.views.location.transfers' %}",
+			{ location_id: $("#location_id").val(), date: $('#transfer-date').val(), }, 
+			function(data) {
+				$('#transfers-table li.body').remove();
+				$('#transfers-table').append(data);
+			});
+	});
+
+	$('#adjustment-date').change(function() {
+		$.get("{% url 'inventory.views.location.adjustments' %}",
+			{ location_id: $("#location_id").val(), date: $('#adjustment-date').val(), }, 
+			function(data) {
+				$('#adjustments-table li.body').remove();
+				$('#adjustments-table').append(data);
+			});
+	});
+});
+</script>
+{% endblock head %}
+
+{% block main-title %}
+{{ location.name }}
+{% endblock main-title %}
+{% block sub-title %}
+{{ location.address }}
+{% endblock sub-title %}  
+
+{% block context-menu %}
+	<div class='button'><a class='trigger' href="{% url 'inventory.views.stock.transfer' %}"><span class='iconic transfer'></span> Transfer</a></div>
+	<div class='button'><a href="{% url 'inventory.views.adjustment.new' location.id %}"><span class='iconic book'></span> Adjustment</a></div>
+	<div class='button'><a class='trigger' href="{{ location.get_edit_url }}"><span class='iconic pen'></span> Edit</a></div>
+{% endblock context-menu %}
+
+{% block content %}
+<input type='hidden' id='location_id' value='{{ location.id }}'/>
+<div id="left" class='column'>
+	<div class='title'>
+		<a href='#stocks' class='toggler'>STOCKS</a>
+	</div>
+	<div id='stocks' class='content'>
+		<input type="text" id='stock-search' placeholder="Search"/>
+		<ul id='stocks-table' class='table'>
+		    <li class='header'>
+		        <div class='item'>Item</div>
+		        <div class='description'>Description</div>
+		        <div class='quantity'>Quantity</div>
+		        <div class='quantity'>Total</div>
+		    </li>
+		    <a class='autoloader' href="{% url 'inventory.views.location.stocks' %}?location_id={{location.id}}"></a>
+		</ul>
+	</div>
+</div>
+<div id="right" class='column'>
+	<div class='title'>
+		<a href='#transfers' class='toggler'>STOCK TRANSFERS</a>
+	</div>
+	<div id='transfers' class='content'>
+		Date <input class="date" id='transfer-date' readonly='readonly' placeholder="Today"/>
+		<ul id='transfers-table' class='table'>
+		    <li class='header'>
+		        <div class='reference'>No.</div>
+		        <div class='date'>Date</div>
+		        <div class='status'>Status</div>
+		    </li>
+		    <a class='autoloader' href="{% url 'inventory.views.location.transfers' %}?location_id={{location.id}}"></a>
+		</ul>
+	</div>
+	<div class='title'>
+		<a href='#adjustments' class='toggler'>ADJUSTMENTS</a>
+	</div>
+	<div id='adjustments' class='content'>
+		Date <input class="date" id='adjustment-date' readonly='readonly' placeholder="Today"/>
+		<ul id='adjustments-table' class='table'>
+		    <li class='header'>
+		        <div class='reference'>No.</div>
+		        <div class='date'>Date</div>
+		        <div class='status'>Status</div>
+		    </li>
+		    <a class='autoloader' href="{% url 'inventory.views.location.adjustments' %}?location_id={{location.id}}"></a>
+		</ul>
+	</div>
+</div>
+<div class='clear' style='height: 15px;'></div>
+{% endblock content %}

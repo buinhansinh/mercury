@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+
+{% block head %}
+<style>
+#location-table {
+	margin: 15px;
+}
+#location-table div.name {
+	width: 200px;
+}
+#location-table div.name {
+	text-align: left;
+}
+#location-table div.address {
+	width: 690px;
+}
+#location-table div.address {
+	text-align: left;
+}
+</style>
+<script>
+</script>
+{% endblock head %}
+
+{% block toolbar %}
+{% endblock toolbar %}
+
+{% block main-title %}
+<span class='iconic'></span>Inventory Locations</span>
+{% endblock main-title %}
+
+{% block sub-title %}
+{% endblock sub-title %}  
+
+{% block content %}
+<ul id='location-table' class='table'>
+	<li class='header'>
+		<div class='name'>Name</div>
+		<div class='address'>Address</div>
+	</li>
+{% for l in locations %}
+	<li class='body'>
+		<div class='name'><a href='{{ l.get_view_url }}'>{{ l.name }}</a></div>
+		<div class='address'>{{l.address}}</div>
+	</li>
+{% endfor %}
+</ul>
+<div class='clear' style='height:15px'></div>
+{% endblock content %}

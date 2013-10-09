@@ -1,0 +1,11 @@
+{% load url from future %}
+{% load humanize %}
+<li class="body">
+	<div class='label'>{{discount.label}}</div>
+	<div class='amount'>{{discount.amount|default:0|floatformat:2|intcomma}}</div>
+	<div class='delete'>
+		<a href="{% url 'accounting.views.discount.delete' discount.id %}">
+			<span class='iconic x'></span>
+		</a>
+	</div>
+</li>

@@ -1,0 +1,19 @@
+{% load url from future %}
+<div class='title'>Select Locations</div>
+<div id="div-locations" class='content'>
+    <label for="select-sender">From</label>
+    <select id='select-sender' name='origin_id' required>
+		{% for loc in locations %}
+    	<option value='{{loc.id}}'>{{loc.name}}</option>
+		{% endfor %}
+    </select>
+    <label for="select-recipient">To</label>
+    <select id='select-recipient' name='origin_id'>
+		{% for loc in locations %}            
+    	<option value='{{loc.id}}'>{{loc.name}}</option>
+		{% endfor %}
+    </select>
+</div>
+<div class='buttons'>
+	<div id='transfer-locations-next' class='button next'><a href="#">Next</a></div>
+</div>

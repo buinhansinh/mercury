@@ -1,0 +1,9 @@
+{% extends 'common/results.html' %}
+{% load url from future %}
+{% block columns %}
+	<div class='id'><a href="{{ result.get_view_url }}">{{result.reference}}</a></div>
+	<div class='code'>{{result.code}}</div>
+	<div class='label'>{{ result.name }}</div>
+	<div class='date'>{{result.date|date:'Y-m-d'}}</div>
+	<div class='amount'>{{result.amount|floatformat:2}}</div>
+{% endblock columns %}

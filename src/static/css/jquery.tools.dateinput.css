@@ -1,0 +1,149 @@
+/* For the details, see:
+   http://flowplayer.org/tools/dateinput/index.html#skinning */
+
+/* the input field */
+input.date {
+    border:1px solid #ccc;
+    padding:4px;
+
+    -moz-box-shadow:0 0 10px #eee inset;
+    -webkit-box-shadow:0 0 10px #eee inset;
+}
+
+/* calendar root element */
+#calroot {
+    /* place on top of other elements. set a higher value if nessessary */
+    z-index:10000;
+
+    margin-top:-1px;
+    width:198px;
+    padding:2px;
+    background-color:#333;
+    font-size:12px;
+
+    -moz-box-shadow: 0 0 15px #666;
+    -webkit-box-shadow: 0 0 15px #666;
+}
+
+/* head. contains title, prev/next month controls and possible month/year selectors */
+#calhead {
+    padding:2px 0;
+    height:22px;
+}
+
+#caltitle {
+    font-size:14px;
+    color:#ccc;
+    float:left;
+    text-align:center;
+    width:155px;
+    line-height:20px;
+    text-shadow:0 1px 0 #ddd;
+}
+
+#calnext, #calprev {
+    display:block;
+    width:20px;
+    height:20px;
+/*    background:transparent url(/media/img/dateinput/prev.gif) no-repeat scroll center center;*/
+    float:left;
+    cursor:pointer;
+    background-color: #666;
+}
+
+#calnext {
+/*    background-image:url(/media/img/dateinput/next.gif);*/
+    float:right;
+}
+
+#calprev.caldisabled, #calnext.caldisabled {
+    visibility:hidden;
+}
+
+/* year/month selector */
+#caltitle select {
+    font-size:10px;
+}
+
+/* names of the days */
+#caldays {
+    height:14px;
+    font-weight: bold;
+}
+
+#caldays span {
+    display:block;
+    float:left;
+    width:28px;
+    text-align:center;
+    color: #ccc;
+}
+
+/* container for weeks */
+#calweeks {
+/*    background-color:#fff;*/
+    margin-top:4px;
+}
+
+/* single week */
+.calweek {
+    clear:left;
+    height:22px;
+}
+
+/* single day */
+.calweek a:link, .calweek a:visited {
+    display:block;
+    float:left;
+    width:27px;
+    height:20px;
+    text-decoration:none;
+    font-size:11px;
+    margin-left:1px;
+    text-align:center;
+    line-height:20px;
+    color: #ccc;
+/*    -moz-border-radius:3px;
+    -webkit-border-radius:3px;*/
+}
+
+/* different states */
+.calweek a:hover, .calfocus {
+    background-color:#fff;
+    color:#333;
+}
+
+/* sunday */
+a.calsun {
+    color:red;
+}
+
+/* offmonth day */
+a.caloff:link {
+    color:#666;
+}
+
+a.caloff:hover {
+    background-color: #fff;
+}
+
+
+/* unselecteble day */
+a.caldisabled:link {
+    background-color:#efefef !important;
+    color:#ccc	!important;
+    cursor:default;
+}
+
+/* current day */
+#calcurrent {
+    background-color:#ccff00;
+    color:#333;
+}
+
+/* today */
+#caltoday {
+    background-color:#333;
+    color:#ccff00;
+    font-weight: bold;
+}

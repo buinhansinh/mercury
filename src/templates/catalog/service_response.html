@@ -1,0 +1,10 @@
+<div class='title'>SERVICE FORM</div>
+<div class='content'>
+	<a href="{{service.get_view_url}}">{{service.name}}</a> Saved.
+</div>
+<div class='buttons'>
+	<div class='button close'><a href="#">Close</a></div>
+</div>
+{% if refresh %}
+<input type='hidden' class='refresh'/>
+{% endif %}

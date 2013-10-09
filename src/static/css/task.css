@@ -1,0 +1,176 @@
+/*
+	Stock
+*/
+ul.table.stock div.item {
+	width: 100px;
+}
+ul.table.stock li.body div.item {
+	text-align: left;
+}
+ul.table.stock div.summary {
+	width: 170px;
+}
+ul.table.stock li.body div.summary {
+	text-align: left;
+}
+ul.table.stock div.quantity {
+	width: 50px;
+}
+ul#inventory-physical div.item {
+	width: 100px;
+}
+ul#inventory-physical div.summary {
+	width: 140px;
+}
+ul#inventory-physical div.quantity {
+	width: 50px;
+}
+ul#inventory-physical div.last-physical {
+	width: 80px;
+}
+ul#inventory-low div.item {
+	width: 100px;
+}
+ul#inventory-low div.summary {
+	width: 110px;
+}
+ul#inventory-low div.location {
+	width: 80px;
+	text-align: left;
+}
+ul#inventory-low div.quantity {
+	width: 80px;
+}
+ul#inventory-negative div.item {
+	width: 140px;
+}
+ul#inventory-negative div.summary {
+	width: 200px;
+}
+/*
+	Order
+*/
+ul.table.order div.id {
+	width: 80px;
+}
+ul.table.order div.code {
+	width: 80px;
+}
+ul.table.order div.customer {
+	width: 110px;
+}
+ul.table.order div.supplier {
+	width: 110px;
+}
+ul.table.order div.date {
+	width: 100px;
+}
+ul.table.order.sale div.supplier {
+	display: none;
+}
+ul.table.order.purchase div.customer {
+	display: none;
+}
+ul.table.order div.type {
+	display: none;
+}
+ul.table.order div.amount {
+	display: none;
+}
+/*
+	Item
+*/
+ul#purchasing-outstanding div.item {
+	width: 80px;
+	text-align: left;
+}
+ul#purchasing-outstanding div.summary {
+	width: 110px;
+	text-align: left;
+}
+ul#purchasing-outstanding div.supplier {
+	width: 100px;
+}
+ul#purchasing-outstanding div.order {
+	width: 80px;
+}
+/*
+	Bills
+*/
+ul.bill.table div.id {
+	width: 80px;
+}
+ul.bill.table div.code {
+	width: 80px;
+	display: none;
+}
+ul.bill.table div.customer {
+	width: 130px;
+}
+ul.bill.table div.supplier {
+	width: 130px;
+}
+ul.bill.table div.date {
+	width: 80px;
+}
+ul.bill.table div.amount {
+	width: 80px;
+}
+#receivable-overdue div.supplier {
+	display: none;
+}
+#receivable-soon div.supplier {
+	display: none;
+}
+#payable-overdue div.customer {
+	display: none;
+}
+#payable-soon div.customer {
+	display: none;
+}
+/*
+	Payments
+*/
+ul.payment.table div.id {
+	width: 80px;
+}
+ul.payment.table div.code {
+	width: 80px;
+}
+ul.payment.table div.customer {
+	width: 130px;
+}
+ul.payment.table div.supplier {
+	width: 130px;
+}
+ul.payment.table div.date {
+	width: 80px;
+}
+ul.payment.table div.amount {
+	width: 80px;
+}
+#collection-unallocated div.supplier {
+	display: none;
+}
+#disbursement-unallocated div.customer {
+	display: none;
+}
+/*
+	Expenses
+*/
+ul.expense div.id {
+	width: 70px;
+}
+ul.expense div.code {
+	width: 80px;
+}
+ul.expense div.label {
+	width: 140px;
+}
+ul.expense div.date {
+	width: 80px;
+}
+ul.expense div.amount {
+	width: 80px;
+	display: none;
+}

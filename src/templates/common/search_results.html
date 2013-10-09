@@ -1,0 +1,8 @@
+{% extends 'common/results.html' %}
+{% load url from future %}
+{% block columns %}
+	{% with r=result %}
+		<div class='name'><a href="{{r.object.get_view_url}}">{{r.name}}</a></div>
+		<div class='summary'>{{r.summary}}</div>
+	{% endwith %}
+{% endblock columns %}

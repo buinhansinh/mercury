@@ -1,0 +1,10 @@
+{% extends 'common/results.html' %}
+{% load url from future %}
+{% block columns %}
+	{% with r=result %}
+		<div class='id'><a href="{{r.transfer.get_view_url}}">{{r.transfer.code}}</a></div>
+		<div class='date'><a href="{{r.transfer.get_view_url}}">{{r.transfer.date|date:"Y-m-d"}}</a></div>
+		<div class='description'><a href="{{r.transfer.get_view_url}}">{{r.order.info.name}}</a></div>
+		<div class='quantity'><a href="{{r.transfer.get_view_url}}">{{r.quantity}}</a></div>
+	{% endwith %}
+{% endblock columns %}

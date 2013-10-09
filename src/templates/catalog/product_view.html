@@ -1,0 +1,335 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+
+{% block head %}
+<style>
+
+#left.column  {
+	width: 350px;
+}
+#right.column {
+	width: 550px;
+}
+#left.column > * {
+	width: 350px;
+}
+#right.column > * {
+	width: 550px;
+}
+#left li.empty {
+	width: 348px;
+}
+#left li.more {
+	width: 348px;
+}
+#right li.empty {
+	width: 548px;
+}
+#right li.more {
+	width: 548px;
+}
+#product-summary, #product-details {
+	margin: 15px;
+}
+#product-summary label {
+	width: 75px;
+	display: inline-block;
+}
+#product-summary input {
+	text-align: left;
+	font-weight: bold;
+}
+#edit-about {
+	float: right;
+	margin-right: 30px;
+}
+#price-content div.label {
+	width: 130px;
+	text-align: left;
+} 
+#price-content div.price {
+	width: 150px;
+	text-align: right;
+}
+#price-content div.actions {
+	width: 10px;
+	text-align: left;
+}
+#stock-table div.location {
+	width: 150px;
+}
+#stock-table li.body div.location {
+	text-align: left;
+}
+#stock-table div.address {
+	width: 100px;
+}
+#stock-table li.body div.address {
+	text-align: left;
+}
+#stock-table div.quantity {
+	width: 50px;
+}
+#stock-table div.last-physical {
+	width: 80px;
+}
+#stock-table div.transactions {
+	width: 50px;
+}
+#transaction-title, #transaction-table {
+	display: none;
+}
+#transaction-table div.date {
+	width: 120px;
+}
+#transaction-table div.quantity {
+	width: 100px;
+}
+#transaction-table div.type {
+	width: 170px;
+}
+#transaction-table div.url {
+	width: 80px;
+}
+
+#transaction-section {
+	margin-top: 15px;
+	margin-bottom: 15px;
+}
+
+#release-table div.code {
+	width: 75px;
+	text-align: left;
+}
+#release-table div.date {
+	width: 75px;
+}
+#release-table div.partner {
+	width: 150px;
+	text-align: left;
+}
+#release-table div.quantity {
+	width: 75px;
+	text-align: right;
+}
+#release-table div.status {
+	width: 75px;
+}
+
+#transfer-table div.code {
+	width: 75px;
+	text-align: left;
+}
+#transfer-table div.date {
+	width: 75px;
+}
+#transfer-table div.direction {
+	width: 150px;
+	text-align: left;
+}
+#transfer-table div.quantity {
+	width: 75px;
+	text-align: right;
+}
+#transfer-table div.status {
+	width: 75px;
+}
+
+div.pane > div.toolbar {
+	padding: 3px;
+}
+input.date {
+	width: 100px;
+	border: 1px solid #999;
+}
+</style>
+<script>
+$(function() {
+	$("input.date").datepicker({
+		format: "mm/dd/yyyy",
+		buttonText: "...",
+		buttonImage: '/static/icons/iconic/black/calendar_8x8.png',
+		showOn: "button",
+	});
+
+	// setup ul.tabs to work as tabs for each div directly under div.panes
+	$("#tabs-section ul.tabs").tabs("#tabs-section div.pane");
+	$("#about-section ul.tabs").tabs("#about-section div.pane");
+	$("#transaction-tabs").tabs("#transaction-section > div.pane");	
+	
+	$("#details-section .toggler").collapse();
+
+	// Search Transactions
+	var searchTransactions = function() {
+		var date = $('#transaction-date').val();
+		$.get("{% url 'catalog.views.product.transactions' %}",
+			{ product_id: {{product.id}} },
+			function(data) {
+				$('#transaction-table li.body').remove();
+				$('#transaction-table').append(data);
+				$('#transaction-title').fadeIn();
+				$('#transaction-table').fadeIn();
+			});
+	}
+	searchTransactions();
+	
+	// Search Releases
+	var searchReleases = function() {
+		var date = $('#release-date').val();
+		$.get("{% url 'catalog.views.product.ordertransfers' %}",
+			{ date: date, product_id: {{product.id}} }, 
+			function(data) {
+				$('#release-table li.body').remove();
+				$('#release-table').append(data);
+			});		
+	}
+	$('#release-date').change(searchReleases);
+	searchReleases();
+
+	// Search Releases
+	var searchTransfers = function() {
+		var date = $('#transfer-date').val();
+		$.get("{% url 'catalog.views.product.stocktransfers' %}",
+			{ date: date, product_id: {{product.id}} }, 
+			function(data) {
+				$('#transfer-table li.body').remove();
+				$('#transfer-table').append(data);
+			});		
+	}
+	$('#transfer-date').change(searchTransfers);
+	searchTransfers();
+});
+</script>
+{% endblock head %}
+
+{% block main-title %}
+<span class='iconic box'></span> {{ product.name }} </span>
+{% endblock main-title %}
+ 
+{% block context-menu %}
+<div id='more-dropdown' class='dropdown'>
+    <div class='button'><a><span class='iconic dropdown'></span> </a></div>
+	<ul class='menu right'>
+		<li class='right'>
+			<div class='button'><a href="{% url 'catalog.views.product.merge' product.id %}"><span class='iconic loop_alt1'></span> Merge</a></div>
+		</li>
+	</ul>
+</div>
+{% endblock context-menu %}
+ 
+{% block content %}
+<div id="left" class='column'>
+	<div class='title'>
+		<a href='#product-summary' class='toggler'>Summary</a>
+	</div>
+	<div id='product-summary' class='content'>
+		<a id='edit-about' class='trigger' href="{{product.get_edit_url}}">
+			<span class="iconic pen"></span> Edit
+		</a>
+    	<div>
+    		<label>Brand:</label>
+    		<input readonly="readonly" value="{{product.brand}}"/>
+    	</div>
+    	<div>
+    		<label>Model:</label>
+    		<input readonly="readonly" value="{{product.model}}"/>
+    	</div>
+    	<div>
+    		<label>Summary:</label>
+    		<input readonly="readonly" value="{{product.summary}}"/>
+    	</div>
+    </div>
+    <div class='title'><a href="#product-details" class='toggler'>Details</a></div>
+    <div id='product-details' class='content'>{{ product.description|default:"None" }}</div>    
+    <div class='title'><a href="#price-content" class='toggler'>Prices</a></div>
+    <div id='price-content'>
+    	<ul id='price-table' class='table'>
+	    	<li class='header'> 
+	    		<div class='label'>Account</div>
+	    		<div class='price'></div>
+	    		<div class='actions'></div>
+	    	</li>
+	    	<li> 
+	    		<div class='label'>List Price</div>
+	    		<div class='price'><a href="#">{{account.price|floatformat:2}}</a></div>
+	    		<div class='actions'>
+	    			<a id='edit-price' class='iconic pen trigger' href="{% url 'company.views.item.price' account.id %}"></a>
+	    		</div> 
+	    	</li>
+	    	<li> 
+	    		<div class='label'>Default Cost</div>
+	    		<div class='price'><a href="#">{{account.cost|floatformat:2}}</a></div>
+	    		<div class='actions'>
+	    			<a id='edit-cost' class='iconic pen trigger' href="{% url 'company.views.item.cost' account.id %}"></a>
+	    		</div> 
+	    	</li>
+    	</ul>
+    	{% with item=account %}
+		{% include 'company/price_table.html' %}
+		{% endwith %}
+	</div>
+	<div class='clear' style="height:15px"></div>
+</div>
+<div id="right" class='column'>
+    <div class='title'><a href="#stock-table" class='toggler'>Stock</a></div>
+	<ul id='stock-table' class='table stock'>
+		<li class='header'>
+			<div class='location'>Location</div>
+			<div class='quantity'>Quantity</div>
+			<div class='quantity'>Floor</div>
+			<div class='quantity'>Ceiling</div>
+			<div class='last-physical'>Last Physical</div>
+		    <div class='transactions'>History</div>
+		</li>
+		<a class='autoloader' href="{% url 'catalog.views.product.stocks' %}?product_id={{product.id}}">Loading...</a>
+	</ul>
+	<div id='transaction-section'>
+	    <ul id='transaction-tabs' class='tabs'>
+	    	<li><a href="#">Releases/Returns</a></li>
+	    	<li><a href="#">Warehouse Transfers</a></li>
+	    	<li><a href="#">All Transactions</a></li>
+	    </ul>
+	    <div class="pane">
+			<div class='toolbar'>
+				<input id='release-date' class="date" readonly='readonly' placeholder='Today'/>
+			</div>
+			<ul id='release-table' class='table order'>
+				<li class='header'>
+					<div class='code'>No.</div>
+					<div class='date'>Date</div>
+					<div class='partner'>Partner</div>
+					<div class='quantity'>Qty</div>
+					<div class='status'>Status</div>
+				</li>		
+			</ul>	    
+	    </div>	
+	    <div class="pane">
+			<div class='toolbar'>
+				<input id='transfer-date' class="date" readonly='readonly' placeholder='Today'/>
+			</div>
+			<ul id='transfer-table' class='table order'>
+				<li class='header'>
+					<div class='code'>No.</div>
+					<div class='date'>Date</div>
+					<div class='direction'>Direction</div>
+					<div class='quantity'>Qty</div>
+					<div class='status'>Status</div>
+				</li>		
+			</ul>	    
+	    </div>
+	    <div class="pane">
+			<ul id='transaction-table' class='table'>
+				<li class='header'>
+				    <div class='date'>Date</div>
+				    <div class='quantity'>Quantity</div>
+				    <div class='type'>Type</div>
+				    <div class='url'>Document</div>
+			    </li>		
+			</ul>
+	    </div>
+	</div>	
+</div>
+<div class="clear"></div>
+{% endblock content %}

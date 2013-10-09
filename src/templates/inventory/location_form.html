@@ -1,0 +1,16 @@
+{% load url from future %}
+<form id='location-form' class="ajax" action="{{request.path}}">
+	<div class='title'>LOCATION FORM</div>
+	<div class='content'>
+		{{ form.errors }}
+		<input type='hidden' name="owner" value="{{form.owner.value}}"/>
+		<div>Name</div>
+		{{ form.name }}
+		<div>&nbsp;</div>
+		<div>Address: </div>
+		{{ form.address }}
+	</div>
+	<div class='buttons'>
+		<div class='button submit'><a>Save</a></div>
+	</div>
+</form>

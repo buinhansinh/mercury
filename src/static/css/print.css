@@ -1,0 +1,215 @@
+div#top-bar {
+	display: none;
+}
+div.button {
+	display: none;
+}
+div.dropdown {
+	display: none;
+}
+ul.tabs {
+	display: none;
+}
+ul.table li.header {
+	color: #000;
+	font-weight: bold;
+	border-bottom: 1px solid #ddd;
+}
+input[readonly=readonly] {
+	border: 1px solid #ddd;
+}
+div#border {
+	width: 960px;
+	border: 1px solid #ddd;
+}
+div#title {
+	background-color: #ccff00;
+	color: #333;
+	padding: 0px 0px 0px 0px;
+	border-bottom: 1px solid #ddd;
+}
+div#title .main {
+	margin: 0px auto 0px 15px;
+	line-height: 45px;
+	font-size: 24px;
+	font-weight: normal;
+}
+div#title .sub {
+	margin: 0px auto 0px auto;
+	line-height: 37px;
+}
+div#title .dropdown {
+	display: inline-block;
+}
+div#title .context-menu {
+	float: right;
+	margin: 10px 15px 0 0;
+}
+div#title .context-menu > label {
+	display: inline;
+	font-weight: bold;
+	line-height: 2em;
+}
+div#title .context-menu > span {
+	margin-right: 15px;
+	
+}
+div#message {
+	display: none;
+	margin: 0px auto 0px auto;
+	padding: 15px;
+	background-color: #FFB200;
+}
+div#message .iconic.info {
+	float: left;
+}
+div#container {
+	position: relative;
+	width: 960px;
+	background-color: #FFF;
+	margin: 0px;
+	padding: 0px;
+}
+div#footer {
+	display: none; /* off by default */
+	background-color: #CCC;
+	text-align: center;
+	padding: 5px 0;
+}
+div#footer > * {
+	margin: 0 2px;
+}
+div#overlay {
+	display: none;
+	background-color: #fff;
+	min-width: 200px;
+}
+div#overlay div.title {
+	background-color: #ccff00;
+	line-height: 2em;
+	font-weight: bold;
+	padding: 0 10px;
+	margin-bottom: 10px;
+}
+div#overlay div.content {
+	margin: 10px;
+}
+div#overlay div.buttons {
+	margin: 10px;
+	float: right;
+}
+li.suggestion span.name {
+	font-weight: bold;
+	font-size: smaller;
+}
+li.suggestion span.summary {
+	font-size: smaller;
+	color: #999;
+}
+/**********************************************************************/
+/* Two column layout
+/**********************************************************************/
+#left.column {
+	float: left;
+	width: 450px;
+	margin-left: 15px;
+}
+#right.column {
+	float: right;
+	width: 450px;
+	margin-right: 15px;
+}
+div.column > * {
+	float: left;
+	clear: left;
+}
+div.column > div.title {
+	background-color: #fff;
+	height: 2.5em;
+	width: 100%;
+	margin-top: 10px;
+	border-bottom: 1px solid #ccc;
+}
+div.column > div.title a.toggler {
+	display: block;
+	line-height: 2.5em;
+	margin-left: 10px;
+	margin-right: 10px;
+	font-size: 16px;
+	font-weight: bold;
+	text-decoration: none;
+	color: #333;
+}
+div.column > div.title .toggler-icon  {
+	float: right;
+	font-weight: normal;
+}
+div.column ul.table li.empty {
+	width: 448px;
+}
+div.column ul.table li.more {
+	width: 448px;
+}
+/**********************************************************************/
+/* Table Empty + More */
+/**********************************************************************/
+ul.table li.empty {
+	border: 1px solid #ccc;
+	background-color: #fff;
+	line-height: 2em;
+	text-align: center;
+}
+ul.table li.more {
+	border: 1px solid #ccc;
+	background-color: #fff;
+	line-height: 2em;
+	text-align: center;
+}
+ul.table li.more a {
+	display: block;
+	width: 100%;
+}
+/**********************************************************************/
+/* Contact card */
+/**********************************************************************/
+div.contact-card {
+}
+div.contact-card label {
+	display: inline-block;
+	width: 100px;
+}
+div.contact-card div.name {
+	font-size: 24px;
+}
+div.contact-card > div {
+	margin-bottom: 5px;
+}
+div.contact-card > div > div {
+	display: inline-block;
+}
+/**********************************************************************/
+/* Document code and date */
+/**********************************************************************/
+div#document {
+	padding: 10px;
+	background-color: #ccc;
+	margin-top: 15px;
+	margin-right: 15px;	
+	margin-bottom: 15px;
+}
+div#document-title {
+	font-size: 18px;
+}
+div#document > * {
+	margin: 0px 0px 5px 0px;
+}
+div#document label {
+	display: block;
+}
+input#document-date {
+	width: 140px;
+}
+input#document-date[readonly=readonly] {
+	width: inherit;
+	margin-right: inherit;
+}

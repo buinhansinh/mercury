@@ -1,0 +1,9 @@
+{% extends 'common/results.html' %}
+{% load url from future %}
+{% block columns %}
+{% with stock=result %}
+    <div class='item'><a href="{{stock.product.get_view_url}}">{{stock.product.name}}</a></div>
+    <div class='summary'>{{stock.product.summary}}</div>
+    <div class='quantity'>{{stock.quantity}}</div>
+{% endwith %}
+{% endblock columns %}

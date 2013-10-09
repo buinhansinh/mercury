@@ -1,0 +1,362 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+{% load humanize %}
+
+{% block head %}
+<style>
+{% if title == 'Disbursement' %}
+div#title {
+	background-color: #ff55aa;
+}
+{% endif %}
+div#contact {
+	float: left;
+}
+.contact-card {
+	float: left;
+	width: 300px;
+	padding-top: 15px;
+	padding-left: 30px;
+	padding-bottom: 15px;
+}
+table#account {
+	clear: left;
+	float: left;
+	margin: 0 15px 15px 15px;
+	width: 300px;
+}
+#document {
+	float: right;
+}
+div#payment{
+	float:left;
+	width: 300px;
+	padding: 30px;
+}
+div#payment > * {
+	margin-right: 15px;
+	margin-bottom: 15px;
+}
+div#payment input {
+	border: 1px solid #CCC;
+}
+table#refunds {
+	float: left;
+	width: 350px;
+	margin: 0 15px 15px 0;
+}
+label {
+	display: inline-block;
+	width: 100px;
+	font-weight: bold;	
+}
+.type {
+	float: left;
+	clear: left;
+	margin-right: 150px;
+}
+.type select {
+}
+.amount {
+	float: left;
+	clear: left;
+}
+.amount input {
+}
+#buttons {
+	clear: both;
+	text-align: center;
+	margin-top: 20px;
+}
+div#allocations {
+	clear: left;
+	float: left;
+	border-top: 1px solid #ccc;
+	padding: 15px;
+	width: 370px;
+}
+div#allocations table {
+	width: 370px;
+}
+tr.temp td {
+	background-color: #ffb200;
+}
+div#unpaid-bills {
+	clear: right;
+	float: right;
+	border-top: 1px solid #ccc;
+	border-left: 1px solid #ccc;
+	padding: 15px;
+	width: 529px;
+	height: 300px;
+	overflow: auto;
+}
+div#unpaid-bills table {
+	width: 515px;
+}
+div#submit-allocations {
+	float: right;
+	margin-top: 10px;
+	margin-right: 10px;
+	display: none;
+}
+</style>
+<script>
+intfloat = function(x) {
+	return Math.round(parseFloat(x) * 100);
+}
+
+currency = function(x) {
+	return x / 100;
+}
+
+allocate = function(bill_id, code, amount) {
+	amount = currency(amount);
+	var td_code = $("<td>").append(code);
+	var td_amount = $("<td>").append(asCurrency(amount));
+	var tr = $("<tr>").attr("class", "temp").attr("id", "allocation-" + bill_id).append("<input type='hidden' name='bill_id' value='" + bill_id + "'/>")
+		.append("<input type='hidden' name='amount' value='" + amount + "'/>")
+		.append(td_code).append(td_amount).append("<td><span class='iconic check'></span></td>");
+	$("form#allocation-form tbody").append(tr);
+}
+
+deallocate = function(bill_id) {
+	var tr = $("tr#allocation-" + bill_id);
+	var amount = 0
+	if (tr.length > 0) {
+		amount = tr.first().children("input[name='amount']").val();
+		tr.remove();
+	}
+	return intfloat(amount);
+}
+
+$(document).ready(function(){
+	$('.paid-checkbox').attr('checked', false);
+
+	$('.paid-checkbox').change(function() {
+		var funds_available = intfloat($('#funds-available-input').val());
+		var funds_allocated = intfloat($('#funds-allocated-input').val());
+		var selection_total = intfloat($('#selection-total-input').val());
+		
+		var bill = intfloat($(this).next('.bill-total').val());
+		var bill_id = $(this).val();
+		var bill_code = $(this).siblings('label').first().html();
+		
+		if ($(this).is(":checked")) {
+			if (funds_available >= (funds_allocated + bill)) {
+				funds_allocated = funds_allocated + bill;
+				allocate(bill_id, bill_code, bill);
+			} else if (funds_available > funds_allocated) {
+				alert("Not enough credit. This bill will only be partially paid.");
+				var allocation = funds_available - funds_allocated;
+				funds_allocated = funds_available;
+				allocate(bill_id, bill_code, allocation);
+			} 
+			selection_total = selection_total + bill;
+		} else {
+			var amount = deallocate(bill_id)
+			funds_allocated = funds_allocated - amount;
+			selection_total = selection_total - bill;
+		}
+		
+		funds_allocated = currency(funds_allocated);
+		selection_total = currency(selection_total);
+		$('#funds-allocated-div').html(asCurrency(funds_allocated));
+		$('#funds-allocated-input').val(funds_allocated);
+		$('#selection-total-div').html(asCurrency(selection_total));
+		$('#selection-total-input').val(selection_total);
+		
+		if ($('tr.temp').length > 0) {
+			$('#submit-allocations').show();
+		} else {
+			$('#submit-allocations').hide();
+		}
+	});
+	
+	$('.withholding-checkbox').change(function() {
+		$('#withholding-input').val($(this).val());
+		$('#withholding-form').submit();
+	});	
+	
+	$('#submit-allocations').click(function() {
+		submit($('#allocation-form'));
+	});
+});
+</script>
+{% endblock head %}
+
+{% block main-title %}{{title|upper}}{% endblock main-title %}  
+{% block sub-title %}No.{{payment.reference}}{% endblock sub-title %}  
+
+{% block context-menu %}
+<label>Status:</label>
+<span>{{ payment.status }}</span>
+{% if payment.supplier == contact %}
+	<div class='button'><a href="{% url 'accounting.views.payment.disburse' contact.id %}"><span class='iconic plus'></span> New Disbursement</a></div>
+{% else %}
+	<div class='button'><a href="{% url 'accounting.views.payment.collect' contact.id %}"><span class='iconic plus'></span> New Collection</a></div>
+{% endif %}
+
+<div class='dropdown'>
+    <div class='button'>
+    	<a><span class='icon iconic dropdown'></span></a> 
+    </div>
+    <ul class='menu right'>
+		<div class='button'><a href="{% url 'accounting.views.refund.new' payment.id %}"><span class='iconic undo'></span> Refund</a></div>
+		{% if payment.editable %}
+		<div class='button'><a href="{{ payment.get_edit_url }}"><span class='iconic pen'></span> Edit</a></div>
+		{% endif %}
+		{% if payment.cancelable %}
+		<div class='button'><a href="{{ payment.get_cancel_url }}"><span class='iconic minus_alt'></span> Cancel</a></div>
+		{% endif %}
+	</ul>
+</div>
+{% endblock context-menu %}  
+
+{% block content %} 
+<input type='hidden' name='contact' value='{{form.contact.value}}'>
+<input type='hidden' name='type' value='{{form.type.value}}'>
+<div id='contact'>
+	{% include 'addressbook/contact_card.html' %}
+	<table id='account' class='data'>
+		<thead>
+			<tr>
+				<th colspan='2'>ACCOUNT</th>
+			</tr>
+		</thead>
+		<tr>
+			<td align='right'>Debt Outstanding:</td>
+			<td align='left'>{{account.debt|default:0|floatformat:2|intcomma}}</td>
+		</tr>
+		<tr>
+			<td align='right'>Credit Available:</td>
+			<td align='left'>{{account.credit|default:0|floatformat:2|intcomma}}</td>
+		</tr>
+	</table>	
+</div>
+<div id="payment">
+    <div class='type'>
+        <label for="mode">Payment Mode:</label>
+        <input type='text' id='mode' readonly='readonly' value='{{mode}}'/>
+    </div>
+    <div class="amount">
+        <label for="amount">Amount:</label>
+        <input type="text" id="amount" name='amount' readonly='readonly' value='{{payment.amount|default:0|floatformat:2|intcomma}}'/>
+    </div>
+    <div>
+    <table id='refunds' class='data'>
+    	<thead>
+    		<tr>
+        		<th colspan='4'>Refunds</th>
+    		</tr>
+    	</thead>
+    	<tbody>
+	        {% for r in payment.refunds.all %}
+        	<tr>
+        		{% if r.cancelable %}
+        		<td>{{r.code|default:"None"}}</td>
+        		<td>{{r.mode_label}}</td>
+        		<td>{{r.amount}}</td>
+        		<td>
+        			<a class='iconic x' href="{% url 'accounting.views.refund.cancel' r.id %}"></a>
+        		</td>
+    			{% else %}
+        		<td class='strikethrough'>{{r.code|default:"None"}}</td>
+        		<td class='strikethrough'>{{r.mode_label}}</td>
+        		<td class='strikethrough'>{{r.amount}}</td>
+        		<td>
+        			<span class='iconic denied' title="canceled"><span>
+        		</td>
+        		{% endif %}
+        	</tr>
+	        {% endfor %}
+	    </tbody>
+    </table>
+    </div>
+</div>
+{% with document=payment %}
+{% include 'common/document_view.html' %}
+{% endwith %}
+<div class="clear"></div>
+{% if payment.cancelable %}
+<div id='allocations'>
+	<table class='data'>
+		<thead>
+			<tr>
+				<th colspan='2'>CURRENT</th>
+			</tr>
+		</thead>
+		<tr>
+			<td align='right'>Funds Available:</td>
+			<td id="funds-available-div" align='left'>{{payment.available|default:0|floatformat:2|intcomma}}</td>
+			<input type="hidden" id='funds-available-input' value="{{payment.available}}"/>
+		</tr>
+		<tr>
+			<td align='right'>Funds Allocated:</td>
+			<td id='funds-allocated-div' align='left'>0.00</td>
+     		<input type="hidden" id='funds-allocated-input' value="0"/>
+		</tr>
+		<tr>
+			<td align='right'>Selection Total:</td>
+			<td id='selection-total-div' align='left'>0.00</td>
+     		<input type="hidden" id='selection-total-input' value="0"/>
+		</tr>
+		<tr>
+			<td align='right'>Tax Withheld:</td>
+			<td align='left'>{{tax_withheld|default:0|floatformat:2|intcomma}}</td>
+		</tr>			
+	</table>	
+	<form id='allocation-form' action="{% url 'accounting.views.payment.allocate' %}" method="POST">
+		<input type='hidden' name='payment_id' value='{{payment.id}}'/>	
+		<table class='data'>
+			<thead>
+				<tr><th colspan='3'>BILL ALLOCATIONS</th></tr>
+			</thead>
+			<tbody>
+			{% for a in payment.allocations.all %}
+				<tr>
+					<td><a href="{{ a.bill.get_view_url }}">{{ a.bill.code }}</a></td>
+					<td>{{ a.amount }}</td>
+					<td><a class="iconic x" href="{% url 'accounting.views.payment.deallocate' a.id %}"></a></td>
+				</tr>
+			{% endfor %}
+			</tbody>
+		</table>
+	</form>
+	<div id='submit-allocations' class='button submit'><a><span class='iconic check'></span> Save</a></div>
+</div>
+<div id='unpaid-bills'>
+	<table class='data'>
+		<thead>
+			<tr><th colspan='5'>UNPAID BILLS</th></tr>
+		</thead>
+		<tbody>
+	{% for b in bills %}
+		<tr>
+			<td>
+				<input type="checkbox" id="checkbox-{{b.id}}" class="paid-checkbox" name="bill-id" value="{{b.id}}"/> 
+				<input type="hidden" class="bill-total" value="{{b.outstanding}}"/> 
+				<label for="checkbox-{{b.id}}">{{b.code}}</label>
+			</td>
+			<td>{{b.date|date:"m/d/Y"}}</td>
+			<td>{{b.outstanding|default:0|floatformat:2|intcomma}}</td>
+			<td>
+				<input id="withhold-{{b.id}}" type="checkbox" class="withholding-checkbox" name="bill-id" value="{{b.id}}" {% if b.has_withholding %}checked{% endif %}/>
+			</td>
+			<td><a href="{{b.get_view_url}}"><span class='iconic arrow_right_alt1'></span></a></td>
+		</tr>
+	{% empty %}
+		<tr><td colspan='2'>Empty</td></tr>
+	{% endfor %}
+		</tbody>
+	</table>
+</div>
+<div class="clear"></div>
+<form id="withholding-form" action="{% url 'accounting.views.payment.toggle_withholding' %}" method="POST">
+	<input type="hidden" id="withholding-input" name='bill_id'/>
+	<input type="hidden" id="withholding-input" name='payment_id' value="{{payment.id}}"/>	
+</form>
+{% endif %}
+{% endblock content %}

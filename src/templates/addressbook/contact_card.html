@@ -1,0 +1,17 @@
+{% load url from future %}
+<div class='contact-card'>
+	<div class="name"><a href="{{ contact.get_view_url }}">{{ contact.name }}</a></div>
+	<div class='phone'>
+		<label>Phone No(s):</label> 
+		<div>{% for n in contact.numbers %}{{ n.value }}, {% endfor %}</div>
+	</div>
+	<div class='email'>
+		<label>Email:</label>
+		<div>{{ contact.emails|first|default:"None" }}</div>
+	</div>
+	<div class='address'>
+		<label>Address:</label>
+		<div>{{ contact.addresses|first|default:"None" }}</div>
+	</div>
+</div>
+

@@ -1,0 +1,322 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+{% load humanize %}
+
+{% block head %}
+<style>
+.contact-card {
+	float: left;
+	margin-top: 15px;
+	margin-left: 30px;
+	margin-bottom: 15px;
+}
+#contact-location {
+	display: none;
+}
+#location {
+	float: left;
+	margin-top: 15px;	
+	margin-left: 100px;
+	width: 300px;
+}
+#location > .name  {
+	font-size: 18px;
+	float: left;
+	margin-right: 1em;
+}
+#transfer-title {
+	float: left;
+	line-height: 1.9em;
+	font-size: x-large;
+	margin-left: 15px;
+}
+#transfer-actions {
+	float: right;
+	font-size: 12px;
+	margin: 10px 15px 0px 10px;
+}
+#document {
+	float: right;
+	padding: 10px;
+	background-color: #CCC;
+	margin: 0px 15px 15px 0px;
+}
+#document > * {
+	margin: 0px 0px 5px 0px;
+}
+#document label {
+	display: block;
+}
+#document .title {
+	font-size: 18px;
+}
+#product-table {
+	clear: both;
+	margin: 15px;
+}
+#product-table div.bullet {
+	width: 10px;
+}
+#product-table div.item {
+	width: 170px;
+}
+#product-table div.description {
+	width: 320px;
+}
+#product-table div.ordered {
+	width: 50px;
+}
+#product-table div.balance {
+	width: 50px;
+	display: none;
+}
+#product-table div.quantity {
+	width: 50px;
+}
+#product-table div.price {
+	width: 80px;
+}
+#product-table div.total {
+	width: 80px;
+}
+#product-table li.body div.total {
+	text-align: right;
+}
+#product-table div.actions {
+	width: 10px;
+}
+div#bottom-bar {
+	clear: both;
+	float: left;
+	margin: 0px 0px 0px 15px;
+	padding: 5px 10px;
+	width: 908px;
+	font-weight: bold;
+	border: 1px solid #CCC;
+}
+div#bottom-bar > * {
+	display: inline-block;
+}
+div#total {
+	float: right;
+	font-weight: bold;
+}
+div#amount {
+	float: right;
+	display: inline-block;
+	font-weight: bold;
+	background-color: #fff;
+	width: 110px;
+	margin-right: 25px;
+	text-align: right;
+}
+div#more-dropdown ul {
+	width: 80px;
+}
+#returns-title {
+	margin: 30px 30px 0px 15px;
+	font-size: large;
+	float: right;
+}
+div.return.id {
+	float: right;
+	clear: right;
+	margin: 15px 30px 0px 15px;
+	font-size: larger;
+}
+ul.return.table {
+	float: right;
+	margin: 0px 15px 0px 15px;
+}
+ul.return.table li.body {
+	background-color: #ffb200;
+}
+ul.return.table div.bullet {
+	width: 10px;
+}
+ul.return.table div.item {
+	width: 170px;
+}
+ul.return.table div.description {
+	width: 320px;
+}
+ul.return.table div.ordered {
+	width: 50px;
+}
+ul.return.table div.balance {
+	width: 50px;
+	display: none;
+}
+ul.return.table div.quantity {
+	width: 50px;
+}
+ul.return.table div.price {
+	width: 80px;
+}
+ul.return.table div.total {
+	width: 80px;
+}
+ul.return.table li.body div.total {
+	text-align: right;
+}
+ul.return.table div.actions {
+	width: 10px;
+}
+ul.return.table div.grand.total {
+	text-align: right;
+	width: 838px;
+	font-weight: bold;
+}
+.canceled {
+	opacity:0.25;
+}
+</style>
+<script>
+total = function() {
+	$('#product-table li.body').each(function() {
+		var product = 1;
+		$(this).find('input.price, input.quantity').each(function() {
+			product = product * $(this).val();
+		});
+		$(this).children('.total').html(product.toFixed(2));
+	});
+};
+
+$(document).ready(function(){
+	$("a.return.x_alt").click(function() {
+		var yes = confirm("Are you sure you want to cancel this return?");
+		if (yes) {
+		} else {
+			return false;
+		}
+	});
+});
+</script>
+{% endblock head %}
+
+{% block main-title %}
+{{title|upper}}
+{% endblock main-title %}
+{% block sub-title %}
+No. {{transfer.reference}}
+{% endblock sub-title %}
+
+{% block context-menu %}
+<label>Order No. </label>
+<span><a href="{{ transfer.order.get_view_url }}">{{transfer.order.reference}}</a></span>
+<label>Bill No. </label>
+<span><a href="{{ transfer.bill.get_view_url }}">{{transfer.bill.reference}}</a> - {{transfer.bill.status}}</span>
+<label>Status: </label>
+<span>{{transfer.status}}</span>
+{% if transfer.pending %}
+<div class='button'><a href="{% url 'trade.views.ordertransfer.forward' transfer.id %}"><span class='iconic arrow_up'></span> Release</a></div>
+{% endif %}
+{% if not transfer.canceled %}
+<div id='more-dropdown' class='dropdown'>
+    <div class='button'>
+    	<a>
+	    	<span class='icon iconic dropdown'></span>
+	    </a> 
+    </div>
+    <ul class='menu right'>
+    	{% if transfer.returnable %}
+		<li><div class='button'><a href="{% url 'trade.views.orderreturn.new' transfer.id %}"><span class='iconic undo'></span> Return</a></div></li>
+		{% endif %}
+    	{% if transfer.editable %}
+		<li><div class='button'><a href="{{ transfer.get_edit_url }}"><span class='iconic pen'></span> Edit</a></div></li>
+		{% endif %}
+		{% if transfer.cancelable %}
+		<li><div class='button'><a href="{{ transfer.get_cancel_url }}"><span class='iconic pen'></span> Cancel</a></div></li>
+		{% endif %}
+	</ul>
+</div>
+{% endif %} 
+{% endblock context-menu %}
+
+{% block content %}
+<form id="form" name="form" method="post" action="">
+	<input type='hidden' name='type' value='{{form.type.value}}'>
+	{% include "addressbook/contact_card.html" %}
+    <div id='location'>
+    	<div class="name">LOCATION: <br> <a href="{{ location.get_view_url }}">{{location.name}}</a></div>
+    </div>
+    {% with document=transfer %} 
+	{% include 'common/document_view.html' %}
+	{% endwith %}
+    <ul id='product-table' class='table'>
+        <li class='header'>
+            <div class='bullet'></div>
+            <div class='item'>Item</div>
+            <div class='description'>Description</div>
+            <div class='ordered'>Order</div>
+            <div class='balance'>Balance</div>
+            <div class='quantity'>Qty</div>
+            <div class='price'>Price</div>
+            <div class='total'>Total</div>
+            <div class='actions'></div>
+        </li>
+{% for item in transfer.items.all %}
+        <li class='body'>
+        	<input type='hidden' name='item-id' value='{{ item.id }}'/>
+            <div class='bullet'><span class='iconic arrow_right'></span></div>
+            <div class='item'><a href="{{ item.order.info.get_view_url }}">{{ item.order.info.name }}</a></div>
+            <div class='description'>{{ item.order.info.summary }}</div>
+            <div class='ordered'>{{ item.order.quantity }}</div>
+            <div class='balance'>{{ item.order.balance }}</div>
+            <div class='quantity'><input type='text' name='item-quantity' class='quantity' readonly='readonly' required='required' value='{{ item.quantity }}'/></div>
+            <div class='price'><input type='text' class='price' readonly='readonly' value='{{ item.order.price|default:0|floatformat:2|intcomma }}'/></div>
+            <div class='total'>{{ item.value|default:0|floatformat:2|intcomma  }}</div>
+            <div class='actions'></div>
+        </li>
+{% endfor %}
+    </ul>
+    <div id='bottom-bar'>
+    	<div id='amount'/>{{transfer.value|default:0|floatformat:2|intcomma}}</div>
+	    <div id='total'>GRAND TOTAL:</div>
+	</div>
+	
+	<div id='returns-title'><span class='iconic undo'></span> RETURNS</div>
+{% for order_return in transfer.returns.all %}
+	{% if order_return.canceled %}
+	<div class='return id canceled'>
+		Ref. No. {{order_return.code|default:"(None)"}} - {{order_return.date|date:"m/d/Y"}} - CANCELED
+	</div>
+    <ul class='return table canceled'>
+	{% else %}
+	<div class='return id'>
+		Ref. No. {{order_return.code|default:"(None)"}} - {{order_return.date|date:"m/d/Y"}}
+		&nbsp;
+		<a class='return iconic x_alt' href="{% url 'trade.views.orderreturn.cancel' order_return.id %}" title='Cancel'></a>
+	</div>
+    <ul class='return table'>
+	{% endif %}	
+        <li class='header'>
+            <div class='bullet'></div>
+            <div class='item'>Item</div>
+            <div class='description'>Description</div>
+            <div class='quantity'>Qty</div>
+            <div class='price'>Price</div>
+            <div class='total'>Total</div>
+            <div class='actions'></div>
+        </li>
+	{% for item in order_return.items.all %}
+        <li class='body'>
+            <div class='bullet'><span class='iconic arrow_left'></span></div>
+            <div class='item'><a href="{{ item.transfer.order.info.get_view_url }}">{{ item.transfer.order.info.name }}</a></div>
+            <div class='description'>{{ item.transfer.order.info.summary }}</div>
+            <div class='quantity'>{{ item.quantity }}</div>
+            <div class='price'>{{ item.transfer.order.price|default:0|floatformat:2|intcomma }}</div>
+            <div class='total'>{{ item.value|default:0|floatformat:2|intcomma }}</div>
+            <div class='actions'></div>
+        </li>
+	{% endfor %}
+		<li class='footer'>
+			<div class="grand total">GRAND TOTAL: &nbsp; {{order_return.value}}</div>
+		</li>
+    </ul>
+{% endfor %}
+	<div style='clear: both; height: 15px;'></div>
+</form>
+{% endblock content %}

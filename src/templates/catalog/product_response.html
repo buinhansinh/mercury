@@ -1,0 +1,10 @@
+<div class='title'>PRODUCT FORM</div>
+<div class='content'>
+	<a href="{{product.get_view_url}}">{{product.name}}</a> Saved.
+</div>
+<div class='buttons'>
+	<div class='button close'><a href="#">Close</a></div>
+</div>
+{% if refresh %}
+<input type='hidden' class='refresh'/>
+{% endif %}

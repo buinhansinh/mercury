@@ -1,0 +1,15 @@
+{% load url from future %}
+<div class='title'>
+	<a href='#payable-overdue' class='toggler'>OVERDUE PAYABLES</a>
+</div>
+<ul id='payable-overdue' class='table bill'>
+	<li class='header'>
+		<div class='id'>No.</div>
+		<div class='code'>Code</div>
+		<div class='customer'>Customer</div>
+		<div class='supplier'>Supplier</div>
+		<div class='date'>Date</div>
+		<div class='amount'>Amount</div>
+	</li>
+	<a class='autoloader' href="{% url 'task.views.billing.bills' %}?customer_id={{ request.user.account.company.id }}&status=OVERDUE">Loading...</a>
+</ul>

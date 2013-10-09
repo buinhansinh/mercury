@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+
+{% block head %}
+<style>
+#inventory-locations div.name {
+	width: 100px;
+	text-align: left;
+}
+#inventory-locations div.address {
+	width: 200px;
+	text-align: left;
+}
+#inventory-locations div.adjust {
+	width: 90px;
+}
+#overlay {
+	display: none;
+	background-color: #FFF;
+}
+#physical-form div.apply {
+	display: block;
+	width: 52px;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 15px;
+}
+#location-form textarea {
+	height: 50px;
+}
+
+</style>
+<script>
+$(function() {
+	$("#overlay").on("click", "#transfer-locations-next", function() {
+		var origin_id = $('#select-sender').val();
+		var destination_id = $('#select-recipient').val();
+		if (origin_id == destination_id) {
+			alert('The transfer source and destination cannot be the same!');
+			return;
+		}
+		window.location.href = "{% url 'inventory.views.stocktransfer.new' %}?" + $.param({
+			origin_id: origin_id,
+			destination_id: destination_id,
+		});
+	});
+});
+</script>
+{% endblock head %}
+
+{% block main-title %}
+INVENTORY TASKS
+{% endblock main-title %}
+
+{% block context-menu %}
+<div class='button'><a href="{% url 'inventory.views.location.new' %}" class='trigger'><span class='iconic plus'></span> Location</a></div>
+<div id='transfer-button' class='button'><a href="{% url 'inventory.views.stock.transfer' %}" class='trigger'><span class='iconic transfer'></span> Transfer</a></div>
+<div class='button'><a class='collapse iconic minus'></a></div>
+<div class='button'><a class='expand iconic plus'></a></div>
+{% endblock context-menu %}
+
+{% block stylesheets %}
+{{ block.super }}
+<link rel="stylesheet" type="text/css" href="{% get_static_prefix %}css/task.css"/>
+{% endblock stylesheets %}
+
+{% block content %}
+<div id='left' class='column'>
+	{% include 'task/inventory/negative.html' %}
+	{% include 'task/inventory/for_physical.html' %}
+	{% include 'task/inventory/low.html' %}
+</div>
+<div id='right' class='column'>
+	<div class='title'>
+		<a id='location-toggler' href='#inventory-locations' class='toggler'>LOCATIONS</a>
+	</div>
+	<ul id='inventory-locations' class='table'>
+		<li class='header'>
+			<div class='name'>Name</div>
+			<div class='address'>Address</div>
+			<div class='adjust'>Action</div>
+		</li>
+		{% for l in locations %}
+		<li class='body'>
+			<div class='name'><a href="{{l.get_view_url}}">{{l.name}}</a></div>
+			<div class='address'>{{l.address}}</div>
+			<div class='adjust'><a href="{% url 'inventory.views.adjustment.new' l.id %}">Adjust</a></div>
+		</li>
+		{% endfor %}
+	</ul>
+	{% include 'task/sales/for_assembly.html' %}	
+	{% include 'task/purchasing/incoming.html' %}
+</div>
+<div class='clear' style='height: 15px'></div>
+{% endblock content %}

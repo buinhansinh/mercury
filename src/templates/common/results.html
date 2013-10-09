@@ -1,0 +1,15 @@
+{% for result in results %}
+<li class='body'>
+{% block columns %}
+{% endblock columns%}
+</li>
+{% empty %}
+<li class='body empty'>No Results</li>
+{% endfor %}
+{% if more %}
+<li class='body more'>
+	<a class='clickloader' href="{{request.path}}?{{params}}">
+	Show More
+	</a>
+</li>
+{% endif %}

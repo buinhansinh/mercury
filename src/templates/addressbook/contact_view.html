@@ -1,0 +1,433 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+
+{% block head %}
+<style>
+#contact-info {
+	border-bottom: 1px solid #CCC;
+	color: #FFF;
+	background-color: #666;
+}
+#contact-section {
+	margin: 15px;
+	width: 300px;
+	float: left;
+}
+#history-section {
+	margin: 15px;
+	width: 600px;
+	float: right;
+}
+#account-section {
+	clear: left;
+	margin: 15px;
+	width: 300px;
+	float: left;
+}
+input.date {
+	width: 100px;
+	border: 1px solid #999;
+}
+div.detail-category {
+	margin: 15px 0 0 5px;
+	min-height: 1em;
+}
+div.detail-category div.title {
+	float: left;
+	line-height: 1em;
+}
+div.detail-category div.title span.iconic{
+	width: 25px;
+	text-align: center;
+}
+div.detail-category  div.detail-value {
+	margin-left: 10em;
+	margin-top: 1em;
+}
+#edit-button {
+	float: right;
+	margin-right: 15px;
+	margin-top: 7px;
+}
+div.section {
+	padding-bottom: 1.5em;
+}
+div.section > div.title > span {
+	display: inline-block;
+	color: #0;
+	line-height: 2em;
+	padding: 0px 0.5em;
+	font-weight: bold;
+	font-size: 16px;
+}
+div.section > div.title {
+	border-bottom: 2px solid #999;
+}
+div.pane > div.toolbar {
+	padding: 3px;
+}
+li.empty {
+	width: 598px;
+}
+li.more {
+	width: 598px;
+}
+.table div.id {
+	width: 80px;
+}
+.table div.code {
+	width: 100px;
+}
+.table div.date {
+	width: 100px;
+}
+.table div.amount {
+	width: 120px;
+}
+.table div.status {
+	width: 100px;
+}
+.table div.label {
+	width: 100px;
+}
+#account-section div.pane {
+	padding: 15px;
+}
+div.pane span.label {
+	display: inline-block;
+	width: 125px;
+	float: left;
+	clear: left;
+	font-weight: bold;
+}
+div.pane span.value {
+	float: left;
+	display: block;
+	margin-bottom: 3px;
+}
+div.pane div.spacer {
+	clear: both;
+	height: 15px;
+}
+div.pane a.edit-link {
+	float: right;
+}
+div.empty {
+	width: 100%;
+	border: 1px solid #ccc;
+	color: #ccc;
+	line-height: 2.5em;
+	text-align: center;
+}
+a.bill-payment-link {
+	float: right;
+	line-height: 1.7em;
+	margin-right: 5px;
+}
+</style>
+<script>
+$(document).ready(function(){
+	$("input.date").datepicker({
+		format: "mm/dd/yyyy",
+		buttonText: "...",
+		buttonImage: '/static/icons/iconic/black/calendar_8x8.png',
+		showOn: "button",
+	});
+
+	$("#history-tabs").tabs("#history-section > div.pane", {history: true});
+	$("#account-tabs").tabs("#account-section > div.pane");
+
+	var contact_id = $('#contact-id').val();
+	
+	// Search Sales
+	var searchSales = function() {
+		var terms = $('#sales-search-terms').val();
+		var status = $('#sales-status').val();
+		var date = $('#sales-date').val();
+		$.get("{% url 'addressbook.views.contact.orders' %}",
+			{ terms: terms, status: status, date: date, customer_id: contact_id }, 
+			function(data) {
+				$('#sales-table li.body').remove();
+				$('#sales-table').append(data);
+			});
+	}
+	$('#sales-search').keyup(function(e) {
+		if(e.which == KEYCODES.ENTER) {
+			$('#sales-search-terms').val($(this).val());
+			searchSales();
+		}
+	});
+	$('#sales-status').change(searchSales);
+	$('#sales-date').change(searchSales);
+	searchSales();
+	
+	// Search Purchases
+	var searchPurchases = function() {
+		var terms = $('#purchase-search-terms').val();
+		var status = $('#purchase-status').val();
+		var date = $('#purchase-date').val();
+		$.get("{% url 'addressbook.views.contact.orders' %}",
+			{ terms: terms, status: status, date: date, supplier_id: contact_id }, 
+			function(data) {
+				$('#purchase-table li.body').remove();
+				$('#purchase-table').append(data);
+			});
+	}
+	$('#purchase-search').keyup(function(e) {
+		if(e.which == KEYCODES.ENTER) {
+			$('#purchase-search-terms').val($(this).val());
+			searchPurchases();
+		}
+	});
+	$('#purchase-status').change(searchPurchases);
+	$('#purchase-date').change(searchPurchases);
+	searchPurchases();
+	
+	// Search Receivables
+	var searchReceivables = function() {
+		var status = $('#receivable-status').val();
+		var date = $('#receivable-date').val();
+		$.get("{% url 'addressbook.views.contact.bills' %}",
+			{ status: status, date: date, customer_id: contact_id }, 
+			function(data) {
+				$('#receivable-table li.body').remove();
+				$('#receivable-table').append(data);
+			});		
+	}
+	$('#receivable-status').change(searchReceivables);
+	$('#receivable-date').change(searchReceivables);
+	searchReceivables();
+	
+	// Search Payables
+	var searchPayables = function() {
+		var status = $('#payable-status').val();
+		var date = $('#payable-date').val();
+		$.get("{% url 'addressbook.views.contact.bills' %}",
+			{ status: status, date: date, supplier_id: contact_id }, 
+			function(data) {
+				$('#payable-table li.body').remove();
+				$('#payable-table').append(data);
+			});	
+	}
+	$('#payable-status').change(searchPayables);
+	$('#payable-date').change(searchPayables);	
+	searchPayables();
+
+	// Search Collections
+	var searchCollections = function() {
+		var status = $('#collection-status').val();
+		var date = $('#collection-date').val();
+		$.get("{% url 'addressbook.views.contact.payments' %}",
+			{ status: status, date: date, customer_id: contact_id }, 
+			function(data) {
+				$('#collection-table li.body').remove();
+				$('#collection-table').append(data);
+			});	
+	}
+	$('#collection-status').change(searchCollections);
+	$('#collection-date').change(searchCollections);	
+	searchCollections();
+
+	// Search Collections
+	var searchDisbursements = function() {
+		var status = $('#disbursement-status').val();
+		var date = $('#disbursement-date').val();
+		$.get("{% url 'addressbook.views.contact.payments' %}",
+			{ status: status, date: date, supplier_id: contact_id }, 
+			function(data) {
+				$('#disbursement-table li.body').remove();
+				$('#disbursement-table').append(data);
+			});	
+	}
+	$('#disbursement-status').change(searchDisbursements);
+	$('#disbursement-date').change(searchDisbursements);
+	searchDisbursements();
+});
+</script>
+{% endblock head %}
+
+{% block main-title %}
+	<span class="iconic user"></span> 
+	{{ contact.name }} 
+{% endblock main-title %}
+{% block sub-title %}{% endblock sub-title %}
+{% block context-menu %}
+{% if not request.user.account.company == contact %}
+<div class="button"><a href="{% url 'addressbook.views.contact.transaction_search' contact.id %}"><span class="iconic magnifying_glass"> </span><span> Transactions</span></a></div>
+<div class='dropdown'>
+    <div class='button'> <a><span class='iconic dropdown'></span></a></div>
+	<ul class='menu right'>
+		<li class='button'><a href="{% url 'trade.views.order.sale' contact.id %}"><span class='iconic box'></span> Sale</a></li>
+		<li class='button'><a href="{% url 'trade.views.order.purchase' contact.id %}"><span class='iconic box'></span> Purchase</a></li>
+		<li class='button'><a href="{% url 'accounting.views.payment.collect' contact.id %}"><span class=''>$</span> Collection</a></li>
+		<li class='button'><a href="{% url 'accounting.views.payment.disburse' contact.id %}"><span class=''>$</span> Disbursement</a></li>
+		<li class='button'><a href="{% url 'accounting.views.bill.receivable' contact.id %}"><span class='iconic book'></span> Legacy Receivable</a></li>
+		<li class='button'><a href="{% url 'accounting.views.bill.payable' contact.id %}"><span class='iconic book'></span> Legacy Payable</a></li>
+		<li class='button'><a href="{% url 'accounting.views.expense.new'%}?contact_id={{contact.id}}"><span class=''>$</span> Expense</a></li>
+		<li class='button'><a href="{% url 'addressbook.views.contact.merge' contact.id%}"><span class='iconic loop_alt1'></span> Merge</a></li>
+	</ul>
+</div>
+{% endif %}
+<!--
+<div id='more-dropdown' class='dropdown'>
+    <div class='button'><a><span class='iconic dropdown'></span> </a></div>
+	<ul class='menu right'>
+		<li class='right'>
+			<div class='button'><a class='archive' href='{{ contact.get_archive_url }}'><span class='iconic trash_stroke'></span> Archive</a></div>
+		</li>
+	</ul>
+</div>
+-->	
+{% endblock context-menu %}
+
+{% block content %}
+<div id='contact-section' class='section'>
+	<input type='hidden' id='contact-id' value='{{ contact.id }}'/>
+    <div class="title">
+        <span>Contact Information</span>
+    	<a id='edit-button' href="{% url 'addressbook.views.contact.edit' contact.id %}"><span class="iconic pen"></span> Edit</a>
+    </div>
+    <div class='content'>
+		<div class='detail-category'>
+			<div class='title'><span class="iconic iphone"></span> Phone No(s):</div>
+			{% for d in contact.numbers %}
+			<div class='detail-value'>{{ d.value }}</div>
+			{% endfor %}
+		</div>
+		<div class='detail-category'>
+			<div class='title'><span class="iconic home"></span> Address(es):</div> 
+			{% for d in contact.addresses %}
+			<div class='detail-value'>{{ d.value }}</div>
+			{% endfor %}
+		</div>
+		<div class='detail-category'>
+			<div class='title'><span class="iconic mail"></span> Emails:</div> 
+			{% for d in contact.emails %}
+			<div class='detail-value'>{{ d.value }}</div>
+			{% endfor %}
+		</div>
+		<div class='detail-category'>
+			<div class='title'><span class="iconic link"></span> Links:</div>
+			{% for d in contact.links %}
+			<div class='detail-value'>{{ d.value }}</div>
+			{% endfor %}
+		</div>
+		<div class='detail-category'>
+			<div class='title'><span class="iconic tag_stroke"></span> Others:</div>
+			{% for d in contact.others %}
+			<div class='detail-value'>{{ d.value }}</div>
+			{% endfor %}
+    	</div>
+    	<div class="clear"></div>
+    </div>
+</div>
+<div id='history-section' class='section'>
+	{% if supplier or customer %}
+    <ul id='history-tabs' class='tabs'>
+    	{% if customer %}
+    	<li><a href="#sales">Sales</a></li>
+    	{% endif %}
+    	{% if supplier %}
+    	<li><a href="#purchases">Purchases</a></li>
+    	{% endif %}
+    	{% if customer %}
+    	<li><a href="#receivables">Receivables</a></li>
+    	{% endif %}
+    	{% if supplier %}
+    	<li><a href="#payables">Payables</a></li>
+    	{% endif %}
+    	{% if customer %}
+    	<li><a href="#collections">Collections</a></li>
+    	{% endif %}
+    	{% if supplier %}
+    	<li><a href="#disbursements">Disbursements</a></li>
+    	{% endif %}
+    	<li><a href="#expenses">Expenses</a></li>
+    </ul>
+    <div class='clear'></div>
+    {% if customer %}
+	<div class='pane'>
+	{% include 'addressbook/contact_sales.html' %}
+	</div>
+	{% endif %}
+	{% if supplier %}
+	<div class='pane'>
+	{% include 'addressbook/contact_purchases.html' %}
+	</div>	
+	{% endif %}
+	{% if customer %}
+	<div class='pane'>
+	{% include 'addressbook/contact_receivables.html' %}
+    </div>
+	{% endif %}
+	{% if supplier %}
+	<div class='pane'>
+	{% include 'addressbook/contact_payables.html' %}
+    </div>    
+	{% endif %}
+	{% if customer %}
+	<div class='pane'>
+	{% include 'addressbook/contact_collections.html' %}
+	</div>	
+	{% endif %}
+	{% if supplier %}
+	<div class='pane'>
+	{% include 'addressbook/contact_disbursements.html' %}
+	</div>
+	{% endif %}
+	<div class='pane'>
+		<ul id='sales-table' class='table order'>
+			<li class='header'>
+				<div class='id'>No.</div>
+				<div class='code'>Doc No.</div>
+				<div class='label'>Label</div>		
+				<div class='date'>Date</div>
+				<div class='amount'>Amount</div>
+			</li>		
+			<a class='autoloader' href="{% url 'addressbook.views.contact.expenses'%}?contact_id={{contact.id}}">Loading...</a>
+		</ul>
+	</div>
+	{% else %}
+	<div class="empty">
+		No records yet.
+	</div>
+	{% endif %}
+</div>
+<div id='account-section' class='section'>
+	{% if customer or supplier %}
+    <ul id='account-tabs' class='tabs'>
+    	{% if customer %}
+    	<li><a href="#">Customer Account</a></li>
+    	{% endif %}
+    	{% if supplier %}
+    	<li><a href="#">Supplier Account</a></li>
+    	{% endif %}
+    </ul>
+    <div class='clear'></div>
+    {% if customer %}
+    <div class='pane'>
+    	{% with account=customer %}
+		{% include 'company/trade_pane.html' %}
+    	{% endwith %}
+	</div>
+	{% endif %}
+	{% if supplier %}
+    <div class='pane'>
+    	{% with account=supplier %}
+		{% include 'company/trade_pane.html' %}
+    	{% endwith %}
+	</div>    
+	{% endif %}
+	{% else %}
+	<div class="empty">
+		No accounts yet.
+	</div>
+	{% endif %}
+</div>
+<div class="clear"></div>
+<script>
+
+</script>
+{% endblock content %}

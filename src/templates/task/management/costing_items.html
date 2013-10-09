@@ -1,0 +1,10 @@
+{% extends 'common/results.html' %}
+{% load url from future %}
+{% load humanize %}
+{% block columns %}
+<div class='name'>
+	<a class='trigger' href="{% url 'company.views.item.cost' result.id %}" title="{{ result.item.name }}">
+	{{result.item.name}} {{result.item.summary}}
+	</a>
+</div>
+{% endblock columns %}    

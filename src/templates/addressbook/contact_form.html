@@ -1,0 +1,330 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+
+{% block head %}
+<style>
+#title .dropdown {
+	display: none;
+}
+#photo-section {
+	position: absolute;
+	top: 0px;
+	bottom: 0px;
+	width: 192px;
+	padding: 30px;
+	background-color: #666;
+	color: #FFF;
+}
+#photo {
+	width: 192px;
+	height: 192px;
+	text-align: center;
+	line-height: 192px;
+}
+#thumbnails {
+	height: 32px;
+	text-align: center;
+	line-height: 32px;
+}
+#photo-section > * {
+	margin-bottom: 10px;
+	width: 192px;
+}
+#photo-section .button {
+}
+hr {
+	clear: left;
+}
+#profile {
+	padding-top: 1px;
+	margin-left: 267px;
+	width: 678px;
+	min-height: 400px;
+}
+.name.field {
+	font-size: 18px;
+	margin-top: 15px;
+}
+#details {
+	clear: both;
+	margin: 30px auto;
+}
+#detail-dropdown {
+	float: right;
+}
+#detail-dropdown {
+	cursor: pointer;
+}
+#details .add.button {
+	float: right;
+	clear: both;
+}
+#details > .title {
+	float: left;
+	font-size: 18px;
+	margin: 5px;
+}
+#details hr {
+	color: #CCC;
+}
+#details .category {
+	clear: both;
+	margin: 10px 15px; 
+	margin-bottom: 15px;
+}
+.detail {
+	margin: 5px 0px;
+}
+.detail span.iconic {
+	width: 20px;
+}
+input.label {
+	width: 100px;
+}
+input.value {
+	width: 250px;
+}
+#addresses textarea {
+	width: 248px;
+}
+.detail-template {
+	display: none;
+}
+</style>
+<script>
+$(document).ready(function(){
+	$("#form").validation([{
+		selector: '#input-name',
+		validators: ['required']
+	}]);
+		
+	$('#submit').click(function(){
+		$('#form').submit();
+	});
+	
+	$('#detail-dropdown').on('click', 'li', function(e) {
+		var type = parseInt($(this).attr('class'));
+		var template = null; 
+		switch(type) {
+			case {{types.NUMBER}}:
+				template = $('#number-template').html();
+				$('div#numbers').append(template);
+				break;
+			case {{types.ADDRESS}}:
+				template = $('#address-template').html();
+				$('div#addresses').append(template);
+				break;
+			case {{types.EMAIL}}:
+				template = $('#email-template').html();
+				$('div#emails').append(template);
+				break;
+			case {{types.LINK}}:
+				template = $('#link-template').html();
+				$('div#links').append(template);
+				break;
+			case {{types.OTHER}}:
+				template = $('#other-template').html();
+				$('div#others').append(template);
+				break;
+		}
+	});
+	
+	$('div#details').on('click', 'span.iconic.minus_alt', function(e) {
+		$(this).siblings("input.delete").val('true');
+		$(this).closest("div.detail").hide();
+	});
+});
+</script>
+{% endblock head %}
+
+{% block context-menu %}
+<div id='submit' class='button'><a><span class="iconic check"></span> Save</a></div>
+{% endblock context-menu %}
+
+{% block main-title %}
+	<span class="iconic user"></span>
+	{{form.instance.name|default:"New Contact"}}
+{% endblock main-title %} 
+{% block sub-title %}{% endblock sub-title %} 
+
+{% block content %}
+<div id="photo-section">
+</div>
+<form id='form' method='POST'>
+<div id="profile">
+    <div class="name field">
+        <input id="input-name" name='name' type="text" value='{{ form.name.value|default:"" }}' required='required' placeholder="Contact Name"/>
+    </div>
+	<div id="details">
+	    <div id='detail-dropdown' class='dropdown'>
+	        <div class='button'><a>ADD <span class='iconic plus'></span></a></div>
+	        <ul class='menu right'>
+	            <li class='{{types.NUMBER}}'><div class='button'><a><span class='iconic iphone'></span> Phone</a></div></li>
+	            <li class='{{types.ADDRESS}}'><div class='button'><a><span class='iconic home'></span> Address</a></div></li>
+	            <li class='{{types.EMAIL}}'><div class='button'><a><span class='iconic mail'></span> Email</a></div></li>
+	            <li class='{{types.LINK}}'><div class='button'><a><span class='iconic link'></span> Link</a></div></li>
+	            <li class='{{types.OTHER}}'><div class='button'><a><span class='iconic tag_stroke'></span> Other</a></div></li>
+	        </ul>
+	        <div class='clear'></div>
+	    </div>
+	    <div class='title'>Contact Details</div>
+	    <hr />
+<!-- 
+
+Category Phones 
+
+-->
+		<div id='numbers' class='category'>
+			{% for d in contact.numbers %}    
+		    <div class="detail">
+		    	<span class='iconic iphone'></span>
+				{% include 'addressbook/contact_detail.html' %}
+		        <span class='iconic minus_alt'></span>
+		    </div>
+			{% endfor %}
+		    <div class="detail">
+		    	<span class='iconic iphone'></span>
+				{% with types.NUMBER as type %}
+				{% include 'addressbook/contact_detail_empty.html' %}
+				{% endwith %}
+		        <span class='iconic minus_alt'></span>
+		    </div>
+		</div>
+<!-- 
+
+Category Address 
+
+-->	    
+	    <div id='addresses' class='category'>
+			{% for d in contact.addresses %}
+	        <div class="detail">
+	        	<span class='iconic home'></span>
+				{% include 'addressbook/contact_detail.html' %}
+	            <span class='iconic minus_alt'></span>
+	        </div>
+			{% endfor %}
+	        <div class="detail">
+	        	<span class='iconic home'></span>
+				{% with types.ADDRESS as type %}
+				{% include 'addressbook/contact_detail_empty.html' %}
+				{% endwith %}
+	            <span class='iconic minus_alt'></span>
+	        </div>
+	    </div>
+<!-- 
+
+Category Emails 
+
+-->    
+	    <div id='emails' class='category'>
+			{% for d in contact.emails %}
+	        <div class="detail">
+	        	<span class='iconic mail'></span>
+				{% include 'addressbook/contact_detail.html' %}
+	            <span class='iconic minus_alt'></span>
+	        </div>
+			{% endfor %}
+	        <div class="detail">
+				<span class='iconic mail'></span>
+				{% with types.EMAIL as type %}
+				{% include 'addressbook/contact_detail_empty.html' %}
+				{% endwith %}
+	            <span class='iconic minus_alt'></span>
+	        </div>
+	    </div>
+<!-- 
+
+Category Links 
+
+-->
+	    <div id='links' class='category'>
+			{% for d in contact.links %}
+	        <div class="detail">
+	        	<span class='iconic link'></span>
+				{% include 'addressbook/contact_detail.html' %}
+	            <span class='iconic minus_alt'></span>
+	        </div>
+			{% endfor %}
+	        <div class="detail">
+	        	<span class='iconic link'></span>
+				{% with types.LINK as type %}
+				{% include 'addressbook/contact_detail_empty.html' %}
+				{% endwith %}
+	            <span class='iconic minus_alt'></span>
+	        </div>
+	    </div>
+<!-- 
+
+Category Other 
+
+-->
+	    <div id='others' class='category'>
+			{% for d in contact.other_details %}    
+	        <div class="detail">
+	         	<span class='iconic tag_stroke'></span>
+				{% include 'addressbook/contact_detail.html' %}
+	            <span class='iconic minus_alt'></span>
+	        </div>
+			{% endfor %}
+	        <div class="detail">
+ 				<span class='iconic tag_stroke'></span>	        
+				{% with types.OTHER as type %}
+				{% include 'addressbook/contact_detail_empty.html' %}
+				{% endwith %}
+	            <span class='iconic minus_alt'></span>
+	        </div>
+	    </div>
+	</div>
+</div>
+</form>
+
+<div style='height:30px'></div>
+
+<div id='number-template' class='detail-template'>
+    <div class="detail">
+		<span class='iconic iphone'></span>	        
+		{% with type=types.NUMBER %}
+		{% include 'addressbook/contact_detail_empty.html' %}
+		{% endwith %}
+        <span class='iconic minus_alt'></span>
+    </div>	
+</div>
+<div id='address-template' class='detail-template'>
+    <div class="detail">
+		<span class='iconic home'></span>	        
+		{% with type=types.ADDRESS %}
+		{% include 'addressbook/contact_detail_empty.html' %}
+		{% endwith %}
+        <span class='iconic minus_alt'></span>
+    </div>	
+</div>
+<div id='email-template' class='detail-template'>
+    <div class="detail">
+		<span class='iconic mail'></span>	        
+		{% with type=types.EMAIL %}
+		{% include 'addressbook/contact_detail_empty.html' %}
+		{% endwith %}
+        <span class='iconic minus_alt'></span>
+    </div>	
+</div>
+<div id='link-template' class='detail-template'>
+    <div class="detail">
+		<span class='iconic link'></span>	        
+		{% with type=types.LINK %}
+		{% include 'addressbook/contact_detail_empty.html' %}
+		{% endwith %}
+        <span class='iconic minus_alt'></span>
+    </div>	
+</div>
+<div id='other-template' class='detail-template'>
+    <div class="detail">
+		<span class='iconic tag_stroke'></span>	        
+		{% with type=types.OTHER %}
+		{% include 'addressbook/contact_detail_empty.html' %}
+		{% endwith %}
+        <span class='iconic minus_alt'></span>
+    </div>	
+</div>
+{% endblock content %}

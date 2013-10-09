@@ -1,0 +1,13 @@
+{% load url from future %}
+<div class='title'>
+	<a href='#sales-release' class='toggler'>ORDERS FOR RELEASE</a>
+</div>
+<ul id='sales-release' class='table order sale'>
+	<li class='header'>
+		<div class='id'>No.</div>
+		<div class='code'>Doc No.</div>
+		<div class='customer'>Customer</div>
+		<div class='date'>Date</div>
+	</li>		
+	<a class='autoloader' href="{% url 'trade.views.order.search' %}?status=OPEN&supplier_id={{request.user.account.company.id}}">Loading...</a>
+</ul>

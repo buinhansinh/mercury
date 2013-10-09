@@ -1,0 +1,11 @@
+<div id='document' class=''>
+    <div id='document-title'>Document</div>
+    <div>
+        <label for="document-date">Date</label>
+        <input class="date" name="date" id="document-date" value='{{form.date.value|date:"m/d/Y"}}'/>
+    </div>
+    <div>
+        <label for="document-code">Ref. No.</label>
+        <input type="text" name="code" id="document-code" value='{{form.code.value|default:""}}'/>
+    </div>
+</div>

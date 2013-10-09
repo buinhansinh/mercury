@@ -1,0 +1,109 @@
+{% extends 'blank.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+
+{% block head %}
+<style>
+body {
+	font-size: 12pt;
+}
+body > * {
+	margin-left: 15pt;
+}
+.label {
+	font-weight: bold;
+	width: 150px;
+}
+table#document {
+	width: 300px;
+}
+
+table#items {
+	width: 600px;
+}
+table#items thead {
+	border-bottom: 1px solid #999;
+}
+table#items thead th {
+	padding: 5px;
+}
+table#items tbody td:last-child {
+	padding-bottom: 10px;
+}
+table#items tbody td {
+	padding-top: 10px;
+	padding-left: 5px;
+	padding-right: 5px;
+}
+table#items td.quantity {
+	text-align: right;
+}
+table#items tfoot {
+	border-top: 1px solid #999;
+}
+table#items tfoot td {
+}
+</style>
+{% endblock head %}
+
+{% block body %}
+<h1>{{ title }} - {{order.reference}}</h1>
+<table id='document'>
+	<tr>
+		<td class='label'>Ref. No.:</td> 
+		<td>{{ order.code }}</td>
+	</tr>
+	<tr>
+		<td class='label'>Date:</td> 
+		<td>{{ order.date|date:"F d, Y" }}</td>
+	</tr>
+</table>
+<br>
+<table>
+	<tr>
+		<td class='label'>{{ contact_label }}</td> 
+		<td>{{ contact.name }}</td>
+	</tr>
+	<tr>
+		<td class='label'>Address:</td> 
+		<td>{{ contact.addresses|first|default:"None" }}</td>	
+	</tr>
+	<tr>
+		<td class='label'>Contact Nos:</td> 
+		<td>{% for n in contact.numbers %}{{ n.value }}, {% endfor %}</td>
+</table>
+<br>
+<br>
+<table id='items'>
+	<thead>
+	<tr>
+    	<th class='name'>Item</th>
+    	<th class='description'>Description</th>
+    	<th class='quantity'>Qty</th>
+    	<th class='price'>Price</th>
+		<th class='total'>Total</th>
+	</tr>
+	</thead>
+	<tbody>
+	{% for item in items %}
+	<tr>
+    	<td class='name'>{{item.info.name}}</td>
+    	<td class='description'>{{item.info.summary}}</td>
+    	<td class='quantity'>{{item.quantity|floatformat:2}}</td>
+    	<td class='quantity'>{{item.price|floatformat:2}}</td>
+    	<td class='quantity'>{{item.value|floatformat:2}}</td>
+	</tr>
+	{% endfor %}
+	</tbody>
+	<tfoot>
+	<tr>
+		<td></td>
+		<td></td>
+		<td></td>
+		<td class='label'>Total</td>
+		<td class='quantity'>{{ order.value|floatformat:2 }}</td>
+	</tr>
+	</tfoot>
+</table>
+{% endblock body %}

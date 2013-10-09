@@ -1,0 +1,13 @@
+{% load url from future %}
+{% for a in accounts %}
+<li class='body'>
+	<div class='bullet'><span class='iconic play'></span></div>
+	<div class='name'>{{a.item.name}}</div>
+	<div class='summary'>{{a.item.summary}}</div>
+	<div class='price'>{{a.price}}</div>
+	<input type='hidden' value='{{a.id}}'/>
+	<div class='edit'>
+		<a href='#' class='edit'>Edit</a>
+	</div>
+</li>
+{% endfor %}

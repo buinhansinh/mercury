@@ -1,0 +1,390 @@
+body {
+	font-family: "Open Sans", "Helvetica Neue", "Helvetica", Arial, Verdana, sans-serif;
+}
+p {
+display: block;
+-webkit-margin-before: 1em;
+-webkit-margin-after: 1em;
+-webkit-margin-start: 0px;
+-webkit-margin-end: 0px;
+}
+.clear {
+	clear: both;
+	margin: 0;
+	padding: 0;
+	height: 0;
+}
+.center {
+	text-align: center;
+}
+.strikethrough {
+	text-decoration: line-through;
+}
+a:link {
+	color:#0000FF;
+}
+a:visited {
+	color:#0000FF;
+}
+a.iconic {
+	color: inherit;
+	text-decoration: none;
+}
+/**********************************************************************/
+/* CSS3 Styles */
+/**********************************************************************/
+.shadowed {
+	-moz-box-shadow:    2px 2px 3px 1px #CCC;
+	-webkit-box-shadow: 2px 2px 3px 1px #CCC;
+	box-shadow:         2px 2px 3px 1px #CCC;
+}
+.curved {
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+}
+.bordered {
+	border: 1px solid #CCC;
+}
+.normal {
+	background-color: #FFF;
+	color: #333;
+}
+.lightgray {
+	background-color: #CCC;
+	color: #666;
+}
+/**********************************************************************/
+/* Button Styles */
+/**********************************************************************/
+input[type="submit"] {
+	border: none;
+	padding: 0px 10px;
+	background-color: #333;	
+	color: #CCC;
+	line-height: 2em;
+}
+.button {
+	display:inline-block;
+	text-align:center;
+	font-size: normal;
+	line-height: 2em;
+	color: #CCC;
+	background-color: #333;
+	white-space: nowrap;
+}
+.button.light {
+	background-color: #CCC;	
+}
+.button .icon {
+}
+.button .text {
+	padding-left: 5px;
+	padding-right: 5px;
+}
+.button:hover {
+	cursor: pointer;
+	color: #FFF;
+}
+.button.depressed{
+	background-color: #333;
+	color: #666;
+}
+.button > * {
+}
+.button a {
+	display: block;
+	text-decoration: none;
+	color: inherit;
+	height: 100%;
+	padding: 0 10px;
+	text-align: left;
+	margin: 0px;
+}
+/**********************************************************************/
+/* Menu Styles */
+/* 
+<div id='main-menu' class='dropdown'>
+    <div class='button'> 
+    	<span class='icon iconic cd'></span> 
+    	<span class='text'>{% block main-button %} MERCURY {% endblock main-button %}</span> 
+    </div>
+    <ul class='menu'>
+        {% block main-menu %}
+        <li>Menu Item 1</li>
+        <li class='submenu'>
+            <ul>
+          <li>Sub Menu Item 1</li>
+          <li>Sub Menu Item 2</li>
+          <li>Sub Menu Item 3</li>
+            </ul>
+        </li>
+        <li>Menu Item 2</li>
+        <li>Menu Item 3</li>
+        {% endblock main-menu %}
+    </ul>
+</div>
+ */
+/**********************************************************************/
+.dropdown {
+	position: relative;
+}
+.dropdown .button {
+	margin-bottom: 0px;
+}
+ul.menu {
+	position: absolute;
+	display: none;
+	background-color: #333;
+	color: #FFF;
+	margin-top: 0;
+	padding-left: 0;
+	border-top: 1px solid #444;
+	border-left: 1px solid #444;
+	border-right: 1px solid #222;
+	border-bottom: 1px solid #222;
+	z-index: 999999;
+}
+ul.menu.right {
+	right: 0px;
+}
+ul.menu > li {
+	float: left;
+	clear: left;
+	list-style: none;
+}
+ul.menu > li.separator {
+	color: #999;
+	height: 1px;
+	width: 100px;
+}
+ul.menu > li.submenu {
+	background-color: #666;
+}
+ul.menu > li ul {
+	margin-top: 0px;
+	padding-left: 0px;
+}
+ul.menu > li li {
+	list-style: circle inside;
+	margin: 5px 5px;
+	float: left;
+}
+ul.menu a {
+	display: block;
+	text-decoration: none;
+	color: inherit;
+}
+ul.menu a:hover {
+	color: #FFF;
+}
+/**********************************************************************/
+/* Tab Styles */
+/**********************************************************************/
+ul.tabs {
+	list-style:none;
+	margin:0 !important;
+	padding:0;
+	height:30px;
+	margin-top: 15px;
+	border-bottom: 2px solid #333;
+}
+ul.tabs li {
+	float:left;
+	text-indent:0;
+	padding:0;
+	margin-left: 0px;
+	margin-right: 3px;
+	margin-bottom: 3px;
+	list-style-image:none !important;
+}
+ul.tabs a {
+	display:block;
+	line-height:30px;
+	text-decoration:none;
+	padding: 0px 10px 0px 10px;
+	margin: 0px;
+	background-color: #CCC;
+	color: #666;
+}
+ul.tabs a:active {
+	outline:none;
+}
+/* when mouse enters the tab move the background image */
+ul.tabs a:hover {
+	color: #FFF;
+}
+/* active tab uses a class name "current". its highlight is also done by moving the background image. */
+ul.tabs a.current, ul.tabs a.current:hover, ul.tabs li.current a {
+	cursor:default !important;
+	background-color: #333;
+	color: #FFF;
+}
+
+/* initially all panes are hidden */ 
+.panes .pane {
+	display:none;
+	clear: both;
+}
+div.panes > * {
+}
+/**********************************************************************/
+/* UL Table Styles */
+/**********************************************************************/
+ul.table {
+	padding: 0px;
+	margin: 0px;
+}
+ul.table li {
+	background-color: #ccc;
+	border-top: 1px solid #fff;
+	clear: both;
+	float: left;
+	list-style: none;
+}
+ul.table li > div {
+	float: left;
+	line-height: 1.75em;
+	margin: 0px;
+	padding: 3px 10px;
+	text-align:center;
+	white-space: nowrap;
+	overflow: hidden;
+}
+ul.table li.header {
+	background-color: #666;
+	color: #fff;
+	border-bottom: none;
+	padding: 2px 0px;
+}
+ul.table li.header > div {
+}
+ul.table li.footer {
+	background-color: #fff;
+	border: 1px solid #ccc;
+}
+ul.table input {
+	margin-top: 0px;
+	width: 100%;
+}
+ul.table input[type=checkbox] {
+	margin-top: 0px;
+	width: auto;
+}
+
+/**********************************************************************/
+/* Table Styles */
+/**********************************************************************/
+table.data {
+	border-left: 1px solid #999;	
+	border-right: 1px solid #999;	
+}
+table.data th {
+	background-color: #666;
+	color: #FFF;
+	border: none;
+	border: 1px solid #FFF;
+	padding: 6px;
+}
+table.data thead th {
+	padding: 5px;
+}
+table.data td {
+	color: #333;
+	background-color: #CCC;
+	border: 1px solid #FFF;
+	padding: 5px 0px;
+	vertical-align: middle;
+	text-align: center;
+}
+table.data td[align=left]{
+	text-align: left;
+	padding-left: 5px;
+}
+table.data td[align=right]{
+	text-align: right;
+	padding-right: 5px;
+}
+/**********************************************************************/
+/* Form Styles */
+/**********************************************************************/
+input[type=text], input.date, input[type=number], input[type=decimal], input[type=password] {
+	border: 1px solid #999;
+	padding: 3px 3px 3px 3px;
+}
+input[readonly=readonly] {
+	border: none;
+	padding: 3px 1px 3px 1px;
+	text-align: center;
+}
+input.error {
+	background-color: #FFE6E6;
+}
+input.warning {
+	background-color: #ffffcc;
+}
+input.passed {
+}
+input[type=checkbox] {
+}
+textarea {
+	border: 1px solid #999;
+}
+select {
+	border: 1px solid #999;
+	padding: 2px 1px 2px 1px;
+}
+select.error {
+	background-color: #FFE6E6;	
+}
+#tip {
+	position: absolute;
+	display: none;
+	padding: 5px 15px;
+	opacity: 1;
+	z-index: 9999999;
+}
+#tip.error {
+	background-color: #FF0000;
+	color: #fff;
+}
+#tip.warning {
+	background-color: #ffff00;
+	color: #333;
+	border: 1px solid #ccc;
+}
+.ui-datepicker {
+	font-size: 12px;
+}
+.ui-datepicker-trigger {
+	margin-left: 3px;
+}
+/**********************************************************************/
+/* Icons */
+/**********************************************************************/
+.iconic {
+}
+.iconic.dropdown:before {
+	content: '\e047';
+}
+.iconic.dropdown {
+	-webkit-transform: rotate(90deg);
+	-moz-transform: rotate(90deg);
+}
+/**********************************************************************/
+/* Autocomplete */
+/**********************************************************************/
+.ui-autocomplete {
+    max-height: 400px;
+    overflow-y: auto;
+    /* prevent horizontal scrollbar */
+    overflow-x: hidden;
+}
+/**********************************************************************/
+/* Hacks to ease this awkward time in between HTML specs */
+/**********************************************************************/
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}

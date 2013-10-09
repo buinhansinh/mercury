@@ -1,0 +1,12 @@
+{% extends 'common/results.html' %}
+{% load url from future %}
+{% load humanize %}
+{% block columns %}
+<div class='rank'>{{forloop.counter|add:offset}}</div>
+<div class='name'>
+	<a href="{{ result.account.supplier.get_view_url }}" title="{{ result.account.supplier.name }}">
+	{{result.account.supplier.name}}
+	</a>
+</div>
+<div class='value'>{{result.value|default:0|floatformat:0|intcomma}}</div>
+{% endblock columns %}    

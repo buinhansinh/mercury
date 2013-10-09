@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+
+{% block head %}
+<style>
+#product-input, #inventory-level-label {
+	margin-top: 15px;
+	margin-left: 15px;
+}
+#inventory-level {
+	margin-right: 15px;
+}
+#order-table-container {
+	padding: 15px;
+}
+#order-table {
+	width: 100%;
+}
+</style>
+<script>
+$(document).ready(function(){
+	var doSearch = function() {
+		var terms = $('#product-input').val();
+		var months = $('#inventory-level').val();
+		window.location = "?" + $.param({ terms: terms, months: months });
+	}
+
+	$("#search-button").click(function() {
+		doSearch();
+	});
+	
+	$("#product-input").focus().keypress(function(e) {
+		if (e.which == KEYCODES.ENTER) {
+			var terms = $('#product-input').val();
+			if (terms.length >= 2) {
+				doSearch();
+			}
+		}
+	});
+});
+</script>
+{% endblock head %}
+
+{% block main-title %}
+PURCHASE ORDER
+{% endblock main-title %}
+
+{% block sub-title %}
+{% endblock sub-title %}  
+
+{% block context-menu %}
+{% endblock context-menu %}
+
+{% block content %}
+<input id="product-input" type="text" placeholder="Enter Product Filter" value="{{terms|default:""}}"/>
+<label id="inventory-level-label">Inventory Level</label>
+<select id="inventory-level">
+	<option value="1" {% if months == 1 %}selected{% endif %}> 1 Month</option>
+	<option value="2" {% if months == 2 %}selected{% endif %}> 2 Months</option>
+	<option value="3" {% if months == 3 %}selected{% endif %}> 3 Months</option>
+	<option value="4" {% if months == 4 %}selected{% endif %}> 4 Months</option>
+	<option value="5" {% if months == 5 %}selected{% endif %}> 5 Months</option>
+	<option value="6" {% if months == 6 %}selected{% endif %}> 6 Months</option>
+	<option value="7" {% if months == 7 %}selected{% endif %}> 7 Months</option>
+	<option value="8" {% if months == 8 %}selected{% endif %}> 8 Months</option>
+	<option value="9" {% if months == 9 %}selected{% endif %}> 9 Months</option>
+	<option value="10" {% if months == 10 %}selected{% endif %}>10 Months</option>
+	<option value="11" {% if months == 11 %}selected{% endif %}>11 Months</option>
+	<option value="12" {% if months == 12 %}selected{% endif %}>12 Months</option>
+</select>
+<div class='button'><a id="search-button">Generate</a></div>
+<div id="order-table-container">
+<table id="order-table" class="data">
+	<tr>
+		<th>Brand</th>
+		<th>Model</th>
+		<th>Summary</th>
+		<th>On Hand</th>
+		<th>Monthly Sales</th>
+		<th>Quantity</th>
+	</tr>
+{% for i in items %}
+	<tr>
+		<td> {{ i.item.brand }} </td>
+		<td> {{ i.item.model }} </td>
+		<td> {{ i.item.summary }} </td>
+		<td> {{ i.stock|floatformat:2 }} </td>
+		<td> {{ i.rate|floatformat:2 }} </td>
+		<td> {{ i.quantity|floatformat:2 }} </td>
+	</tr>
+{% endfor %}
+</table>
+</div>
+{% endblock content %}

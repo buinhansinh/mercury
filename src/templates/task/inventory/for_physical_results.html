@@ -1,0 +1,10 @@
+{% extends 'common/results.html' %}
+{% load url from future %}
+{% block columns %}
+{% with stock=result %}
+    <div class='item'><a href="{{stock.product.get_view_url}}">{{stock.product.name}}</a></div>
+    <div class='summary'>{{stock.product.summary}}</div>
+    <div class='quantity'>{{stock.quantity}}</div>
+    <div class='last-physical'><a class="physical trigger" href="{% url 'inventory.views.stock.physical' stock.id %}">{{stock.last_physical.date|date:"M d, Y"|default:"None"}}</a></div>
+{% endwith %}
+{% endblock columns %}    

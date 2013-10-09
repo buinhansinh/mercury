@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+{% load humanize %}
+
+{% block head %}
+<style>
+.contact-card {
+	float: left;
+	width: 300px;
+	padding-top: 15px;
+	padding-left: 30px;
+	padding-bottom: 15px;
+}
+.contact-card .name {
+	font-size: 24px;
+}
+#document {
+	float: right;
+}
+#details {
+	float:left;
+	width: 370px;
+	padding: 30px 15px;
+	border-left: 1px solid #ccc;
+	min-height: 135px;
+}
+#details > * {
+	display: block-inline;
+	float: left;
+	line-height: 2em;
+}
+#details > div.spacing {
+	width: 10px;
+	height: 40px;
+	display: block;
+}
+#details label {
+	clear: left;
+	width: 140px;
+	font-weight: bold;
+}
+#discount-table {
+	clear: left;
+}
+#discount-table div.label, #discount-table div.amount {
+	width: 100px;
+}
+#discount-table li.body div.amount {
+	text-align: right;
+}
+#discount-table div.delete {
+	width: 10px;
+}
+#discount-table div.empty {
+	width: 248px;
+}
+#discount-button {
+	float: left;
+	margin-left: 10px;
+	margin-top: 1px;
+}
+#discount-form input {
+	width: 100px;
+}
+#transfer-details {
+	clear: both;
+	margin-top: 15px;
+	border-top: 1px solid #ccc;
+	padding: 15px;
+}
+#product-table {
+	clear: both;
+}
+#product-table div.bullet {
+	width: 10px;
+}
+#product-table div.item {
+	width: 170px;
+}
+#product-table div.description {
+	width: 320px;
+}
+#product-table div.ordered {
+	width: 50px;
+}
+#product-table div.balance {
+	width: 50px;
+	display: none;
+}
+#product-table div.quantity {
+	width: 50px;
+}
+#product-table div.price {
+	width: 80px;
+}
+#product-table div.total {
+	width: 80px;
+}
+#product-table li.body div.total {
+	text-align: right;
+}
+#product-table div.actions {
+	width: 10px;
+}
+</style>
+<script>
+$.validation.amount = function(input) {
+	var bill_amount = parseFloat($("#bill-amount").val());
+	var value = parseFloat($(input).val());
+	if (value > bill_amount) {
+		$(input).invalidate($.validation.ERROR, 'The discount cannot be greater than the bill amount.');
+		return false;
+	}
+},
+
+$(document).ready(function(){
+	$("#discount-button").click(function() {
+		$('#overlay').overlay().load();
+		$('#discount-label').focus();
+	});
+	
+	$("#discount-form").validation([{
+		selector: "#discount-label",
+		validators: ['required'],
+	}, {
+		selector: "#discount-amount",
+		validators: ['required', 'positive_decimal', 'amount'],
+	}, ]);
+	
+	// enable selection of items
+	$("#discount-label").autocomplete({
+		source: ["Sales Discount", "Withholding Tax"],
+		minLength: 0,
+	});
+	
+	// enable forms to submit via ajax and load responses onto the form itself
+	$('#discount-form div.button.submit').click(function() {
+		submit($('#discount-form'));
+	});		
+});
+</script>
+{% endblock head %}
+
+{% block main-title %}{{bill.type|upper}}{% endblock main-title %}  
+{% block sub-title %}No. {{bill.reference}} {% endblock sub-title %}
+
+{% block context-menu %}
+	<label>Debt Outstanding:</label>
+	<span>{{bill.account.debt|default:0|floatformat:2|intcomma}}</span>
+	<label>Credit Available:</label>
+	<span>{{bill.account.credit|default:0|floatformat:2|intcomma}}</span>
+	<label>Status:</label>
+	<span>{{bill.status}}</span>
+	{% if not bill.canceled %}
+	<div class='dropdown'>
+	    <div class='button'>
+	    	<a><span class='icon iconic dropdown'></span></a> 
+	    </div>
+	    <ul class='menu right'>
+			{% if not bill.is_paid %}
+			<li><div class='button'><a href="{% url 'accounting.views.bill.quickpay' bill.id %}"><span class='iconic bolt'></span> Quickpay</a></div></li>
+			{% endif %}
+	    	<li><div class='button'><a href="{{ bill.get_edit_url }}"><span class='iconic pen'></span> Edit</a></div></li>
+			{% if bill.cancelable %}
+			<li><div class='button'><a href="{% url 'accounting.views.bill.cancel' bill.id %}"><span class='iconic minus_alt'></span> Cancel</a></div></li>
+			{% endif %}
+		</ul>
+	</div>
+	{% endif %}
+{% endblock context-menu %}
+
+{% block content %}
+{% include "addressbook/contact_card.html" %}
+{% with document=bill %}
+{% include "common/document_view.html" %}
+{% endwith %}
+<div id='details'>
+	<label>BILL TOTAL:</label>
+	<div>{{bill.total|default:0|floatformat:2|intcomma}}</div>
+	<input type='hidden' id="bill-amount" value="{{bill.total}}"/>
+	<div class='spacing'></div>
+	<label>Order No.:</label>
+	<div>
+	{% if bill.transfer %}
+		<a href="{{bill.transfer.order.get_view_url}}">{{bill.transfer.order.reference}}</a>
+	{% else %}
+		None
+	{% endif %}
+	</div>
+	<div class='spacing'></div>
+	<label>Transfer No.:</label>
+	<div>
+	{% if bill.transfer %}
+		<a href="{{bill.transfer.get_view_url}}">{{bill.transfer.reference}}</a>
+	{% else %}
+		None
+	{% endif %}
+	</div>
+	<label>Transfer Amount:</label>
+	<div>{{bill.amount|default:0|floatformat:2|intcomma}}</div>
+	<div class='spacing'></div>
+	<label>Total Discount:</label>
+	<div>{{bill.discount|default:0|floatformat:2|intcomma}}</div>
+	<div class='spacing'></div>
+	<ul id='discount-table' class='table'>
+		<li class="header">
+			<div class='label'>Discount</div>
+			<div class='amount'>Amount</div>
+			<div class='delete'></div>
+		</li>
+		{% for d in bill.discounts.all %}
+		<li class="body">
+			<div class='label'>{{d.label}}</div>
+			<div class='amount'>{{d.amount|default:0|floatformat:2|intcomma}}</div>
+			<div class='delete'>
+				<a href="{% url 'accounting.views.discount.delete' d.id %}">
+					<span class='iconic x'></span>
+				</a>
+			</div>
+		</li>
+		{% empty %}
+		<li class='empty'><div class='empty'>None</div></li>
+		{% endfor %}
+	</ul>
+	<div id='discount-button' class="button"><a><span class='iconic plus'></span> Add</a></div>
+</div>
+{% if bill.transfer %}
+<div id='transfer-details'>
+	<ul id='product-table' class='table'>
+	    <li class='header'>
+	        <div class='bullet'></div>
+	        <div class='item'>Item</div>
+	        <div class='description'>Description</div>
+	        <div class='ordered'>Order</div>
+	        <div class='balance'>Balance</div>
+	        <div class='quantity'>Qty</div>
+	        <div class='price'>Price</div>
+	        <div class='total'>Total</div>
+	        <div class='actions'></div>
+	    </li>
+	{% for item in bill.transfer.items.all %}
+	    <li class='body'>
+	    	<input type='hidden' name='item-id' value='{{ item.id }}'/>
+	        <div class='bullet'><span class='iconic play'></span></div>
+	        <div class='item'><a href="{{ item.order.info.get_view_url }}">{{ item.order.info.name }}</a></div>
+	        <div class='description'>{{ item.order.info.summary }}</div>
+	        <div class='ordered'>{{ item.order.quantity }}</div>
+	        <div class='balance'>{{ item.order.balance }}</div>
+	        <div class='quantity'><input type='text' name='item-quantity' class='quantity' readonly='readonly' required='required' value='{{ item.quantity }}'/></div>
+	        <div class='price'><input type='text' class='price' readonly='readonly' value='{{ item.order.price|default:0|floatformat:2|intcomma }}'/></div>
+	        <div class='total'>{{ item.value|default:0|floatformat:2|intcomma  }}</div>
+	        <div class='actions'></div>
+	    </li>
+	{% endfor %}
+	</ul>
+</div>
+<div class="clear" style="height: 15px;"></div>
+{% endif %}
+<div class="clear" style=""></div>
+{% endblock content %}
+
+{% block overlay %}
+<form id='discount-form' action="{% url 'accounting.views.discount.new' bill.id %}" method="post">
+	<div class='title'>ADD DISCOUNT</div>
+	<div class='content'>
+		<input type="hidden" name="bill" value="{{bill.id}}"/>
+		<input type='text' id='discount-label' name='label' placeholder="Label"/>
+	    <input type='text' id='discount-amount' name='amount' placeholder="Amount"/>
+    </div>
+	<div class='buttons'>
+		<div class='button submit'><a>Save</a></div>
+	</div>
+</form>
+{% endblock overlay %}

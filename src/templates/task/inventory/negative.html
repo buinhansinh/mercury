@@ -1,0 +1,12 @@
+{% load url from future %}
+<div class='title'>
+	<a href='#inventory-negative' class='toggler'>NEGATIVE STOCK</a>
+</div>
+<ul id='inventory-negative' class='table stock'>
+	<li class='header'>
+		<div class='item'>Item</div>
+		<div class='summary'>Summary</div>
+		<div class='quantity'>Stock</div>
+	</li>
+	<a class='autoloader' href="{% url 'task.views.warehousing.negative' %}">Loading...</a>
+</ul>

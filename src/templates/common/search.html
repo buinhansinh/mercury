@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+
+{% block head %}
+<style>
+ul.search {
+	padding: 0px;
+	margin: 20px;
+}
+ul.search > li {
+	list-style: none;
+	margin-bottom: 15px;
+}
+ul.search div.name {
+	font-size: larger;
+}
+</style>
+<script>
+</script>
+{% endblock head %}
+
+{% block main-title %}
+<span class='iconic magnifying_glass'></span> SEARCH FOR '{{ terms }}'
+{% endblock main-title %}
+
+{% block sub-title %}
+{{count}} results
+{% endblock sub-title %}
+
+{% block content %}
+<ul class='search'>
+	<a class='autoloader' href="{% url 'common.views.search.results' %}?terms={{terms}}">Search me</a>
+</ul>
+<div class='clear' style='height: 1px;'></div>
+{% endblock content %}

@@ -1,0 +1,8 @@
+{% extends 'common/results.html' %}
+{% load url from future %}
+{% block columns %}
+<div class='id'><a href="{{ result.get_view_url }}">{{ result.reference }}</a></div>
+<div class='code'>{{ result.code }}</div>
+<div class='customer'><a href="{{result.customer.get_view_url}}">{{ result.customer.name }}</a></div>
+<div class='date'>{{ result.date|date:'Y-m-d' }}</a></div>
+{% endblock columns %}

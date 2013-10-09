@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+
+{% block head %}
+<style>
+#document {
+	float: right;
+}
+#location-section {
+	float: left;
+	margin: 15px 15px 15px 30px;
+}
+#location-section label {
+	display: inline-block;
+	margin-right: 1em; 
+}
+#location-section > * {
+	font-size: 18px;
+	float: left;
+	margin-top: 15px;
+}
+#location-section .destination {
+	margin-left: 8em;
+}
+#product-table {
+	clear: both;
+	margin: 15px;
+}
+#product-table div.handle {
+	width: 10px;
+}
+#product-table div.item {
+	width: 200px;
+}
+#product-table div.description {
+	width: 300px;
+}
+#product-table div.spacer {
+	width: 220px;
+}
+#product-table div.quantity {
+	width: 100px;
+}
+</style>
+<script>
+$(document).ready(function(){
+});
+</script>
+{% endblock head %}
+
+{% block main-title %}
+STOCK TRANSFER
+{% endblock main-title %}
+{% block sub-title %}
+No. {{transfer.reference}}
+{% endblock sub-title %}  
+
+{% block context-menu %}
+<label>Status: </label>
+<span>{{transfer.status }}</span>
+{% if transfer.editable %}
+<div class='button'><a href="{{transfer.get_edit_url}}"><span class='iconic pen'></span> Edit</a></div>
+{% endif %}
+{% if transfer.cancelable %}
+<div class='button'><a href="{{transfer.get_cancel_url}}"><span class='iconic minus_alt'></span> Cancel</a></div>
+{% endif %}
+{% endblock context-menu %}
+
+{% block content %}
+<form id="form" name="form" method="post" action="">
+	{% with document=transfer %}
+	{% include 'common/document_view.html' %}
+	{% endwith %}
+    <div id='location-section'>
+        <div class="origin">
+            <label for="origin">From:</label>
+            <a href="{{transfer.origin.get_view_url}}">{{transfer.origin.name}}</a>
+        </div>
+        <div class="arrow"> <span class="iconic"></span> </div>
+        <div class="destination">
+            <label for="destination">To:</label>
+            <a href="{{transfer.destination.get_view_url}}">{{transfer.destination.name}}</a>
+        </div>
+    </div>
+    <ul id='product-table' class='table'>
+        <li class='header'>
+	       	<div class='handle'></div>
+            <div class='item'>Item</div>
+            <div class='description'>Description</div>
+            <div class='spacer'>&nbsp;</div>
+            <div class='quantity'>Quantity</div>
+        </li>
+		{% for item in transfer.items.all %}
+        <li class='body'>
+        	<div class='handle'>
+        		<span class='iconic play'></span>
+        	</div>        
+            <div class='item'><a href="{{item.product.get_view_url}}">{{item.product.name}}</a></div>
+            <div class='description'>{{item.product.summary}}</div>
+            <div class='spacer'>&nbsp;</div>
+            <div class='quantity'>{{item.quantity}}</div>
+        </li>
+		{% endfor %}
+    </ul>
+</form>
+<div class='clear' style='height: 15px'></div>
+{% endblock content %}

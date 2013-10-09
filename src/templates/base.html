@@ -1,0 +1,104 @@
+{% extends 'blank.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+
+{% block stylesheets %}
+<link rel="stylesheet" type="text/css" href="{% get_static_prefix %}css/base.css" media="screen"/>
+<link rel="stylesheet" type="text/css" href="{% get_static_prefix %}css/print.css" media="print"/>
+{% endblock stylesheets %}
+{% block scripts %}
+<script type="text/javascript" src="{% get_static_prefix %}js/base.js"></script>
+{% endblock scripts %}
+
+{% block body %}
+<div id='top-bar' class="shadowed">
+  	<div id='main-menu' class='button'><a href="/"><span class='icon iconic cd'></span> <span class='text'>MERCURY</span> </a></div>
+    <input id='search' type="text" placeholder="Search"/>
+    <input id='suggestions-url' type='hidden' value="{% url 'common.views.search.suggestions' %}"/>
+    <div id='add-menu' class='dropdown'>
+    	<div class='button'><a href='#'><span class='iconic plus'></span></a></div>
+        <ul class='menu right'>
+        	<li>
+        		<div class="button">
+        			<a href="{% url 'addressbook.views.contact.new' %}"><span class='iconic user'></span> Contact</a>
+        		</div>
+        	</li>
+        	<li>
+        		<div class="button">
+        			<a class='trigger' href="{% url 'catalog.views.product.new' %}"><span class='iconic box'></span> Product</a>
+        		</div>
+        	</li>
+        	<li>
+        		<div class="button">
+        			<a class='trigger' href="{% url 'catalog.views.service.new' %}"><span class='iconic cog'></span> Service</a>
+        		</div>
+        	</li>
+        </ul>
+    </div>
+    <div class='separator'>&nbsp;</div>
+    <div id='toolbar'>
+		{% if 'sales' in request.user.account.groups or request.user.is_superuser %}
+		<div class='button'><a href="{% url 'sales' %}">Sales</a></div>
+		{% endif %}
+		{% if 'purchasing' in request.user.account.groups or request.user.is_superuser %}
+		<div class='button'><a href="{% url 'purchasing' %}">Purchasing</a></div>
+		{% endif %}
+		{% if 'inventory' in request.user.account.groups or request.user.is_superuser %}
+		<div class='button'><a href="{% url 'inventory' %}">Inventory</a></div>
+		{% endif %}
+		{% if 'accounting' in request.user.account.groups or request.user.is_superuser %}
+		<div class='button'><a href="{% url 'accounting' %}">Accounting</a></div>
+		{% endif %}
+		{% if 'management' in request.user.account.groups or request.user.is_superuser %}
+		<div class='button'><a href="{% url 'management' %}">Management</a></div>
+		{% endif %}
+    </div>
+    <div id='account-menu' class='dropdown'>
+        <div class='button'>
+        	<a href='#'> 
+        		<span class='text'>{{request.user.username}}</span> <span class='icon iconic user'></span>
+        	</a> 
+        </div>
+        <ul class='menu right'>
+        	<li><div class='button'><a href='#'><span class='iconic user'></span> Contacts</a></div></li>
+	    	<li><div class='button'><a href='#'><span class='iconic box'></span> Products</a></div></li>
+	    	<li><div class='button'><a href='#'><span class='iconic cog'></span> Services</a></div></li>
+	    	<li><div class='button'><a href="{% url 'inventory.views.location.index' %}"><span class='iconic home'></span> Locations</a></div></li>
+            <li class='logout'>
+            	<div class='button'>
+            		<a href="{% url 'logout' %}"><span class='icon iconic arrow_right'></span> Logout</a>
+            	</div> 
+            </li>
+        </ul>
+    </div>
+</div>
+<div id='border' class=''>
+    <div id='title'>
+    	{% block header %}
+        <div class='context-menu'>
+        	{% block context-menu %}{% endblock context-menu %}
+        </div>
+    	<span class='main'> {% block main-title %}{% endblock main-title %} </span>
+        <span class='sub'> {% block sub-title %}{% endblock sub-title %} </span>
+        {% endblock header %}
+    </div>
+    <div id='message'>
+    {% block message %}
+    	{% if form.errors %}
+		<div class='errorlist'>
+			<span class='iconic x_alt'></span> ERROR
+			{{ form.errors }}
+		</div>
+		{% endif %}
+    {% endblock message %}
+    </div>
+    <div id='container'> 
+    {% block content %}Content{% endblock content %}
+    </div>
+    <div id='footer'> 
+    {% block footer %}Footer{% endblock footer %}
+    </div>
+</div>
+<div id='overlay' class=''>{% block overlay %}{% endblock overlay %}</div>
+{% endblock body %}

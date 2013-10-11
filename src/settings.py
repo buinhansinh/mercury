@@ -198,6 +198,9 @@ INSTALLED_APPS = (
     'task',
 )
 
+
+LOGS_DIR = os.path.join(os.path.dirname(PROJECT_DIR), "logs")
+
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
 # the site admins on every HTTP 500 error.
@@ -220,7 +223,7 @@ LOGGING = {
         'debug_log': {
             'level':'DEBUG',
             'class':'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(PROJECT_DIR, "logs") + "/debug.log",
+            'filename': os.path.join(LOGS_DIR, "mercury_debug.log"),
             'maxBytes': 50000,
             'backupCount': 2,
             'formatter': 'standard',
@@ -228,7 +231,7 @@ LOGGING = {
         'bookkeep_log': {
             'level':'DEBUG',
             'class':'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(PROJECT_DIR, "logs") + "/bookkeep.log",
+            'filename': os.path.join(LOGS_DIR, "mercury_bookkeep.log"),
             'maxBytes': 50000,
             'backupCount': 2,
             'formatter': 'standard',

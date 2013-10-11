@@ -1,4 +1,4 @@
-sudo apt-get install nginx supervisor mysql-server mysql-client mysql-workbench libmysqlclient-dev python-dev build-essentials python-pip python-virtualenv python-zc.buildout
+sudo apt-get install p7zip-full nginx supervisor mysql-server mysql-client mysql-workbench libmysqlclient-dev python-dev build-essential python-pip python-virtualenv python-zc.buildout
 virtualenv --no-site-packages /web/mercury
 cd /web/mercury
 mkdir logs

@@ -260,6 +260,8 @@ def credit(supplier, customer, amount):
 
 def debit(supplier, customer, amount):
     account, _ = TradeAccount.objects.get_or_create(supplier=supplier, customer=customer)
+    if (account.debt + amount) < 0:
+        raise IntegrityError("Account debt negative.")
     account.debt += amount
     account.save()
 
@@ -419,8 +421,10 @@ def payment_allocation(sender, instance, action, user, **kwargs):
         instance.bill.assess()
         account = TradeAccount.objects.get(supplier=instance.bill.supplier, customer=instance.bill.customer)
         amount = Decimal(instance.amount)
-        if (account.credit + amount) < 0:
+        if (account.credit - amount) < 0:
             raise IntegrityError("Account credit negative.")
+        if (account.debt - amount) < 0:
+            raise IntegrityError("Account debt negative.")
         account.debt -= amount
         account.credit -= amount
         account.save()

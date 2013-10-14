@@ -190,7 +190,7 @@ def unpay(request, _id):
 def quickpay(request, _id):
     bill = Bill.objects.get(pk=_id)
     if bill.labeled(Bill.UNPAID):
-        payment = Payment.objects.create(customer=bill.customer, supplier=bill.supplier, amount=bill.total)
+        payment = Payment.objects.create(customer=bill.customer, supplier=bill.supplier, amount=bill.total, date=bill.date)
         payment.log(Payment.REGISTER, request.user)
         allocation = PaymentAllocation.objects.create(bill=bill, payment=payment, amount=payment.amount)
         allocation.log(PaymentAllocation.REGISTER, request.user)

@@ -5,7 +5,7 @@ Created on Jan 31, 2013
 '''
 from django.core.management.base import NoArgsCommand
 from company.models import TradeAccount
-from accounting.models import Payment
+from accounting.models import Payment, Bill
 
 class Command(NoArgsCommand):
     
@@ -13,16 +13,23 @@ class Command(NoArgsCommand):
         accounts = TradeAccount.objects.filter(credit__lt=0)
         for a in accounts:
             print "C- {} {} {}".format(a.id, a.supplier, a.customer)
-#            payments = Payment.objects.filter(supplier=a.supplier, customer=a.customer, labels__name=Payment.UNALLOCATED)
-#            credit = 0
-#            for p in payments:
-#                credit += p.available()
-#            a.credit = credit
-#            a.save()
-#            print "Fixed."
+            payments = Payment.objects.filter(supplier=a.supplier, customer=a.customer, labels__name=Payment.UNALLOCATED)
+            credit = 0
+            for p in payments:
+                credit += p.available()
+            a.credit = credit
+            a.save()
+            print "Fixed."
         accounts = TradeAccount.objects.filter(debt__lt=0)
         for a in accounts:
             print "D- {} {} {}".format(a.id, a.supplier, a.customer)
+            bills = Bill.objects.filter(supplier=a.supplier, customer=a.customer, labels__name=Bill.UNPAID)
+            debt = 0
+            for bill in bills:
+                debt += bill.outstanding()
+            a.debt = debt
+            a.save()
+            print "Fixed."
         payments = Payment.objects.filter(labels__name=Payment.OVERALLOCATED)
         for p in payments:
             print "PO {} {} {}".format(p.id, p.supplier, p.customer)

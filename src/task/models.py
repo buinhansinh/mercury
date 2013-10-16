@@ -145,6 +145,7 @@ def stock_transfer(sender, instance, action, user, **kwargs):
     if instance.labeled(StockTransfer.CANCELED):
         raise WorkflowException("Modifying a canceled document.")
     if action == StockTransfer.REGISTER or action == StockTransfer.CHECKIN:
+        if action == StockTransfer.REGISTER: instance.label(StockTransfer.VALID)
         for i in instance.items.all():
             forward(i.product, i.quantity, instance.origin, instance.destination, i, user)
     elif action == StockTransfer.CHECKOUT:
@@ -163,6 +164,7 @@ def adjustment(sender, instance, action, user, **kwargs):
     if instance.labeled(Adjustment.CANCELED):
         raise WorkflowException("Modifying a canceled document.")
     if action == Adjustment.REGISTER or action == Adjustment.CHECKIN:
+        if action == Adjustment.REGISTER: instance.label(Adjustment.VALID)
         for i in instance.items.all():
             stock = i.stock()
             stock.quantity += i.delta
@@ -227,6 +229,7 @@ def order(sender, instance, action, user, **kwargs):
     if instance.labeled(Order.CANCELED):
         raise WorkflowException("Modifying a canceled document.")
     if action == Order.REGISTER:
+        instance.label(Order.VALID)
         TradeAccount.objects.get_or_create(customer=instance.customer, supplier=instance.supplier)
         instance.assess()
         update_default_costs(instance, user)
@@ -272,6 +275,7 @@ def order_transfer(sender, instance, action, user, **kwargs):
         raise WorkflowException("Modifying a canceled document.")
     if action == OrderTransfer.REGISTER or action == OrderTransfer.CHECKIN:
         if action == OrderTransfer.REGISTER: 
+            instance.label(OrderTransfer.VALID)
             if instance.origin.owner == instance.order.customer \
             and instance.destination.owner == instance.order.supplier:
                 instance.label(OrderTransfer.RETURN)
@@ -335,6 +339,7 @@ def payment(sender, instance, action, user, **kwargs):
     if instance.labeled(Payment.CANCELED):
         raise WorkflowException("Modifying a canceled document.")
     if action == Payment.REGISTER or action == Payment.CHECKIN:
+        if action == Payment.REGISTER: instance.label(Payment.VALID)
         instance.total = instance.amount - instance.refunded()  
         instance.save()
         instance.assess()
@@ -356,6 +361,7 @@ def refund(sender, instance, action, user, **kwargs):
     if instance.labeled(Refund.CANCELED):
         raise WorkflowException("Modifying a canceled document.")
     if action == Refund.REGISTER or action == Refund.CHECKIN:
+        if action == Refund.REGISTER: instance.label(Refund.VALID)
         instance.payment.log(Payment.CHECKOUT, user)
         instance.payment.log(Payment.CHECKIN, user)
     elif action == Refund.CHECKOUT:
@@ -399,6 +405,7 @@ def bill(sender, instance, action, user, **kwargs):
     if instance.labeled(Bill.CANCELED):
         raise WorkflowException("Modifying a canceled document.")
     if action == Bill.REGISTER or action == Bill.CHECKIN:
+        if action == Bill.REGISTER: instance.label(Bill.VALID)
         instance.total = instance.amount - instance.discount()
         instance.save()
         instance.assess()
@@ -440,5 +447,10 @@ def payment_allocation(sender, instance, action, user, **kwargs):
         
 @receiver(Expense.Event, sender=Expense)
 def expense(sender, instance, action, user, **kwargs):
+    if action == Expense.REGISTER: 
+        instance.label(Expense.VALID)
+    elif action == Expense.CANCEL:
+        instance.label(Expense.CANCELED)
+        instance.unlabel(Expense.VALID)        
     pass
 

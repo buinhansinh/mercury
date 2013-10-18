@@ -190,7 +190,7 @@ $(document).ready(function(){
 		var status = $('#receivable-status').val();
 		var date = $('#receivable-date').val();
 		$.get("{% url 'addressbook.views.contact.bills' %}",
-			{ status: status, date: date, customer_id: contact_id }, 
+			{ status: status, date: date, customer_id: contact_id, sort:'asc' }, 
 			function(data) {
 				$('#receivable-table li.body').remove();
 				$('#receivable-table').append(data);
@@ -205,7 +205,7 @@ $(document).ready(function(){
 		var status = $('#payable-status').val();
 		var date = $('#payable-date').val();
 		$.get("{% url 'addressbook.views.contact.bills' %}",
-			{ status: status, date: date, supplier_id: contact_id }, 
+			{ status: status, date: date, supplier_id: contact_id, sort:'asc' }, 
 			function(data) {
 				$('#payable-table li.body').remove();
 				$('#payable-table').append(data);

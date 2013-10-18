@@ -66,8 +66,8 @@ $(document).ready(function(){
 	{% endif %}
     <div id="expense">
 		<input type="hidden" name="owner" value="{{form.owner.value}}"/>
-	    {{form.name.label_tag}}
-	     <input type="text" id="label" name='label' required='required' value='{{form.name.value|default:''}}'/>
+	    <label>Label</label>
+	     <input type="text" id="label" name='name' required='required' value='{{form.name.value|default:''}}'/>
 	    {{form.tags.label_tag}}
 	    {{form.tags}}
 	    <label for="amount">Amount</label>

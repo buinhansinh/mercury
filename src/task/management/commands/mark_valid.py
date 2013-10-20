@@ -8,7 +8,7 @@ from common.models import Document
 from datetime import datetime
 from django.core.management.base import NoArgsCommand
 from inventory.models import StockTransfer, Adjustment
-from trade.models import Order, OrderTransfer
+from trade.models import Order, OrderTransfer, OrderReturn
 
 
 class Command(NoArgsCommand):
@@ -29,6 +29,7 @@ class Command(NoArgsCommand):
         self.mark(Adjustment)
         self.mark(Order)
         self.mark(OrderTransfer)
+        self.mark(OrderReturn)
         end_time = datetime.now()
         print "End Time: {}".format(end_time)        
         pass

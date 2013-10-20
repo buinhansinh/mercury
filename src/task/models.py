@@ -319,6 +319,7 @@ def order_return(sender, instance, action, user, **kwargs):
     if instance.labeled(OrderReturn.CANCELED):
         raise WorkflowException("Modifying a canceled document.")
     if action == OrderReturn.REGISTER:
+        instance.label(OrderReturn.VALID)
         instance.assess()
         instance.transfer.log(OrderTransfer.CHECKOUT, user)
         instance.transfer.log(OrderTransfer.CHECKIN, user)

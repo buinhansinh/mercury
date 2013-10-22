@@ -375,9 +375,10 @@ def refund(sender, instance, action, user, **kwargs):
 
 
 def create_or_update_bill(transfer, user):
-    bill, created = Bill.objects.get_or_create(transfer=transfer, defaults={'supplier': transfer.order.supplier, 
-                                                                         'customer': transfer.order.customer,
-                                                                         'date': transfer.date,})
+    bill, created = Bill.objects.get_or_create(transfer=transfer, 
+                                               defaults={'supplier': transfer.order.supplier, 
+                                                         'customer': transfer.order.customer,
+                                                         'date': transfer.date,})
     if not created:
         bill.log(Bill.CHECKOUT, user)
     bill.code = transfer.code # copy the transfer code over to the bill

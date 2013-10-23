@@ -138,7 +138,15 @@ $(document).ready(function(){
 	// enable forms to submit via ajax and load responses onto the form itself
 	$('#discount-form div.button.submit').click(function() {
 		submit($('#discount-form'));
-	});		
+	});
+
+	$("a#cancel-button").click(function() {
+		var yes = confirm("Are you sure you want to cancel this bill?");
+		if (yes) {
+		} else {
+			return false;
+		}
+	});			
 });
 </script>
 {% endblock head %}
@@ -164,7 +172,7 @@ $(document).ready(function(){
 			{% endif %}
 	    	<li><div class='button'><a href="{{ bill.get_edit_url }}"><span class='iconic pen'></span> Edit</a></div></li>
 			{% if bill.cancelable %}
-			<li><div class='button'><a href="{% url 'accounting.views.bill.cancel' bill.id %}"><span class='iconic minus_alt'></span> Cancel</a></div></li>
+			<li><div class='button'><a id="cancel-button" href="{% url 'accounting.views.bill.cancel' bill.id %}"><span class='iconic minus_alt'></span> Cancel</a></div></li>
 			{% endif %}
 		</ul>
 	</div>

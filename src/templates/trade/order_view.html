@@ -161,6 +161,14 @@ $(document).ready(function(){
 		location_id = $('select#location').val();
 		window.location = transfer_url + '?location_id=' + location_id; 
 	});
+
+	$("a#cancel-button").click(function() {
+		var yes = confirm("Are you sure you want to cancel this order?");
+		if (yes) {
+		} else {
+			return false;
+		}
+	});	
 });
 </script>
 {% endblock head %}
@@ -206,7 +214,7 @@ $(document).ready(function(){
 		{% endif %}
 		{% if order.cancelable %}
 			<li class='right'>
-				<div class='button'><a href='{{order.get_cancel_url}}'><span class='iconic minus_alt'></span> Cancel</a></div>
+				<div class='button'><a id="cancel-button" href='{{order.get_cancel_url}}'><span class='iconic minus_alt'></span> Cancel</a></div>
 			</li>
 		{% endif %}
 		</ul>

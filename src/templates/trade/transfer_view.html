@@ -185,6 +185,14 @@ total = function() {
 };
 
 $(document).ready(function(){
+	$("a#cancel-button").click(function() {
+		var yes = confirm("Are you sure you want to cancel this transfer?");
+		if (yes) {
+		} else {
+			return false;
+		}
+	});
+
 	$("a.return.x_alt").click(function() {
 		var yes = confirm("Are you sure you want to cancel this return?");
 		if (yes) {
@@ -228,7 +236,7 @@ No. {{transfer.reference}}
 		<li><div class='button'><a href="{{ transfer.get_edit_url }}"><span class='iconic pen'></span> Edit</a></div></li>
 		{% endif %}
 		{% if transfer.cancelable %}
-		<li><div class='button'><a href="{{ transfer.get_cancel_url }}"><span class='iconic pen'></span> Cancel</a></div></li>
+		<li><div class='button'><a id="cancel-button" href="{{ transfer.get_cancel_url }}"><span class='iconic pen'></span> Cancel</a></div></li>
 		{% endif %}
 	</ul>
 </div>

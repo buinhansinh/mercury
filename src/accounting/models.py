@@ -196,3 +196,15 @@ class Expense(Document):
     amount = common.fields.DecimalField(default=0)
     name = common.fields.LabelField()
     tags = TaggableManager(blank=True)
+
+    def status(self):
+        if self.labeled(Expense.CANCELED):
+            return 'CANCELED'
+        else:
+            return 'VALID'
+
+    def editable(self):
+        return not self.labeled(Expense.CANCELED)
+            
+    def cancelable(self):
+        return not self.labeled(Expense.CANCELED)

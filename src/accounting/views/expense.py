@@ -51,7 +51,6 @@ def new(request):
 
 @group_required('accounting', 'management')
 def edit(request, _id):
-    company = request.user.account.company
     expense = Expense.objects.get(pk=_id)
     if request.method == 'GET':
         form = ExpenseForm(instance=expense)
@@ -65,6 +64,13 @@ def edit(request, _id):
     return render_to_response('accounting/expense_form.html',
                               dict(form=form, contact=expense.contact),
                               context_instance=RequestContext(request))
+
+
+@group_required('accounting', 'management')
+def cancel(request, _id):
+    expense = Expense.objects.get(pk=_id)
+    expense.log(Expense.CANCEL, request.user)
+    return HttpResponseRedirect(expense.get_view_url())
 
 
 @group_required('accounting', 'management')

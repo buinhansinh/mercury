@@ -183,6 +183,14 @@ $(document).ready(function(){
 	$('#submit-allocations').click(function() {
 		submit($('#allocation-form'));
 	});
+	
+	$("a#cancel-button").click(function() {
+		var yes = confirm("Are you sure you want to cancel this payment?");
+		if (yes) {
+		} else {
+			return false;
+		}
+	});		
 });
 </script>
 {% endblock head %}
@@ -209,7 +217,7 @@ $(document).ready(function(){
 		<div class='button'><a href="{{ payment.get_edit_url }}"><span class='iconic pen'></span> Edit</a></div>
 		{% endif %}
 		{% if payment.cancelable %}
-		<div class='button'><a href="{{ payment.get_cancel_url }}"><span class='iconic minus_alt'></span> Cancel</a></div>
+		<div class='button'><a id="cancel-button" href="{{ payment.get_cancel_url }}"><span class='iconic minus_alt'></span> Cancel</a></div>
 		{% endif %}
 	</ul>
 </div>

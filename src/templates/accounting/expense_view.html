@@ -45,8 +45,28 @@ div#expense div {
 }
 </style>
 <script>
+$(document).ready(function(){
+	$("a#cancel-button").click(function() {
+		var yes = confirm("Are you sure you want to cancel this expense?");
+		if (yes) {
+		} else {
+			return false;
+		}
+	});
+});
 </script>
 {% endblock head %}
+
+{% block context-menu %}
+<label>Status:</label>
+<span>{{expense.status}}</span>
+{% if expense.editable %}
+<div class='button'><a href="{{expense.get_edit_url}}"><span class='iconic pen'></span> Edit</a></div>
+{% endif %}
+{% if expense.cancelable %}
+<div class='button'><a id="cancel-button" href="{% url 'accounting.views.expense.cancel' expense.id %}"><span class='iconic pen'></span> Cancel</a></div>
+{% endif %}
+{% endblock context-menu %}
 
 {% block main-title %}EXPENSE FORM{% endblock main-title %}  
 {% block sub-title %}No. {{expense.reference}}{% endblock sub-title %}  
@@ -74,7 +94,3 @@ div#expense div {
 </form>
 <div class="clear"></div>
 {% endblock content %}
-
-{% block context-menu %}
-<div class='button'><a href="{{expense.get_edit_url}}"><span class='iconic pen'></span> Edit</a></div>
-{% endblock context-menu %}

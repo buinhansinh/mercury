@@ -1,7 +1,7 @@
 {% extends 'common/results.html' %}
 {% load url from future %}
 {% block columns %}
-	<div class='id'><a href="{{ result.get_view_url }}">{{result.reference}}</a></div>
+	<div class='id'><a href="{{ result.get_view_url }}">{{result.code}}</a></div>
 	<div class='code'>{{result.code}}</div>
 	<div class='customer'><a href="{{ result.customer.get_view_url }}">{{ result.customer }}</a></div>
 	<div class='supplier'><a href="{{ result.supplier.get_view_url }}">{{ result.supplier }}</a></div>

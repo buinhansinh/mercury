@@ -257,14 +257,24 @@ $(document).ready(function(){
 {% if not request.user.account.company == contact %}
 <div class="button"><a href="{% url 'addressbook.views.contact.transaction_search' contact.id %}"><span class="iconic magnifying_glass"> </span><span> Transactions</span></a></div>
 <div class='dropdown'>
-    <div class='button'> <a><span class='iconic dropdown'></span></a></div>
+    <div class='button'><a><span class='iconic plus'></span> Sales</a></div>
 	<ul class='menu right'>
-		<li class='button'><a href="{% url 'trade.views.order.sale' contact.id %}"><span class='iconic box'></span> Sale</a></li>
-		<li class='button'><a href="{% url 'trade.views.order.purchase' contact.id %}"><span class='iconic box'></span> Purchase</a></li>
+		<li class='button'><a href="{% url 'trade.views.order.sale' contact.id %}"><span class='iconic box'></span> Order</a></li>
 		<li class='button'><a href="{% url 'accounting.views.payment.collect' contact.id %}"><span class=''>$</span> Collection</a></li>
-		<li class='button'><a href="{% url 'accounting.views.payment.disburse' contact.id %}"><span class=''>$</span> Disbursement</a></li>
 		<li class='button'><a href="{% url 'accounting.views.bill.receivable' contact.id %}"><span class='iconic book'></span> Legacy Receivable</a></li>
+	</ul>
+</div>
+<div class='dropdown'>
+    <div class='button'><a><span class='iconic plus'></span> Purchase</a></div>
+	<ul class='menu right'>
+		<li class='button'><a href="{% url 'trade.views.order.purchase' contact.id %}"><span class='iconic box'></span> Order</a></li>
+		<li class='button'><a href="{% url 'accounting.views.payment.disburse' contact.id %}"><span class=''>$</span> Disbursement</a></li>
 		<li class='button'><a href="{% url 'accounting.views.bill.payable' contact.id %}"><span class='iconic book'></span> Legacy Payable</a></li>
+	</ul>
+</div>
+<div class='dropdown'>
+    <div class='button'><a><span class='iconic dropdown'></span></a></div>
+	<ul class='menu right'>
 		<li class='button'><a href="{% url 'accounting.views.expense.new'%}?contact_id={{contact.id}}"><span class=''>$</span> Expense</a></li>
 		<li class='button'><a href="{% url 'addressbook.views.contact.merge' contact.id%}"><span class='iconic loop_alt1'></span> Merge</a></li>
 	</ul>

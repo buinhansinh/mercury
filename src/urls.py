@@ -162,6 +162,7 @@ urlpatterns += patterns('accounting.views.expense',
     (r'^expense/$', 'new'),
     (r'^expense/(?P<_id>\d+)/$', 'view'),
     (r'^expense/(?P<_id>\d+)/edit/$', 'edit'),
+    (r'^expense/(?P<_id>\d+)/cancel/$', 'cancel'),
 )
 
 urlpatterns += patterns('accounting.views.bill',

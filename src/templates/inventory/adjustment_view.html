@@ -54,6 +54,13 @@
 </style>
 <script>
 $(document).ready(function(){
+	$("a#cancel-button").click(function() {
+		var yes = confirm("Are you sure you want to cancel this adjustment?");
+		if (yes) {
+		} else {
+			return false;
+		}
+	});	
 });
 </script>
 {% endblock head %}
@@ -70,7 +77,7 @@ $(document).ready(function(){
 <div class='button'><a href="{% url 'inventory.views.adjustment.edit' adjustment.id %}"><span class="iconic pen"></span> Edit</a></div>
 {% endif %}
 {% if adjustment.cancelable %}
-<div class='button'><a href="{% url 'inventory.views.adjustment.cancel' adjustment.id %}"><span class="iconic minus_alt"></span> Cancel</a></div>
+<div class='button'><a id="cancel-button" href="{% url 'inventory.views.adjustment.cancel' adjustment.id %}"><span class="iconic minus_alt"></span> Cancel</a></div>
 {% endif %}
 {% endblock context-menu %}
 

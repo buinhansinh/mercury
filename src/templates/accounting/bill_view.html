@@ -6,6 +6,25 @@
 
 {% block head %}
 <style>
+.col > div, .col > label {
+	display: block-inline;
+	float: left;
+	line-height: 2em;
+}
+.col > div.spacing {
+	width: 10px;
+	height: 40px;
+	display: block;
+}
+.col label {
+	clear: left;
+	width: 140px;
+	font-weight: bold;
+}
+#contact.col {
+	float: left;
+	width: 350px;
+}
 .contact-card {
 	float: left;
 	width: 300px;
@@ -16,33 +35,30 @@
 .contact-card .name {
 	font-size: 24px;
 }
+table#account {
+	clear: left;
+	float: left;
+	margin: 0 15px 15px 15px;
+	width: 320px;
+}
+table#allocations {
+	width: 270px;
+	margin: 0 15px 15px 0;
+}
 #document {
 	float: right;
 }
 #details {
 	float:left;
 	width: 370px;
-	padding: 30px 15px;
+	padding: 15px 15px;
 	border-left: 1px solid #ccc;
-	min-height: 135px;
+	min-height: 225px;
 }
-#details > * {
-	display: block-inline;
-	float: left;
-	line-height: 2em;
-}
-#details > div.spacing {
-	width: 10px;
-	height: 40px;
-	display: block;
-}
-#details label {
-	clear: left;
-	width: 140px;
-	font-weight: bold;
-}
+
 #discount-table {
 	clear: left;
+	margin-bottom: 10px;
 }
 #discount-table div.label, #discount-table div.amount {
 	width: 100px;
@@ -155,10 +171,22 @@ $(document).ready(function(){
 {% block sub-title %}No. {{bill.reference}} {% endblock sub-title %}
 
 {% block context-menu %}
-	<label>Debt Outstanding:</label>
-	<span>{{bill.account.debt|default:0|floatformat:2|intcomma}}</span>
-	<label>Credit Available:</label>
-	<span>{{bill.account.credit|default:0|floatformat:2|intcomma}}</span>
+	<label>Order No.:</label>
+	<span>
+		{% if bill.transfer %}
+			<a href="{{bill.transfer.order.get_view_url}}">{{bill.transfer.order.reference}}</a>
+		{% else %}
+			None
+		{% endif %}
+	</span>
+	<label>Transfer No.:</label>
+	<span>
+		{% if bill.transfer %}
+			<a href="{{bill.transfer.get_view_url}}">{{bill.transfer.reference}}</a>
+		{% else %}
+			None
+		{% endif %}
+	</span>
 	<label>Status:</label>
 	<span>{{bill.status}}</span>
 	{% if not bill.canceled %}
@@ -180,37 +208,53 @@ $(document).ready(function(){
 {% endblock context-menu %}
 
 {% block content %}
-{% include "addressbook/contact_card.html" %}
+<div id='contact' class="col">
+	{% include "addressbook/contact_card.html" %}
+	<table id="account" class="data">
+		<thead>
+			<tr>
+				<th colspan="2">ACCOUNT</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td align="right">Debt Outstanding:</td>
+				<td align="left">{{bill.account.debt|default:0|floatformat:2|intcomma}}</td>
+			</tr>
+			<tr>
+				<td align="right">Credit Available:</td>
+				<td align="left">{{bill.account.credit|default:0|floatformat:2|intcomma}}</td>
+			</tr>
+		</tbody>
+	</table>
+</div>
 {% with document=bill %}
 {% include "common/document_view.html" %}
 {% endwith %}
-<div id='details'>
-	<label>BILL TOTAL:</label>
+<div id='details' class="col">
+	<table id="allocations" class="data">
+		<thead><tr><th colspan="2">ALLOCATIONS</th></tr></thead>
+		<tbody>
+		{% for a in bill.allocations.all %}
+			<tr>
+				<td><a href="{{a.payment.get_view_url}}">{{a.payment.code}}</a></td>
+				<td>{{a.amount}}</td>
+			</tr>
+		{% empty %}
+			<tr>
+				<td colspan="2">None</td>
+			</tr>
+		{% endfor %}
+		</tbody>
+	</table>
+	<label>GROSS:</label>
+	<div>{{bill.amount|default:0|floatformat:2|intcomma}}</div>
+	<input type='hidden' id="bill-amount" value="{{bill.total}}"/>
+	<label>DISCOUNT:</label>
+	<div>{{bill.discount|default:0|floatformat:2|intcomma}}</div>
+	<label>NET:</label>
 	<div>{{bill.total|default:0|floatformat:2|intcomma}}</div>
 	<input type='hidden' id="bill-amount" value="{{bill.total}}"/>
-	<div class='spacing'></div>
-	<label>Order No.:</label>
-	<div>
-	{% if bill.transfer %}
-		<a href="{{bill.transfer.order.get_view_url}}">{{bill.transfer.order.reference}}</a>
-	{% else %}
-		None
-	{% endif %}
-	</div>
-	<div class='spacing'></div>
-	<label>Transfer No.:</label>
-	<div>
-	{% if bill.transfer %}
-		<a href="{{bill.transfer.get_view_url}}">{{bill.transfer.reference}}</a>
-	{% else %}
-		None
-	{% endif %}
-	</div>
-	<label>Transfer Amount:</label>
-	<div>{{bill.amount|default:0|floatformat:2|intcomma}}</div>
-	<div class='spacing'></div>
-	<label>Total Discount:</label>
-	<div>{{bill.discount|default:0|floatformat:2|intcomma}}</div>
 	<div class='spacing'></div>
 	<ul id='discount-table' class='table'>
 		<li class="header">

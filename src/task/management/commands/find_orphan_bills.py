@@ -38,9 +38,9 @@ class Command(NoArgsCommand):
 
             today = datetime.today()
             first_day = datetime(today.year, 1, 1)
-            print "Querying orphan bills...".format(bill.id)
+            print "Querying orphan bills..."
             bills = Bill.objects.filter(transfer=None, date__gt=first_day, labels__name=Bill.VALID)
-            print "Writig to csv...".format(bill.id)
+            print "Writig to csv..."
             for b in bills:
                 writer.writerow(['Bill', b.id, b.code, b.date, b.customer, b.supplier, b.amount])
 

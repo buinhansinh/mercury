@@ -8,12 +8,12 @@ from company.models import ItemAccount
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from trade.models import OrderItem, Order, OrderTransferItem, OrderTransfer
-from common.views.search import paginate
+from common.views.search import paginate, sort_by_date
 from common.utils import group_required
-from inventory.models import Stock
 from django.views.decorators.cache import cache_page
 from haystack.query import SearchQuerySet
 from datetime import datetime, timedelta
+import trade.views.order
 import decimal
 
 
@@ -22,6 +22,13 @@ def view(request):
     return render_to_response('task/purchasing/view.html',
         dict(),
         context_instance=RequestContext(request))
+
+
+@group_required('sales', 'purchasing', 'inventory', 'management')
+def pending(request):
+    results = trade.views.order.search(request)
+    results = sort_by_date(request, results)
+    return paginate(request, results, 'task/purchasing/order_results.html')
 
 
 @group_required('sales', 'purchasing', 'inventory', 'management')

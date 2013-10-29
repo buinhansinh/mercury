@@ -68,9 +68,8 @@ INVENTORY TASKS
 
 {% block content %}
 <div id='left' class='column'>
-	{% include 'task/inventory/negative.html' %}
-	{% include 'task/inventory/for_physical.html' %}
-	{% include 'task/inventory/low.html' %}
+	{% include 'task/sales/for_assembly.html' %}	
+	{% include 'task/purchasing/pending_orders.html' %}
 </div>
 <div id='right' class='column'>
 	<div class='title'>
@@ -90,8 +89,9 @@ INVENTORY TASKS
 		</li>
 		{% endfor %}
 	</ul>
-	{% include 'task/sales/for_assembly.html' %}	
-	{% include 'task/purchasing/incoming.html' %}
+	{% include 'task/inventory/negative.html' %}
+	{% include 'task/inventory/for_physical.html' %}
+	{% include 'task/inventory/low.html' %}	
 </div>
 <div class='clear' style='height: 15px'></div>
 {% endblock content %}

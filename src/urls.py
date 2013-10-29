@@ -222,6 +222,7 @@ urlpatterns += patterns('task.views.purchasing',
     url(r'^purchasing/$', 'view', name='purchasing'),
     (r'^purchasing/urgent/$', 'urgent'),
     (r'^purchasing/incoming/$', 'incoming'),
+    (r'^purchasing/pending/$', 'pending'),    
     (r'^purchasing/order/$', 'order'),
 )
 

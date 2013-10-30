@@ -136,7 +136,7 @@ class ItemAccount(AccountBase):
         return OrderItem.objects.filter(order__supplier__id=self.owner.id,
                                         info_type=self.item_type,
                                         info_id=self.item_id,
-                                        order__labels__name=Order.VALID)
+                                        order__labels__name=Order.CLOSED)
 
     def year_sales(self):
         now = datetime.now()
@@ -176,7 +176,7 @@ class ItemAccount(AccountBase):
         return OrderItem.objects.filter(order__customer__id=self.owner.id,
                                         info_type=self.item_type,
                                         info_id=self.item_id,
-                                        order__labels__name=Order.VALID)
+                                        order__labels__name=Order.CLOSED)
     
     def year_purchases(self):
         now = datetime.now()

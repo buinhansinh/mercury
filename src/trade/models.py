@@ -30,7 +30,7 @@ class Order(Document):
 
     # helpful tags. system assigned
     OPEN = Enum('open')
-    CLOSED = Enum('closed') # either served or canceled and zero balance
+    CLOSED = Enum('closed') # served and zero balance
     RETURNS = Enum('returns') # marks an order with returns
     SERVABLE = Enum('servable')
     RETURNABLE = Enum('returnable')

@@ -10,7 +10,15 @@ from accounting.models import Payment, Bill
 class Command(NoArgsCommand):
     
     def handle_noargs(self, **options):
-        accounts = TradeAccount.objects.filter(credit__lt=0)
+        print "Assessing payments..."
+        payments = Payment.objects.all()
+        for p in payments:
+            p.assess()
+        print "Assessing bills..."
+        bills = Bill.objects.all()
+        for b in bills:
+            b.assess()
+        accounts = TradeAccount.objects.all()
         for a in accounts:
             print "C- {} {} {}".format(a.id, a.supplier, a.customer)
             payments = Payment.objects.filter(supplier=a.supplier, customer=a.customer, labels__name=Payment.UNALLOCATED)
@@ -30,6 +38,3 @@ class Command(NoArgsCommand):
             a.debt = debt
             a.save()
             print "Fixed."
-        payments = Payment.objects.filter(labels__name=Payment.OVERALLOCATED)
-        for p in payments:
-            print "PO {} {} {}".format(p.id, p.supplier, p.customer)

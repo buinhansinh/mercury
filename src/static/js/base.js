@@ -120,6 +120,20 @@ $(document).ready(function(){
 		});
 	});
 	
+	$(window).scroll(function(e) {
+		$("a.scrollloader").each(function(i) {
+			if (elementInViewport(this)) {
+				$.ajax({
+					url: $(this).attr('href'), 
+					success: function(data){
+						$(this).parent().replaceWith(data);
+					},
+					context: $(this),
+				});
+			}
+		});
+	});
+	
 	// autoload sequentially one at a time to avoid server overload.
 	var autoload = function(autoloaders, i) {
 		if (i >= autoloaders.length) {

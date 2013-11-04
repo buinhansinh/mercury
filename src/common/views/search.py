@@ -98,7 +98,7 @@ def suggestions(request):
 @login_required
 def view(request):
     terms = request.GET.get('term')
-    results = SearchQuerySet().autocomplete(text=terms)
+    results = SearchQuerySet().auto_query(terms)
     results = results.models(Product, Service, Contact)
     count = results.count()    
     return render_to_response('common/search.html',
@@ -109,6 +109,6 @@ def view(request):
 @login_required
 def results(request):
     terms = request.GET['terms'] 
-    results = SearchQuerySet().autocomplete(text=terms)
+    results = SearchQuerySet().auto_query(terms)
     results = results.models(Product, Service, Contact)
     return paginate(request, results, 'common/search_results.html')

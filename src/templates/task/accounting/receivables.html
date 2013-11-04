@@ -11,16 +11,19 @@
 
 {% block head %}
 <style>
-.column {
+.col {
 	width: 205px;
 	margin: 15px;
 	float: left;
 }
-.column.firstcol {
+.col.firstcol {
 	margin-left: 30px;
 }
 ul.table li.header div.value {
 	width: 207px;
+}
+ul.table li.body {
+	width: 227px;
 }
 ul.table div.rank {
 	width: 10px;
@@ -32,6 +35,9 @@ ul.table div.name {
 ul.table div.value {
 	width: 60px;
 	text-align: right;
+}
+ul.table li.more, li.empty {
+	width: 225px;
 }
 </style>
 {% endblock head %}
@@ -66,7 +72,7 @@ RECEIVABLE AGING
 	</div>
 	{% endif %}
 <div class='clear'></div>
-<div class='column'>
+<div class='col'>
 	<ul id='income' class='table statement'>
 		<li class='header'>
 			<div class='value'>120 Days</div>
@@ -74,7 +80,7 @@ RECEIVABLE AGING
 		<a class="autoloader" href="{% url 'task.views.billing.receivables_per_customer' %}?supplier_id={{ request.user.account.company.id }}&age=120"></a>
 	</ul>
 </div>
-<div class='column'>
+<div class='col'>
 	<ul id='income' class='table statement'>
 		<li class='header'>
 			<div class='value'>90 Days</div>
@@ -82,7 +88,7 @@ RECEIVABLE AGING
 		<a class="autoloader" href="{% url 'task.views.billing.receivables_per_customer' %}?supplier_id={{ request.user.account.company.id }}&age=90"></a>
 	</ul>
 </div>
-<div class='column'>
+<div class='col'>
 	<ul id='income' class='table statement'>
 		<li class='header'>
 			<div class='value'>60 Days</div>
@@ -90,7 +96,7 @@ RECEIVABLE AGING
 		<a class="autoloader" href="{% url 'task.views.billing.receivables_per_customer' %}?supplier_id={{ request.user.account.company.id }}&age=60"></a>
 	</ul>
 </div>
-<div class='column'>
+<div class='col'>
 	<ul id='income' class='table statement'>
 		<li class='header'>
 			<div class='value'>30 Days</div>

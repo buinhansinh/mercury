@@ -35,7 +35,7 @@ def sort_by_date(request, results):
     return results
 
 
-def paginate(request, results, template, default_offset=0, max_limit=15):
+def paginate(request, results, template, default_offset=0, max_limit=25):
     offset = int(request.GET.get('offset', default_offset))
     limit = request.GET.get('limit', max_limit) 
     limit = max_limit if limit > max_limit else limit    

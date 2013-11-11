@@ -108,28 +108,31 @@ $(document).ready(function(){
 		form.load(url, params);
 	});	
 	
+	var load_a = function(el) {
+		$.ajax({
+			url: $(el).attr('href'), 
+			success: function(data){
+				$(el).parent().replaceWith(data);
+			},
+			context: $(el),
+		});
+	}
+	
 	// enables .loader class objects to replace themselves with an ajax page on click
 	$('body').on('click', 'li > a.clickloader', function(e) {
 		e.preventDefault();
-		$.ajax({
-			url: $(this).attr('href'), 
-			success: function(data){
-				$(this).parent().replaceWith(data);
-			},
-			context: $(this),
-		});
+		load_a(this);
+	});
+	
+	$('body').on('click', 'li > a.scrollloader', function(e) {
+		e.preventDefault();
+		load_a(this);
 	});
 	
 	$(window).scroll(function(e) {
 		$("a.scrollloader").each(function(i) {
 			if (elementInViewport(this)) {
-				$.ajax({
-					url: $(this).attr('href'), 
-					success: function(data){
-						$(this).parent().replaceWith(data);
-					},
-					context: $(this),
-				});
+				load_a(this);
 			}
 		});
 	});

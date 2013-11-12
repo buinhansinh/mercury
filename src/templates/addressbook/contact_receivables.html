@@ -7,6 +7,7 @@
 		<option value='PAID'>PAID</option>
 	</select> 
 	<input id='receivable-date' class='date' readonly='readonly' placeholder='Today'/>
+	<div class="button"><a href="{% url 'accounting.views.bill.receivables_statement' contact.id %}">Print Statement</a></div>
 </div>
 <ul id='receivable-table' class='table bill'>
 	<li class='header'>

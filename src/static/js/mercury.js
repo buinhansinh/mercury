@@ -22,6 +22,10 @@ function elementInViewport(el) {
     );
 }
 
+function intcomma(x) {
+    return x.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
 // Neeeded for ajax to work with Django CSRF
 $(document)
 	.ajaxSend(

@@ -18,6 +18,8 @@ from addressbook.models import Contact
 from company.models import TradeAccount
 from django.conf.urls.defaults import url
 from django.core.urlresolvers import reverse
+from datetime import date
+from django.db.models.aggregates import Sum
 
 
 def annotate(bill, company):
@@ -258,6 +260,23 @@ def receivables(request, contact_id):
 
 
 @group_required('accounting', 'management')
+def receivables_statement(request, contact_id):
+    primary = request.user.account.company
+    contact = Contact.objects.get(pk=contact_id)
+    bills = Bill.objects.filter(customer=contact, supplier=primary, labels__name=Bill.UNPAID)
+    title = "PAYABLES"
+    today = date.today()
+    return render_to_response(
+        'accounting/statement.html',
+        dict(contact=contact,
+             primary=primary,
+             bills=bills,
+             title=title,
+             today=today),
+        context_instance=RequestContext(request))
+
+
+@group_required('accounting', 'management')
 def payables(request, contact_id):
     primary = request.user.account.company
     contact = Contact.objects.get(pk=contact_id)
@@ -265,3 +284,20 @@ def payables(request, contact_id):
     customer = primary
     title = "PAYABLE"
     return payment(request, supplier, customer, contact, title) 
+
+
+@group_required('accounting', 'management')
+def payables_statement(request, contact_id):
+    primary = request.user.account.company
+    contact = Contact.objects.get(pk=contact_id)
+    bills = Bill.objects.filter(customer=primary, supplier=contact, labels__name=Bill.UNPAID)
+    title = "RECEIVABLES"
+    today = date.today()
+    return render_to_response(
+        'accounting/statement.html',
+        dict(contact=contact,
+             primary=primary,
+             bills=bills,
+             title=title,
+             today=today),
+        context_instance=RequestContext(request))

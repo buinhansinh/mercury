@@ -1,0 +1,64 @@
+{% extends 'blank.html' %}
+{% load compress %}
+{% load static %}
+{% load humanize %}
+{% load url from future %}
+
+{% block head %}
+<style>
+body > * {
+	text-align: center;
+}
+table {
+    margin: 0 auto;
+}
+td {
+	padding: 5px 20px;
+}
+</style>
+<script>
+$(function() {
+	var total = 0.00;
+	$("input.amount").each(function(el) {
+		amount = parseFloat($(this).val());
+		total += amount;
+	});
+	$("td#total").html(intcomma(total.toFixed(2)));
+});
+</script>
+{% endblock head %}
+
+{% block body %}
+
+<h1>STATEMENT OF ACCOUNT<h1>
+<h2>{{contact.name}}<h2>
+<h3>{{title}} as of {{today}}<h3>
+<br>
+<table>
+	<thead>
+		<tr>
+			<th>Ref. No.</th>
+			<th>Date</th>
+			<th>Amount</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for b in bills %}
+		<tr>
+			<td align="left">{{b.code}}</td>
+			<td align="left">{{b.date|date:'Y M d'}}</td>
+			<td align="right">{{b.total|default:0|floatformat:2|intcomma}}</td>
+			<input class='amount' type="hidden" value="{{b.outstanding}}"/>
+		</tr>
+		{% endfor %}
+		<tr>
+			<td></td>
+			<td>TOTAL:</td>
+			<td id="total"></td>
+		</tr>
+	</tbody>
+</table>
+
+
+
+{% endblock body %}

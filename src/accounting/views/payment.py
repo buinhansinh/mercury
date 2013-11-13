@@ -69,7 +69,7 @@ def view(request, _id):
     account = TradeAccount.objects.get(supplier=payment.supplier, customer=payment.customer)
     bills = Bill.objects.filter(supplier=payment.supplier, 
                                 customer=payment.customer, 
-                                labels__name=Bill.UNPAID).filter(labels__name=Bill.VALID).order_by('date')
+                                labels__name=Bill.UNPAID).order_by('date')
     tax_withheld = 0        
     for b in bills:
         for d in b.discounts.all():

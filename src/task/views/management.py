@@ -10,7 +10,7 @@ from company.models import TradeAccount, ItemAccount, AccountData,\
 from common.views.search import paginate
 from common.utils import group_required
 from django.views.decorators.cache import cache_page
-from trade.models import OrderTransfer
+from trade.models import OrderTransfer, OrderTransferItem
 from django.db.models.aggregates import Sum
 from datetime import date
 
@@ -90,6 +90,15 @@ def costing(request):
     primary = request.user.account.company
     items = ItemAccount.objects.filter(cost=0, owner=primary)
     return render_to_response('task/management/costing.html',
+        dict(items=items),
+        context_instance=RequestContext(request))
+
+
+@group_required('management')
+def negative_sales(request):
+    items = OrderTransferItem.objects.filter(profit__lt=0, transfer__labels__name=OrderTransfer.VALID).order_by('profit')
+    return render_to_response(
+        'task/management/negative_sales.html',
         dict(items=items),
         context_instance=RequestContext(request))
 

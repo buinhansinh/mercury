@@ -243,8 +243,10 @@ urlpatterns += patterns('task.views.management',
     url(r'^management/customers/$', 'customers'),
     url(r'^management/suppliers/$', 'suppliers'),
     url(r'^management/items/$', 'items'),
+    
     url(r'^management/costing/items/$', 'costing_items'),
     url(r'^management/costing/$', 'costing'),
+    url(r'^management/sales/negative/$', 'negative_sales'),
 )
 
 urlpatterns += patterns('task.views',

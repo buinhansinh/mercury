@@ -20,7 +20,9 @@ def search(request):
     if terms:
         terms = terms.split(' ')
         for t in terms:
-            stocks = stocks.filter(Q(product__model__icontains=t) | Q(product__brand__icontains=t))
+            stocks = stocks.filter(Q(product__model__icontains=t) | 
+                                   Q(product__brand__icontains=t) | 
+                                   Q(product__summary__icontains=t))
     location_id = request.GET.get('location_id', None)
     if location_id:
         stocks = stocks.filter(location__id=location_id)

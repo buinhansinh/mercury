@@ -28,14 +28,17 @@ div#sorting {
 ul.table {
 }
 ul.table div.item {
-	width: 150px;
+	width: 120px;
 	text-align: left;
 }
 ul.table div.description {
-	width: 160px;
+	width: 220px;
 	text-align: left;
 }
 ul.table div.quantity {
+	width: 50px;
+}
+ul.table div.last-physical {
 	width: 80px;
 }
 ul.table div.reference {
@@ -167,7 +170,7 @@ $(document).ready(function(){
 		        <div class='item'>Item</div>
 		        <div class='description'>Description</div>
 		        <div class='quantity'>Quantity</div>
-		        <div class='quantity'>Total</div>
+		        <div class='last-physical'>Last Physical</div>
 		    </li>
 		    <a class='autoloader' href="{% url 'inventory.views.location.stocks' %}?location_id={{location.id}}"></a>
 		</ul>

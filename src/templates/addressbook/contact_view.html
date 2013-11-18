@@ -154,10 +154,8 @@ $(document).ready(function(){
 			});
 	}
 	$('#sales-search').keyup(function(e) {
-		if(e.which == KEYCODES.ENTER) {
-			$('#sales-search-terms').val($(this).val());
-			searchSales();
-		}
+		$('#sales-search-terms').val($(this).val());
+		searchSales();
 	});
 	$('#sales-status').change(searchSales);
 	$('#sales-date').change(searchSales);
@@ -176,10 +174,8 @@ $(document).ready(function(){
 			});
 	}
 	$('#purchase-search').keyup(function(e) {
-		if(e.which == KEYCODES.ENTER) {
-			$('#purchase-search-terms').val($(this).val());
-			searchPurchases();
-		}
+		$('#purchase-search-terms').val($(this).val());
+		searchPurchases();
 	});
 	$('#purchase-status').change(searchPurchases);
 	$('#purchase-date').change(searchPurchases);
@@ -187,30 +183,40 @@ $(document).ready(function(){
 	
 	// Search Receivables
 	var searchReceivables = function() {
+		var terms = $('#receivable-search-terms').val();
 		var status = $('#receivable-status').val();
 		var date = $('#receivable-date').val();
 		$.get("{% url 'addressbook.views.contact.bills' %}",
-			{ status: status, date: date, customer_id: contact_id, sort:'asc' }, 
+			{ code: terms, status: status, date: date, customer_id: contact_id, sort:'asc' }, 
 			function(data) {
 				$('#receivable-table li.body').remove();
 				$('#receivable-table').append(data);
 			});		
 	}
+	$('#receivable-search').keyup(function(e) {
+		$('#receivable-search-terms').val($(this).val());
+		searchReceivables();
+	});	
 	$('#receivable-status').change(searchReceivables);
 	$('#receivable-date').change(searchReceivables);
 	searchReceivables();
 	
 	// Search Payables
 	var searchPayables = function() {
+		var terms = $('#receivable-search-terms').val();
 		var status = $('#payable-status').val();
 		var date = $('#payable-date').val();
 		$.get("{% url 'addressbook.views.contact.bills' %}",
-			{ status: status, date: date, supplier_id: contact_id, sort:'asc' }, 
+			{ code: terms, status: status, date: date, supplier_id: contact_id, sort:'asc' }, 
 			function(data) {
 				$('#payable-table li.body').remove();
 				$('#payable-table').append(data);
 			});	
 	}
+	$('#payable-search').keyup(function(e) {
+		$('#payable-search-terms').val($(this).val());
+		searchPayables();
+	});		
 	$('#payable-status').change(searchPayables);
 	$('#payable-date').change(searchPayables);	
 	searchPayables();
@@ -220,7 +226,7 @@ $(document).ready(function(){
 		var status = $('#collection-status').val();
 		var date = $('#collection-date').val();
 		$.get("{% url 'addressbook.views.contact.payments' %}",
-			{ status: status, date: date, customer_id: contact_id }, 
+			{ status: status, date: date, customer_id: contact_id, sort:'asc' }, 
 			function(data) {
 				$('#collection-table li.body').remove();
 				$('#collection-table').append(data);
@@ -235,7 +241,7 @@ $(document).ready(function(){
 		var status = $('#disbursement-status').val();
 		var date = $('#disbursement-date').val();
 		$.get("{% url 'addressbook.views.contact.payments' %}",
-			{ status: status, date: date, supplier_id: contact_id }, 
+			{ status: status, date: date, supplier_id: contact_id, sort:'asc' }, 
 			function(data) {
 				$('#disbursement-table li.body').remove();
 				$('#disbursement-table').append(data);

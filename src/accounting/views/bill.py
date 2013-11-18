@@ -47,6 +47,10 @@ def search(request):
     if supplier_id:
         bills = bills.filter(supplier__id=supplier_id)
 
+    code = request.GET.get('code', None)
+    if code:
+        bills = bills.filter(code__icontains=code)
+
     age = request.GET.get('age', None)
     if age:
         age_date = datetime.now() - timedelta(days=int(age))

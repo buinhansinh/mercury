@@ -1,0 +1,50 @@
+{% extends 'blank.html' %}
+{% load compress %}
+{% load static %}
+{% load humanize %}
+{% load url from future %}
+
+{% block head %}
+<style>
+body > * {
+	text-align: center;
+}
+table {
+    margin: 0 auto;
+}
+table.data td {
+	padding: 5px 20px;
+}
+</style>
+<script>
+
+</script>
+{% endblock head %}
+
+{% block body %}
+
+<h1>CUSTOMER REPORT<h1>
+<h3>as of {{today}}<h3>
+<br>
+<table class="data">
+	<thead>
+		<tr>
+			<th>Customer</th>
+			<th>Profit</th>
+			<th>Sales</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for a in accounts %}
+		<tr>
+			<td align="left">{{a.name}}</td>
+			<td align="right">{{a.profit|default:0|floatformat:2|intcomma}}</td>
+			<td align="right">{{a.sales|default:0|floatformat:2|intcomma}}</td>
+			<input type="hidden" class="profit" value="{{a.profit}}"/>
+			<input type="hidden" class="sales" value="{{a.sales}}"/>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+
+{% endblock body %}

@@ -22,7 +22,7 @@ ACCOUNTING TASKS
 
 {% block context-menu %}
 <div class='button'><a href="{% url 'accounting.views.expense.new' %}"><span class='iconic plus'></span> Expense</a></div>
-<div class='button'><a href="{% url 'task.views.billing.receivables' %}">Receivables</a></div>
+<div class='button'><a href="{% url 'task.views.billing.receivables_full' %}">Receivables</a></div>
 <div class='button'><a class='collapse iconic minus'></a></div>
 <div class='button'><a class='expand iconic plus'></a></div>
 {% endblock context-menu %}

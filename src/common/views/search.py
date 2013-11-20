@@ -35,14 +35,15 @@ def sort_by_date(request, results):
     return results
 
 
-def paginate(request, results, template, default_offset=0, max_limit=25):
+def paginate(request, results, template, default_offset=0, max_limit=25, cap=None):
     offset = int(request.GET.get('offset', default_offset))
     limit = request.GET.get('limit', max_limit) 
     limit = max_limit if limit > max_limit else limit    
     
-    limited = results[offset: offset + limit * 2]
-    more = len(limited) > limit
-    limited = limited[:limit]
+    limited = results[offset: offset + limit * 2] # get next 2 batches of results
+    more = len(limited) > limit # if spliced results are less than the limit, then there aren't any more
+    if cap: more = more and (offset + limit < cap) # if results exceed cap do not show more 
+    limited = limited[:limit] # now to splice it to just 1 batch
 
     old_offset = offset
     offset += limit

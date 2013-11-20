@@ -12,7 +12,7 @@ body > * {
 table {
     margin: 0 auto;
 }
-td {
+table.data td {
 	padding: 5px 20px;
 }
 </style>
@@ -34,7 +34,7 @@ $(function() {
 <h2>{{contact.name}}<h2>
 <h3>{{title}} as of {{today}}<h3>
 <br>
-<table>
+<table class="data">
 	<thead>
 		<tr>
 			<th>Ref. No.</th>
@@ -46,7 +46,7 @@ $(function() {
 		{% for b in bills %}
 		<tr>
 			<td align="left">{{b.code}}</td>
-			<td align="left">{{b.date|date:'Y M d'}}</td>
+			<td align="center">{{b.date|date:'Y M d'}}</td>
 			<td align="right">{{b.total|default:0|floatformat:2|intcomma}}</td>
 			<input class='amount' type="hidden" value="{{b.outstanding}}"/>
 		</tr>

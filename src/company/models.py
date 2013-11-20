@@ -59,14 +59,7 @@ class AccountBase(models.Model):
         return ContentType.objects.get_for_model(cls)
 
     def data(self, label, date, value=None):
-        if value:
-            data, _ = AccountData.objects.get_or_create(account_type=self.content_type(), 
-                                                        account_id=self.id, 
-                                                        label=label, 
-                                                        date=date)
-            data.value = value
-            data.save()
-        else:
+        if value == None:
             try:
                 data = AccountData.objects.get(account_type=self.content_type(), 
                                                account_id=self.id, 
@@ -74,7 +67,15 @@ class AccountBase(models.Model):
                                                date=date)
                 return data.value
             except AccountData.DoesNotExist:
-                return 0
+                return 0            
+        else:
+            data, _ = AccountData.objects.get_or_create(account_type=self.content_type(), 
+                                                        account_id=self.id, 
+                                                        label=label, 
+                                                        date=date)
+            data.value = value
+            data.save()
+
 
 
 class ItemAccount(AccountBase):

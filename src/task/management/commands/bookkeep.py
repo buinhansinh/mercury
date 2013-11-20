@@ -95,10 +95,12 @@ class Command(BaseCommand):
     
     # calculate costs and profit for all orders in range
     def bookkeep_orders(self):
-        orders = Order.objects.filter(supplier=self.primary, date__lte=self.end_date) \
-            .filter(date__gte=self.start_date)
-        if not self.recalculate:
-            orders = orders.exclude(labels__name=Order.AUDITED).select_related('items', 'transfers', 'transfers__items')
+        orders = OrderTransfer.objects.filter(order__supplier=self.primary, 
+                                              date__lte=self.end_date, 
+                                              date__gte=self.start_date, 
+                                              labels__name=OrderTransfer.VALID).select_related('items')
+#        if not self.recalculate:
+#            orders = orders.exclude(labels__name=Order.AUDITED).select_related('items', 'transfers', 'transfers__items')
         count = orders.count()
         for i, o in enumerate(orders): 
             sys.stdout.write("Calculating order costs and profits... {} of {}\r".format(i + 1, count))

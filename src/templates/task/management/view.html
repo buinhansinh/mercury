@@ -159,9 +159,14 @@ div.column ul.table li.more {
 		<li class='header'>
 			<div class='rank'>#</div>
 			<div class='name'>Name</div>
-			<div class='value'>Profit</div>
+			<div class='value'>Profit		
+				
+			</div>
 		</li>
 		<a class='autoloader' href="{% url 'task.views.management.customers' %}"></a>
+		<li class="more">
+			<a href="{% url 'task.views.management.customers_full' %}">Show All</a>
+		</li>
 	</ul>
 </div>
 <div class='column'>

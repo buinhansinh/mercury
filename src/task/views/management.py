@@ -3,16 +3,18 @@ Created on Nov 12, 2012
 
 @author: bratface
 '''
+from datetime import date
+from django.db.models.aggregates import Sum
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
-from company.models import TradeAccount, ItemAccount, AccountData,\
-    CompanyAccount
-from common.views.search import paginate
-from common.utils import group_required
 from django.views.decorators.cache import cache_page
+from operator import itemgetter
+
+from common.utils import group_required
+from common.views.search import paginate
+from company.models import TradeAccount, ItemAccount, AccountData, \
+    CompanyAccount
 from trade.models import OrderTransfer, OrderTransferItem
-from django.db.models.aggregates import Sum
-from datetime import date
 
 
 @group_required('management')
@@ -47,7 +49,6 @@ def view(request):
     
 
 @group_required('management')
-@cache_page(60*60*4)
 def customers(request):
     primary = request.user.account.company
     cutoff = primary.account.current_cutoff_date()
@@ -56,7 +57,43 @@ def customers(request):
                                       date=cutoff, 
                                       account_type=TradeAccount.content_type(),
                                       account_id__in=customer_ids).order_by('-value')
-    return paginate(request, data, 'task/management/customers.html')
+    return paginate(request, data, 'task/management/customers.html', cap=25)
+
+
+@group_required('management')
+def customers_full(request):
+    primary = request.user.account.company
+    cutoff = primary.account.current_cutoff_date()
+    customers = TradeAccount.objects.filter(supplier=primary)
+    customer_ids = customers.values_list('id', flat=True)
+    profits = AccountData.objects.filter(label=TradeAccount.YEAR_PROFIT, 
+                                         date=cutoff, 
+                                         account_type=TradeAccount.content_type(),
+                                         account_id__in=customer_ids)
+    sales = AccountData.objects.filter(label=TradeAccount.YEAR_SALES, 
+                                       date=cutoff, 
+                                       account_type=TradeAccount.content_type(),
+                                       account_id__in=customer_ids)
+    accounts = {}
+    for s in sales:
+        if s.value > 0:
+            account = accounts.get(s.account_id, {})
+            account['sales'] = s.value
+            account['name'] = s.account.customer.name
+            accounts[s.account_id] = account
+    for p in profits:
+        if p.value > 0:
+            account = accounts.get(p.account_id, {})
+            account['profit'] = p.value
+            account['name'] = p.account.customer.name
+            accounts[p.account_id] = account
+    
+    accounts = sorted(accounts.values(), key=lambda k: k.get('profit', 0), reverse=True)
+    
+    return render_to_response('task/management/customers_full.html',
+        dict(accounts=accounts,
+             today=date.today()),
+        context_instance=RequestContext(request))
 
 
 @group_required('management')

@@ -305,6 +305,9 @@ table.data td[align=right]{
 	text-align: right;
 	padding-right: 5px;
 }
+table.data tr:hover td {
+	background-color: #ddd;
+}
 /**********************************************************************/
 /* Form Styles */
 /**********************************************************************/

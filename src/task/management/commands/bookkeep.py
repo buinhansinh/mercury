@@ -219,14 +219,13 @@ class Command(BaseCommand):
             sys.stdout.flush()
             delta_map[a.product.id] = delta_map.get(a.product.id, 0) + a.delta
         
-        
         total = 0
         accounts = ItemAccount.objects.filter(item_type=Product.content_type(), owner=self.primary)
         count = len(accounts)
         for i, account in enumerate(accounts):
             sys.stdout.write("Writing out adjustments... {} of {}\r".format(i + 1, count))
             sys.stdout.flush()
-            key = (account.item_type.id, account.item_id)
+            key = account.item_id
             adjustment = delta_map.get(key, 0) * self.context.estimate(account.item)
             total += adjustment
             account.data(ItemAccount.YEAR_ADJUSMENT, self.cutoff, adjustment)

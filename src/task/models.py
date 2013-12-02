@@ -400,6 +400,7 @@ def cancel_bill(bill, user):
     undo_bill(bill, user)
     bill.label(Bill.CANCELED)
     bill.unlabel(Bill.VALID)
+    bill.assess()
 
 
 @receiver(Bill.Event, sender=Bill)

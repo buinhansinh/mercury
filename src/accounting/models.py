@@ -79,14 +79,13 @@ class Bill(Document):
     def assess(self):
         outstanding = self.outstanding()
         canceled = self.labeled(Bill.CANCELED)
-        self.label_if(outstanding <= 0 and not canceled, Bill.PAID)
-        self.label_if(outstanding < 0 and not canceled, Bill.OVERPAID)
-        self.label_if(outstanding > 0 and not canceled, Bill.UNPAID)
-        if outstanding > 0 and not canceled:
-            account = self.account()
-            delta = datetime.today() - self.date
-            self.label_if(delta.days > account.credit_period, Bill.OVERDUE)
-            self.label_if(delta.days > account.credit_period - 14, Bill.DUE_SOON)      
+        self.label_if(not canceled and outstanding <= 0, Bill.PAID)
+        self.label_if(not canceled and outstanding < 0, Bill.OVERPAID)
+        self.label_if(not canceled and outstanding > 0, Bill.UNPAID)
+        account = self.account()
+        delta = datetime.today() - self.date
+        self.label_if(not canceled and delta.days > account.credit_period, Bill.OVERDUE)
+        self.label_if(not canceled and delta.days > account.credit_period - 14, Bill.DUE_SOON)      
 
 
 class BillDiscount(models.Model):

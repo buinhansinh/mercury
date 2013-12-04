@@ -43,6 +43,10 @@ def search(request):
     if supplier_id:
         payments = payments.filter(supplier__id=supplier_id)
 
+    code = request.GET.get('code', None)
+    if code:
+        payments = payments.filter(code__icontains=code)
+
     status = request.GET.get('status', None)
     if status == 'UNALLOCATED':
         payments = payments.filter(labels__name=Payment.UNALLOCATED)

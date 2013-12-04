@@ -143,7 +143,7 @@ $(document).ready(function(){
 	
 	// Search Sales
 	var searchSales = function() {
-		var terms = $('#sales-search-terms').val();
+		var terms = $('#sales-search').val();
 		var status = $('#sales-status').val();
 		var date = $('#sales-date').val();
 		$.get("{% url 'addressbook.views.contact.orders' %}",
@@ -153,17 +153,14 @@ $(document).ready(function(){
 				$('#sales-table').append(data);
 			});
 	}
-	$('#sales-search').keyup(function(e) {
-		$('#sales-search-terms').val($(this).val());
-		searchSales();
-	});
+	$('#sales-search').keyup(searchSales);
 	$('#sales-status').change(searchSales);
 	$('#sales-date').change(searchSales);
 	searchSales();
 	
 	// Search Purchases
 	var searchPurchases = function() {
-		var terms = $('#purchase-search-terms').val();
+		var terms = $('#purchase-search').val();
 		var status = $('#purchase-status').val();
 		var date = $('#purchase-date').val();
 		$.get("{% url 'addressbook.views.contact.orders' %}",
@@ -173,17 +170,14 @@ $(document).ready(function(){
 				$('#purchase-table').append(data);
 			});
 	}
-	$('#purchase-search').keyup(function(e) {
-		$('#purchase-search-terms').val($(this).val());
-		searchPurchases();
-	});
+	$('#purchase-search').keyup(searchPurchases);
 	$('#purchase-status').change(searchPurchases);
 	$('#purchase-date').change(searchPurchases);
 	searchPurchases();
 	
 	// Search Receivables
 	var searchReceivables = function() {
-		var terms = $('#receivable-search-terms').val();
+		var terms = $('#receivable-search').val();
 		var status = $('#receivable-status').val();
 		var date = $('#receivable-date').val();
 		$.get("{% url 'addressbook.views.contact.bills' %}",
@@ -193,17 +187,14 @@ $(document).ready(function(){
 				$('#receivable-table').append(data);
 			});		
 	}
-	$('#receivable-search').keyup(function(e) {
-		$('#receivable-search-terms').val($(this).val());
-		searchReceivables();
-	});	
+	$('#receivable-search').keyup(searchReceivables);	
 	$('#receivable-status').change(searchReceivables);
 	$('#receivable-date').change(searchReceivables);
 	searchReceivables();
 	
 	// Search Payables
 	var searchPayables = function() {
-		var terms = $('#receivable-search-terms').val();
+		var terms = $('#payable-search').val();
 		var status = $('#payable-status').val();
 		var date = $('#payable-date').val();
 		$.get("{% url 'addressbook.views.contact.bills' %}",
@@ -213,40 +204,41 @@ $(document).ready(function(){
 				$('#payable-table').append(data);
 			});	
 	}
-	$('#payable-search').keyup(function(e) {
-		$('#payable-search-terms').val($(this).val());
-		searchPayables();
-	});		
+	$('#payable-search').keyup(searchPayables);		
 	$('#payable-status').change(searchPayables);
 	$('#payable-date').change(searchPayables);	
 	searchPayables();
 
 	// Search Collections
 	var searchCollections = function() {
+		var terms = $('#collection-search').val();
 		var status = $('#collection-status').val();
 		var date = $('#collection-date').val();
 		$.get("{% url 'addressbook.views.contact.payments' %}",
-			{ status: status, date: date, customer_id: contact_id, sort:'asc' }, 
+			{ code: terms, status: status, date: date, customer_id: contact_id, sort:'asc' }, 
 			function(data) {
 				$('#collection-table li.body').remove();
 				$('#collection-table').append(data);
 			});	
 	}
+	$('#collection-search').keyup(searchCollections);		
 	$('#collection-status').change(searchCollections);
 	$('#collection-date').change(searchCollections);	
 	searchCollections();
 
 	// Search Collections
 	var searchDisbursements = function() {
+		var terms = $('#disbursement-search').val();
 		var status = $('#disbursement-status').val();
 		var date = $('#disbursement-date').val();
 		$.get("{% url 'addressbook.views.contact.payments' %}",
-			{ status: status, date: date, supplier_id: contact_id, sort:'asc' }, 
+			{ code: terms, status: status, date: date, supplier_id: contact_id, sort:'asc' }, 
 			function(data) {
 				$('#disbursement-table li.body').remove();
 				$('#disbursement-table').append(data);
 			});	
 	}
+	$('#disbursement-search').keyup(searchDisbursements);		
 	$('#disbursement-status').change(searchDisbursements);
 	$('#disbursement-date').change(searchDisbursements);
 	searchDisbursements();

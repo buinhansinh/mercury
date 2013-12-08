@@ -15,13 +15,15 @@ class LabelField(models.CharField):
         kwargs['max_length'] = 64
         super(models.CharField, self).__init__(*args, **kwargs)
 
+
 class MessageField(models.CharField):
     description = 'A multi-purpose message field'
     
     def __init__(self, *args, **kwargs):
         kwargs['max_length'] = 160
         super(models.CharField, self).__init__(*args, **kwargs)
-        
+
+
 class DiscountField(models.CharField):
     description = "A field for ridiculously long discount chains perpetuated by the industry (e.g. -50-10-5)."
     
@@ -54,7 +56,6 @@ class PrecisionDecimalField(models.DecimalField):
         kwargs['max_digits'] = 15
         kwargs['decimal_places'] = 3
         super(PrecisionDecimalField, self).__init__(*args, **kwargs)
-
 
 
 class EnumField(models.BigIntegerField):

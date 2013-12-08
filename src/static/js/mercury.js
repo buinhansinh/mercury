@@ -3,6 +3,14 @@ KEYCODES = {
 	ESCAPE: 27,
 }
 
+// similar to python string format function
+String.prototype.format = function () {
+	var i = 0, args = arguments;
+	return this.replace(/{}/g, function () {
+		return typeof args[i] != 'undefined' ? args[i++] : '';
+	});
+};
+
 mercury_form_submitted = false;
 submit = function(form) {
 	if (!mercury_form_submitted) {

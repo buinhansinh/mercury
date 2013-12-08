@@ -3,20 +3,19 @@ Created on May 28, 2012
 
 @author: bratface
 '''
-from accounting.models import Payment, Bill, BillDiscount, PaymentAllocation
-from addressbook.models import Contact
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.forms.models import ModelForm
-from django.http import HttpResponseRedirect, HttpResponseForbidden,\
-    HttpResponseBadRequest
+from django.http import HttpResponseRedirect, HttpResponseForbidden, \
+    HttpResponseBadRequest, HttpResponse
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
-from datetime import datetime, timedelta
-import settings
+
+from accounting.models import Payment, Bill, BillDiscount, PaymentAllocation
+from accounting.views import bill
+from addressbook.models import Contact
 from common.utils import group_required
-from company.models import TradeAccount
-from django.db.models.aggregates import Sum
+import json
 
 
 PAYMENT_MODES = {
@@ -70,30 +69,155 @@ def view(request, _id):
     if payment.supplier == company:
         contact = payment.customer
         title = 'Collection'
-    account = TradeAccount.objects.get(supplier=payment.supplier, customer=payment.customer)
-    bills = Bill.objects.filter(supplier=payment.supplier, 
-                                customer=payment.customer, 
-                                labels__name=Bill.UNPAID).filter(labels__name=Bill.VALID).order_by('date')
-    tax_withheld = 0        
-    for b in bills:
-        for d in b.discounts.all():
-            if d.label == BillDiscount.WITHHOLDING_TAX:
-                tax_withheld += d.amount
-    #tax_withheld = BillDiscount.objects.filter(label=BillDiscount.WITHHOLDING_TAX, bill__in=bills).aggregate(total=Sum('amount'))['total']
     return render_to_response(
         'accounting/payment_view.html',
         dict(contact=contact,
              title=title,
              payment=payment,
-             account=account,
-             bills=bills,
-             tax_withheld=tax_withheld,
              mode=PAYMENT_MODES[payment.mode]),
         context_instance=RequestContext(request))
 
 
 @group_required('accounting', 'management')
-def allocate(request):
+def allocate(request, _id):
+    payment = Payment.objects.get(pk=_id)
+    company = request.user.account.company
+    if payment.customer == company:
+        contact = payment.supplier
+        title = 'Disbursement'
+    if payment.supplier == company:
+        contact = payment.customer
+        title = 'Collection'
+    if request.method == 'GET':
+        return render_to_response(
+            'accounting/allocation_form.html',
+            dict(contact=contact,
+                 title=title,
+                 payment=payment,
+                 mode=PAYMENT_MODES[payment.mode]),
+            context_instance=RequestContext(request))
+    elif request.method == 'POST':    
+        alloc_ids = request.POST.getlist('id')
+        bill_ids = request.POST.getlist('bill_id')
+        cancels = request.POST.getlist('canceled')
+        wtaxes = request.POST.getlist('withholding_tax')
+        salesdiscs = request.POST.getlist('sales_discount')
+        amounts = request.POST.getlist('amount')
+        for i, alloc_id in enumerate(alloc_ids):
+            if cancels[i] == 'True':
+                if not alloc_id == '0':
+                    alloc = PaymentAllocation.objects.get(pk=alloc_id)
+                    alloc.delete()
+                continue
+            bill = None
+            if not alloc_id == '0':
+                alloc = PaymentAllocation.objects.get(pk=alloc_id)
+                alloc.bill.withholding_tax(wtaxes[i])
+                alloc.bill.sales_discount(salesdiscs[i])
+                alloc.amount = amounts[i]
+                alloc.save()
+                bill = alloc.bill
+            else:
+                bill = Bill.objects.get(pk=bill_ids[i])
+                alloc = PaymentAllocation()
+                alloc.bill = bill
+                alloc.payment = payment
+                alloc.amount = amounts[i]
+                alloc.save()
+            bill.total = bill.amount - bill.total_discount()
+            bill.save()
+            bill.assess()
+        payment.assess()
+        update_account(payment.account())
+        return HttpResponseRedirect(payment.get_view_url())
+
+
+def update_account(account):
+    payments = Payment.objects.filter(supplier=account.supplier, customer=account.customer, labels__name=Payment.UNALLOCATED).filter(labels__name=Payment.VALID)
+    credit = 0
+    for p in payments:
+        credit += p.available()
+    account.credit = credit
+    bills = Bill.objects.filter(supplier=account.supplier, customer=account.customer, labels__name=Bill.UNPAID).filter(labels__name=Bill.VALID)
+    debt = 0
+    for bill in bills:
+        debt += bill.outstanding()
+    account.debt = debt
+    account.save()
+
+
+def respond_in_json(bills):
+    results = []
+    for b in bills:
+        results.append({
+            'label': b.code,
+            'bill_id': b.id,
+            'code': b.code,
+            'date': b.date.strftime('%m/%d/%Y'),
+            'amount': str(b.amount),
+        })
+    return HttpResponse(
+        json.dumps(results),
+        mimetype='application/json'
+    )
+    
+
+def bill_to_dict(bill):
+    withholding_tax = bill.withholding_tax()
+    sales_discount = bill.sales_discount()
+    other_discount = bill.total_discount() - sales_discount - withholding_tax 
+    return {'id': 0,
+            'label': bill.code,
+            'bill_id': bill.id,
+            'bill_url': bill.get_view_url(),
+            'code': bill.code,
+            'date': bill.date.strftime('%m/%d/%Y'),
+            'bill_amount': str(bill.amount),
+            'withholding_tax': str(withholding_tax),
+            'sales_discount': str(sales_discount),
+            'other_discount': str(other_discount),
+            'amount': 0}
+
+
+@group_required('accounting', 'management')
+def allocate_bills_unpaid(request, _id):
+    payment = Payment.objects.get(pk=_id)
+    bills = Bill.objects.filter(supplier=payment.supplier, 
+                                customer=payment.customer, 
+                                labels__name=Bill.UNPAID).filter(labels__name=Bill.VALID)
+    terms = request.GET.get('term', None)
+    if terms:
+        bills = bills.filter(code__icontains=terms)
+    bills = bills.order_by('date')
+    results = []
+    for b in bills:
+        result = bill_to_dict(b);
+        result['allocated'] = str(b.allocated())
+        results.append(result)
+    return HttpResponse(
+        json.dumps(results),
+        mimetype='application/json'
+    )
+
+
+@group_required('accounting', 'management')
+def allocate_bills_allocated(request, _id):
+    payment = Payment.objects.get(pk=_id)
+    results = []
+    for a in payment.allocations.all():
+        result = bill_to_dict(a.bill)
+        result['id'] = a.id
+        result['amount'] = str(a.amount)
+        result['allocated'] = str(a.bill.allocated() - a.amount)
+        results.append(result)
+    return HttpResponse(
+        json.dumps(results),
+        mimetype='application/json'
+    )
+
+
+@group_required('accounting', 'management')
+def allocate_bak(request):
     payment = Payment.objects.get(pk=request.POST['payment_id'])
     bill_ids = request.POST.getlist('bill_id')
     amounts = request.POST.getlist('amount')

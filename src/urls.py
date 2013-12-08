@@ -195,7 +195,9 @@ urlpatterns += patterns('accounting.views.payment',
     (r'^contact/(?P<contact_id>\d+)/disburse/$', 'disburse'),
     (r'^contact/(?P<contact_id>\d+)/collect/$', 'collect'),
     (r'^payment/toggle/withholding/$', 'toggle_withholding'),
-    (r'^payment/allocate/$', 'allocate'),
+    (r'^payment/(?P<_id>\d+)/allocate/$', 'allocate'),
+    (r'^payment/(?P<_id>\d+)/allocate/bills/unpaid/$', 'allocate_bills_unpaid'),
+    (r'^payment/(?P<_id>\d+)/allocate/bills/allocated/$', 'allocate_bills_allocated'),
     (r'^payment/deallocate/(?P<_id>\d+)/$', 'deallocate'),
 )
 

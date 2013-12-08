@@ -10,7 +10,7 @@ from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.forms.models import ModelForm
 from django.http import HttpResponseRedirect, HttpResponseForbidden,\
-    HttpResponseBadRequest
+    HttpResponseBadRequest 
 from datetime import datetime, timedelta
 from common.utils import group_required
 import settings
@@ -19,7 +19,6 @@ from company.models import TradeAccount
 from django.conf.urls.defaults import url
 from django.core.urlresolvers import reverse
 from datetime import date
-from django.db.models.aggregates import Sum
 
 
 def annotate(bill, company):
@@ -70,7 +69,7 @@ def search(request):
     
     return bills
     
-    
+
 @login_required
 def view(request, _id):
     bill = Bill.objects.get(pk=_id)

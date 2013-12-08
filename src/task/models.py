@@ -409,7 +409,7 @@ def bill(sender, instance, action, user, **kwargs):
         raise WorkflowException("Modifying a canceled document.")
     if action == Bill.REGISTER or action == Bill.CHECKIN:
         if action == Bill.REGISTER: instance.label(Bill.VALID)
-        instance.total = instance.amount - instance.discount()
+        instance.total = instance.amount - instance.total_discount()
         instance.save()
         instance.assess()
         debit(instance.supplier, instance.customer, instance.total)

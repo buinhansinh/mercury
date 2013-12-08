@@ -14,6 +14,7 @@ from taggit.managers import TaggableManager
 from trade.models import OrderTransfer
 import common.fields
 
+
 """
     Based on item releases and receipts
 """
@@ -57,14 +58,32 @@ class Bill(Document):
         else:
             return 'VALID'
 
-    def discount(self):
+    def total_discount(self):
         total = self.discounts.aggregate(total=Sum('amount'))['total']
         total = total if total else 0
         return Decimal(total)
 
     def has_withholding(self):
-        count = self.discounts.filter(label="Withholding Tax").count()
+        count = self.discounts.filter(label=BillDiscount.WITHHOLDING_TAX).count()
         return count > 0
+
+    def discount(self, label, amount=None):
+        if amount == None:
+            try:
+                d = self.discounts.get(label=label)
+            except BillDiscount.DoesNotExist:
+                return 0
+            return d.amount
+        elif amount > 0:
+            d, _ = self.discounts.get_or_create(label=label)
+            d.amount = amount
+            d.save()
+            
+    def withholding_tax(self, amount=None):
+        return self.discount(BillDiscount.WITHHOLDING_TAX, amount)
+    
+    def sales_discount(self, amount=None):
+        return self.discount(BillDiscount.SALES_DISCOUNT, amount)
 
     def allocated(self):
         allocations = self.allocations.all()
@@ -74,7 +93,7 @@ class Bill(Document):
         return total
     
     def outstanding(self):
-        return self.total - self.allocated()
+        return self.amount - self.total_discount() - self.allocated()
 
     def assess(self):
         outstanding = self.outstanding()
@@ -90,6 +109,7 @@ class Bill(Document):
 
 class BillDiscount(models.Model):
     WITHHOLDING_TAX = "Withholding Tax"
+    SALES_DISCOUNT = "Sales Discount"
     
     bill = models.ForeignKey(Bill, related_name='discounts')
     label = common.fields.LabelField()
@@ -133,6 +153,9 @@ class Payment(Document):
         else:
             return 'UNALLOCATED'
 
+    def account(self):
+        return TradeAccount.objects.get(supplier=self.supplier, customer=self.customer)
+    
     def refunded(self):
         refunds = self.refunds.valid()
         total = 0
@@ -163,6 +186,9 @@ class PaymentAllocation(Object):
     amount = common.fields.DecimalField(default=0)
     payment = models.ForeignKey(Payment, related_name='allocations')
     bill = models.ForeignKey(Bill, related_name='allocations')
+
+    def is_partial(self):
+        return not self.bill.total == self.amount
 
 
 class RefundManager(models.Manager):

@@ -251,7 +251,7 @@ $(document).ready(function(){
 	<div>{{bill.amount|default:0|floatformat:2|intcomma}}</div>
 	<input type='hidden' id="bill-amount" value="{{bill.total}}"/>
 	<label>DISCOUNT:</label>
-	<div>{{bill.discount|default:0|floatformat:2|intcomma}}</div>
+	<div>{{bill.total_discount|default:0|floatformat:2|intcomma}}</div>
 	<label>NET:</label>
 	<div>{{bill.total|default:0|floatformat:2|intcomma}}</div>
 	<input type='hidden' id="bill-amount" value="{{bill.total}}"/>

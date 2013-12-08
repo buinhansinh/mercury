@@ -1,0 +1,391 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+{% load humanize %}
+
+{% block head %}
+<style>
+{% if title == 'Disbursement' %}
+div#title {
+	background-color: #ff55aa;
+}
+{% endif %}
+div#contact {
+	float: left;
+}
+.contact-card {
+	float: left;
+	width: 300px;
+	padding-top: 15px;
+	padding-left: 30px;
+	padding-bottom: 15px;
+}
+table#account {
+	clear: left;
+	float: left;
+	margin: 0 15px 15px 15px;
+	width: 300px;
+}
+#document {
+	float: right;
+}
+div#payment{
+	float:left;
+	width: 300px;
+	padding: 15px 30px;
+}
+div#payment > * {
+	margin-right: 15px;
+	margin-bottom: 15px;
+}
+div#payment input {
+	border: 1px solid #CCC;
+}
+table#refunds {
+	float: left;
+	width: 350px;
+	margin: 0 15px 15px 0;
+}
+label {
+	display: inline-block;
+	width: 100px;
+	font-weight: bold;	
+}
+#buttons {
+	clear: both;
+	text-align: center;
+	margin-top: 20px;
+}
+div#allocations {
+	clear: left;
+	border-top: 1px solid #ccc;
+	padding: 15px;
+	width: 930px;
+}
+div#allocations table.data {
+	width: 100%;
+}
+div#allocations table.data input {
+	width: 90px;
+	text-align: center;
+}
+li.suggestion {
+	white-space: nowrap;
+	overflow: hidden;
+}
+li.suggestion span.code {
+	display: inline-block;
+	width: 150px;
+	font-weight: bold;
+	font-size: smaller;
+}
+li.suggestion span.date {
+	display: inline-block;
+	width: 100px;
+	font-size: smaller;
+}
+li.suggestion span.amount {
+	display: inline-block;
+	width: 150px;
+	font-size: smaller;
+	text-align: right;
+	padding-right: 15px;
+}
+table.data tfoot tr td, table.data tfoot tr:hover td {
+	border-top: 2px solid #333;
+	background-color: #fff;
+}
+table.data tfoot td {
+	margin-top: 5px;
+	font-weight: bold;
+}
+</style>
+<script>
+to_int_currency = function(x) {
+	return Math.round(parseFloat(x) * 100);
+}
+
+currency = function(x) {
+	return x / 100;
+}
+
+var allocation_row = 
+	"<tr>\
+		<input type='hidden' name='id' class='id' value='{}'/>\
+		<input type='hidden' name='bill_id' class='bill-id' value='{}'/>\
+		<input type='hidden' name='canceled' class='canceled' value='False'/>\
+		<td class='code'><a href='{}'>{}</a></td>\
+		<td class='date'>{}</td>\
+		<td class='amount'>{}</td>\
+		<td class='withholding-tax'><a href='#' class='auto-withhold'><span class='iconic bolt'></span></a> <input type='text' name='withholding_tax' class='withholding-tax' value='{}'/></td>\
+		<td class='sales-discount'><input type='text' name='sales_discount' class='sales-discount' value='{}'/></td>\
+		<td class='other-discount'>{}</td>\
+		<td class='allocated'>{}</td>\
+		<td class='outstanding'></td>\
+		<td class='allocation'><a href='#' class='auto-allocate'><span class='iconic bolt'></span></a> <input type='text' name='amount' class='allocation' value='{}'/></td>\
+		<td class='action'>&nbsp;<a href='#' class='iconic x'></a>&nbsp;</td>\
+	</tr>";
+
+$(document).ready(function(){
+	// get unpaid bills and fill up autocomplete
+	var insert_allocation_row = function(allocation) {
+		if($("tr input.bill-id[value={}]".format(allocation.bill_id)).length == 0) {
+			row = allocation_row.format(
+					allocation.id,
+					allocation.bill_id,
+					allocation.bill_url,
+					allocation.code,
+					allocation.date,
+					allocation.bill_amount,
+					allocation.withholding_tax,
+					allocation.sales_discount,
+					allocation.other_discount,
+					allocation.allocated,
+					allocation.amount);
+			$("#allocations-table tbody").append(row);
+		} else {
+			alert("There's already an allocation for this bill!");
+		}
+	};
+
+	// Removing allocations 
+	$('#allocations-table').on("click", "a.iconic.x", function(e) {
+		var yes = confirm("Are you sure you want to remove this allocation?");
+		if (yes) {
+			var allocation_id = $(this).closest("tr").children("input.id").val();
+			var row = $(this).parents("tr"); 
+			if (allocation_id == '0') {
+				row.remove();			
+			}
+			else
+			{
+				row.hide();
+				row.children('input.canceled').val('True');
+			}
+			$('#form').validate();
+		}
+		e.preventDefault();
+	});	
+	
+	$.getJSON("{% url 'accounting.views.payment.allocate_bills_allocated' payment.id %}", function(data) {
+		var i = 0;
+		for (i=0; i<data.length; i++) {
+			insert_allocation_row(data[i]);
+		}
+		$('#form').validate();
+	});	
+	
+	$.getJSON("{% url 'accounting.views.payment.allocate_bills_unpaid' payment.id %}", function(data) {
+		$("#bill-search").autocomplete({
+			source: data,
+			minLength: 0,
+			select: function(e, ui) {
+				insert_allocation_row(ui.item);
+				$(this).val('');
+				$('#form').validate();
+				e.preventDefault();
+			},
+		}).data("autocomplete")._renderItem = function(ul, item) {
+			var li = null;
+			li = $("<li class='suggestion'>").data("item.autocomplete", item)
+				.append("<a><span class='code'>" + item.label + 
+						"</span><span class='date'>" + item.date + 
+						"</span><span class='amount'> " + item.amount + "</span></a>"); 
+	        return li.appendTo(ul);
+		};
+	});
+	
+	$('#form').on('click', "a.auto-withhold", function(e) {
+		var amount = $(this).parents('tr').children('td.amount').html();
+		var withholding_tax = currency(Math.round(to_int_currency(amount) / 112));
+		var input = $(this).siblings('input.withholding-tax');
+		input.val(withholding_tax);
+		e.preventDefault();
+		$("#form").validate();
+		input.focus();
+	});
+	
+	$('#form').on('click', "a.auto-allocate", function(e) {
+		var outstanding = $(this).parents('tr').children('td.outstanding').html();
+		var input = $(this).siblings('input.allocation'); 
+		input.val(outstanding);
+		e.preventDefault();
+		$("#form").validate();
+		input.focus();
+	});	
+	
+	$.validation.outstanding = function(input) {
+		var tr = $(input).parents('tr');
+		var amount = tr.children('td.amount').html();
+		var allocated = tr.children('td.allocated').html();
+		var withholding_tax = tr.find('input.withholding-tax').val();
+		var sales_discount = tr.find('input.sales-discount').val();
+		var other_discount = tr.find('td.other-discount').html();		
+		var outstanding = to_int_currency(amount) - to_int_currency(allocated) - to_int_currency(withholding_tax) - to_int_currency(sales_discount) - to_int_currency(other_discount);
+		var outstanding = currency(outstanding);
+		if (outstanding < 0)
+			$(input).invalidate($.validation.ERROR, 'Discounts cannot be greater than the bill amount.');
+		tr.children('td.outstanding').html(outstanding);
+	}
+
+	var total_td = function(selector) {
+		var total = 0;
+		$(selector).each(function() {
+			total += to_int_currency($(this).html());
+		});
+		return currency(total);
+	}
+
+	var total_input = function(selector) {
+		var total = 0;
+		$(selector).each(function() {
+			total += to_int_currency($(this).val());
+		});
+		return currency(total);
+	}
+	
+	$.validation.totals = function(input) {
+		var footer = $("#allocations-table tfoot tr");
+		var body = $("#allocations-table tbody tr:visible");
+		footer.children('td.amount').html(total_td(body.children('td.amount')));	
+		footer.children('td.withholding-tax').html(total_input(body.find('input.withholding-tax')));	
+		footer.children('td.sales-discount').html(total_input(body.find('input.sales-discount')));	
+		footer.children('td.other-discount').html(total_td(body.children('td.other-discount')));	
+		footer.children('td.allocated').html(total_td(body.children('td.allocated')));	
+		footer.children('td.outstanding').html(total_td(body.children('td.outstanding')));
+		var funds_allocated = total_input(body.find('input.allocation'));
+		footer.children('td.allocation').html(funds_allocated);
+		$("#funds-allocated").html(funds_allocated);
+		var funds_available = $("#funds-available").html();
+		var funds_remaining = currency(to_int_currency(funds_available) - to_int_currency(funds_allocated));
+		$("#funds-remaining").html(funds_remaining);
+	}
+	
+	$.validation.allocation = function(input) {
+		var outstanding = $(input).closest('tr').children('td.outstanding').html();
+		var allocation = $(input).val();
+		if (to_int_currency(allocation) > to_int_currency(outstanding))
+			$(input).invalidate($.validation.ERROR, 'Allocation cannot be greater than the outstanding amount.');
+	}
+	
+	// form validation
+	$("#form").validation([{
+		selector: "input.withholding-tax",
+		validators: ['positive_decimal', 'outstanding', 'totals'],
+	}, {
+		selector: "input.sales-discount",
+		validators: ['positive_decimal', 'outstanding', 'totals']
+	}, {
+		selector: "input.allocation",
+		validators: ['required', 'positive_decimal', 'allocation', 'totals'],
+	}, ], function() {
+		if($('#allocations-table tbody tr').length < 1) {
+			alert("But you haven't allocated anything!");
+			return false;
+		}	
+		var funds_remaining = currency(to_int_currency($("#funds-remaining").html()));
+		if (funds_remaining < 0) {
+			alert("Total allocations cannot exceed available funds.");
+			return false;
+		}		
+	});
+	
+	$('#save-button').click(function() {
+		$('#form').submit();
+		return false;
+	});	
+});
+</script>
+{% endblock head %}
+
+{% block main-title %}{{title|upper}}{% endblock main-title %}  
+{% block sub-title %}No.{{payment.reference}}{% endblock sub-title %}  
+
+{% block context-menu %}
+<div class='button'><a href="#" id="save-button"><span class='iconic check'></span> Save</a></div>
+{% endblock context-menu %}  
+
+{% block content %} 
+<input type='hidden' name='contact' value='{{form.contact.value}}'>
+<input type='hidden' name='type' value='{{form.type.value}}'>
+<div id='contact'>
+	{% include 'addressbook/contact_card.html' %}
+</div>
+<div id="payment">
+    <div>
+    <table id='refunds' class='data'>
+    	<thead>
+    		<tr>
+        		<th colspan='2'>PAYMENT</th>
+    		</tr>
+    	</thead>
+    	<tbody>
+    		<tr>
+    			<td align="right">Mode:</td>
+    			<td align="left">{{mode}}</td>
+    		</tr>
+    		<tr>
+    			<td align="right">Available:</td>
+    			<td align="left" id="funds-available">{{payment.total|default:0|floatformat:2|intcomma}}</td>
+    		</tr>	        
+    		<tr>
+    			<td align="right">Allocated:</td>
+    			<td align="left" id="funds-allocated"></td>
+    		</tr>	        
+    		<tr>
+    			<td align="right">Remaining:</td>
+    			<td align="left" id="funds-remaining"></td>
+    		</tr>	        
+	    </tbody>
+    </table>
+    </div>
+</div>
+{% with document=payment %}
+{% include 'common/document_view.html' %}
+{% endwith %}
+<div class="clear"></div>
+{% if payment.cancelable %}
+<div id='allocations'>
+	<div>
+		<span class="iconic plus"></span>
+		<input id="bill-search" type="text" value="" placeholder="Add Allocation"></input>
+	</div>
+	<form id="form" method="POST" >
+		<table id="allocations-table" class='allocations data'>
+			<thead>
+				<tr>
+					<th colspan='10'>ALLOCATIONS</th>
+				</tr>
+				<tr>
+					<th>Bill No.</th>
+					<th>Date</th>
+					<th>Amount</th>
+					<th>W. Tax</th>
+					<th>Sales Disc.</th>
+					<th>Other Disc.</th>
+					<th>Allocated</th>
+					<th>Outstanding</th>
+					<th>Allocation</th>
+					<th></th>
+				</tr>			
+			</thead>
+			<tbody></tbody>
+			<tfoot>
+				<tr>
+					<td colspan="2">Total</td>
+					<td class="amount">Amount</td>
+					<td class="withholding-tax">W. Tax</td>
+					<td class="sales-discount">Sales Disc.</td>
+					<td class="other-discount">Other Disc.</td>
+					<td class="allocated">Allocated</td>
+					<td class="outstanding">Outstanding</td>
+					<td class="allocation">Allocation</td>
+					<td></td>
+				</tr>
+			</tfoot>			
+		</table>
+	</form>
+</div>
+{% endif %}
+{% endblock content %}

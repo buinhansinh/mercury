@@ -190,16 +190,19 @@ $.validation = {
 			}
 			
 			// custom form validation
+			var passed = true;
 			if (onSubmit) {
-				return onSubmit();
+				passed = onSubmit();
 			}
 			
-			// prevent multiple submissions
-			if ($(this).data('submitted')) {
-				alert('This form has already been submitted. Please wait.');
-				return false;
-			} else {
-				$(this).data('submitted', true);
+			if (passed != false) {
+				// prevent multiple submissions
+				if ($(this).data('submitted')) {
+					alert('This form has already been submitted. Please wait.');
+					return false;
+				} else {
+					$(this).data('submitted', true);
+				}
 			}
 		});
 		

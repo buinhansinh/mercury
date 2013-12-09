@@ -193,6 +193,7 @@ def allocate_bills_unpaid(request, _id):
     for b in bills:
         result = bill_to_dict(b);
         result['allocated'] = str(b.allocated())
+        result['amount'] = str(b.outstanding())
         results.append(result)
     return HttpResponse(
         json.dumps(results),

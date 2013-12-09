@@ -71,6 +71,7 @@ label {
 	margin-top: 20px;
 }
 div#allocations {
+	clear: left;
 	border-top: 1px solid #ccc;
 	padding: 15px;
 	width: 930px;
@@ -198,8 +199,16 @@ $(document).ready(function(){
         	</tr>
 	        {% endfor %}
     		<tr>
-    			<td align="right">Net:</td>
+    			<td align="right">Net Refunds:</td>
     			<td align="left" colspan="2">{{payment.total|default:0|floatformat:2|intcomma}}</td>
+    		</tr>	        
+    		<tr>
+    			<td align="right">Allocated:</td>
+    			<td align="left" colspan="2">{{payment.allocated|default:0|floatformat:2|intcomma}}</td>
+    		</tr>	        
+    		<tr>
+    			<td align="right">Remaining:</td>
+    			<td align="left" colspan="2">{{payment.available|default:0|floatformat:2|intcomma}}</td>
     		</tr>	        
 	    </tbody>
     </table>

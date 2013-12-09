@@ -30,6 +30,9 @@ a.iconic {
 	color: inherit;
 	text-decoration: none;
 }
+.loading { 
+	background: url('../images/loading.gif') no-repeat right center; 
+}
 /**********************************************************************/
 /* CSS3 Styles */
 /**********************************************************************/

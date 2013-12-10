@@ -112,8 +112,6 @@ def allocate(request, _id):
             bill = None
             if not alloc_id == '0':
                 alloc = PaymentAllocation.objects.get(pk=alloc_id)
-                alloc.bill.withholding_tax(wtaxes[i])
-                alloc.bill.sales_discount(salesdiscs[i])
                 alloc.amount = amounts[i]
                 alloc.save()
                 bill = alloc.bill
@@ -124,6 +122,8 @@ def allocate(request, _id):
                 alloc.payment = payment
                 alloc.amount = amounts[i]
                 alloc.save()
+            bill.withholding_tax(wtaxes[i])
+            bill.sales_discount(salesdiscs[i])
             bill.total = bill.amount - bill.total_discount()
             bill.save()
             bill.assess()

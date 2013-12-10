@@ -233,6 +233,12 @@ $(document).ready(function(){
 		if (outstanding < 0)
 			$(input).invalidate($.validation.ERROR, 'Discounts cannot be greater than the bill amount.');
 		tr.children('td.outstanding').html(outstanding);
+		
+		// if allocation > outstanding, set it to outstanding
+		var allocation = tr.find('input.allocation').val();
+		if (to_int_currency(allocation) > to_int_currency(outstanding)) {
+			tr.find('input.allocation').val(outstanding);
+		}
 	}
 
 	var total_td = function(selector) {

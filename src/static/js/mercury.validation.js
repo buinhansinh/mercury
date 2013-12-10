@@ -204,6 +204,8 @@ $.validation = {
 					$(this).data('submitted', true);
 				}
 			}
+			
+			return passed;
 		});
 		
 		this.validate();

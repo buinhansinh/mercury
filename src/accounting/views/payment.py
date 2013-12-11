@@ -133,12 +133,12 @@ def allocate(request, _id):
 
 
 def update_account(account):
-    payments = Payment.objects.filter(supplier=account.supplier, customer=account.customer, labels__name=Payment.UNALLOCATED).filter(labels__name=Payment.VALID)
+    payments = Payment.objects.filter(supplier=account.supplier, customer=account.customer, labels__name=Payment.UNALLOCATED)
     credit = 0
     for p in payments:
         credit += p.available()
     account.credit = credit
-    bills = Bill.objects.filter(supplier=account.supplier, customer=account.customer, labels__name=Bill.UNPAID).filter(labels__name=Bill.VALID)
+    bills = Bill.objects.filter(supplier=account.supplier, customer=account.customer, labels__name=Bill.UNPAID)
     debt = 0
     for bill in bills:
         debt += bill.outstanding()
@@ -176,7 +176,8 @@ def bill_to_dict(bill):
             'withholding_tax': str(withholding_tax),
             'sales_discount': str(sales_discount),
             'other_discount': str(other_discount),
-            'amount': 0}
+            'outstanding': str(bill.outstanding()),
+            'amount': str(bill.outstanding())}
 
 
 @group_required('accounting', 'management')
@@ -184,7 +185,7 @@ def allocate_bills_unpaid(request, _id):
     payment = Payment.objects.get(pk=_id)
     bills = Bill.objects.filter(supplier=payment.supplier, 
                                 customer=payment.customer, 
-                                labels__name=Bill.UNPAID).filter(labels__name=Bill.VALID)
+                                labels__name=Bill.UNPAID)
     terms = request.GET.get('term', None)
     if terms:
         bills = bills.filter(code__icontains=terms)
@@ -193,7 +194,6 @@ def allocate_bills_unpaid(request, _id):
     for b in bills:
         result = bill_to_dict(b);
         result['allocated'] = str(b.allocated())
-        result['amount'] = str(b.outstanding())
         results.append(result)
     return HttpResponse(
         json.dumps(results),

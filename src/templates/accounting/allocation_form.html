@@ -118,19 +118,39 @@ var allocation_row =
 		<input type='hidden' name='id' class='id' value='{}'/>\
 		<input type='hidden' name='bill_id' class='bill-id' value='{}'/>\
 		<input type='hidden' name='canceled' class='canceled' value='False'/>\
-		<td class='code'><a href='{}'>{}</a></td>\
+		<td class='code'><a href='{}' target='_'>{}</a></td>\
 		<td class='date'>{}</td>\
 		<td class='amount'>{}</td>\
 		<td class='withholding-tax'><a href='#' class='auto-withhold'><span class='iconic bolt'></span></a> <input type='text' name='withholding_tax' class='withholding-tax' value='{}'/></td>\
 		<td class='sales-discount'><input type='text' name='sales_discount' class='sales-discount' value='{}'/></td>\
 		<td class='other-discount'>{}</td>\
 		<td class='allocated'>{}</td>\
-		<td class='outstanding'></td>\
+		<td class='outstanding'>{}</td>\
 		<td class='allocation'><a href='#' class='auto-allocate'><span class='iconic bolt'></span></a> <input type='text' name='amount' class='allocation' value='{}'/></td>\
 		<td class='action'>&nbsp;<a href='#' class='iconic x'></a>&nbsp;</td>\
 	</tr>";
 
+allocated_bills = new Array();
+	
 $(document).ready(function(){
+	var total_rows = function() {
+		var footer = $("#allocations-table tfoot tr");
+		var body = $("#allocations-table tbody tr:visible");
+		footer.children('td.amount').html(total_td(body.children('td.amount')));	
+		footer.children('td.withholding-tax').html(total_input(body.find('input.withholding-tax')));	
+		footer.children('td.sales-discount').html(total_input(body.find('input.sales-discount')));	
+		footer.children('td.other-discount').html(total_td(body.children('td.other-discount')));	
+		footer.children('td.allocated').html(total_td(body.children('td.allocated')));	
+		footer.children('td.outstanding').html(total_td(body.children('td.outstanding')));
+		var funds_allocated = total_input(body.find('input.allocation'));
+		footer.children('td.allocation').html(funds_allocated);
+		$("#funds-allocated").html(funds_allocated);
+		var funds_available = $("#funds-available").html();
+		var funds_remaining = currency(to_int_currency(funds_available) - to_int_currency(funds_allocated));
+		$("#funds-remaining").html(funds_remaining);		
+	} 
+	
+	
 	// get unpaid bills and fill up autocomplete
 	var insert_allocation_row = function(allocation) {
 		if($("tr input.bill-id[value={}]".format(allocation.bill_id)).length == 0) {
@@ -145,8 +165,10 @@ $(document).ready(function(){
 					allocation.sales_discount,
 					allocation.other_discount,
 					allocation.allocated,
+					allocation.outstanding,
 					allocation.amount);
 			$("#allocations-table tbody").append(row);
+			total_rows();
 		} else {
 			alert("There's already an allocation for this bill!");
 		}
@@ -188,7 +210,7 @@ $(document).ready(function(){
 			select: function(e, ui) {
 				insert_allocation_row(ui.item);
 				$(this).val('');
-				$('#form').validate();
+				$(this).focus();
 				e.preventDefault();
 			},
 		}).data("autocomplete")._renderItem = function(ul, item) {
@@ -258,20 +280,7 @@ $(document).ready(function(){
 	}
 	
 	$.validation.totals = function(input) {
-		var footer = $("#allocations-table tfoot tr");
-		var body = $("#allocations-table tbody tr:visible");
-		footer.children('td.amount').html(total_td(body.children('td.amount')));	
-		footer.children('td.withholding-tax').html(total_input(body.find('input.withholding-tax')));	
-		footer.children('td.sales-discount').html(total_input(body.find('input.sales-discount')));	
-		footer.children('td.other-discount').html(total_td(body.children('td.other-discount')));	
-		footer.children('td.allocated').html(total_td(body.children('td.allocated')));	
-		footer.children('td.outstanding').html(total_td(body.children('td.outstanding')));
-		var funds_allocated = total_input(body.find('input.allocation'));
-		footer.children('td.allocation').html(funds_allocated);
-		$("#funds-allocated").html(funds_allocated);
-		var funds_available = $("#funds-available").html();
-		var funds_remaining = currency(to_int_currency(funds_available) - to_int_currency(funds_allocated));
-		$("#funds-remaining").html(funds_remaining);
+		total_rows();
 	}
 	
 	$.validation.allocation = function(input) {

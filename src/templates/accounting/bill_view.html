@@ -42,7 +42,7 @@ table#account {
 	width: 320px;
 }
 table#allocations {
-	width: 270px;
+	width: 375px;
 	margin: 0 15px 15px 0;
 }
 #document {
@@ -54,28 +54,6 @@ table#allocations {
 	padding: 15px 15px;
 	border-left: 1px solid #ccc;
 	min-height: 225px;
-}
-
-#discount-table {
-	clear: left;
-	margin-bottom: 10px;
-}
-#discount-table div.label, #discount-table div.amount {
-	width: 100px;
-}
-#discount-table li.body div.amount {
-	text-align: right;
-}
-#discount-table div.delete {
-	width: 10px;
-}
-#discount-table div.empty {
-	width: 248px;
-}
-#discount-button {
-	float: left;
-	margin-left: 10px;
-	margin-top: 1px;
 }
 #discount-form input {
 	width: 100px;
@@ -119,6 +97,88 @@ table#allocations {
 }
 #product-table div.actions {
 	width: 10px;
+}
+div#bottom-bar {
+	clear: both;
+	float: left;
+	padding: 5px 10px;
+	width: 908px;
+	font-weight: bold;
+	border: 1px solid #CCC;
+}
+div#bottom-bar > * {
+	display: inline-block;
+}
+div#total {
+	float: right;
+	font-weight: bold;
+}
+div#amount {
+	float: right;
+	display: inline-block;
+	font-weight: bold;
+	background-color: #fff;
+	width: 110px;
+	margin-right: 25px;
+	text-align: right;
+}
+
+#returns-title {
+	margin: 30px 30px 0px 15px;
+	font-size: large;
+	float: right;
+}
+div.return.id {
+	float: right;
+	clear: right;
+	margin: 15px 30px 0px 15px;
+	font-size: larger;
+}
+ul.return.table {
+	float: right;
+	margin: 0px 15px 0px 15px;
+}
+ul.return.table li.body {
+	background-color: #ffb200;
+}
+ul.return.table div.bullet {
+	width: 10px;
+}
+ul.return.table div.item {
+	width: 170px;
+}
+ul.return.table div.description {
+	width: 320px;
+}
+ul.return.table div.ordered {
+	width: 50px;
+}
+ul.return.table div.balance {
+	width: 50px;
+	display: none;
+}
+ul.return.table div.quantity {
+	width: 50px;
+}
+ul.return.table div.price {
+	width: 80px;
+}
+ul.return.table div.total {
+	width: 80px;
+}
+ul.return.table li.body div.total {
+	text-align: right;
+}
+ul.return.table div.actions {
+	width: 10px;
+}
+ul.return.table div.grand.total {
+	text-align: right;
+	width: 838px;
+	font-weight: bold;
+}
+.canceled {
+	opacity:0.25;
 }
 </style>
 <script>
@@ -198,7 +258,10 @@ $(document).ready(function(){
 			{% if not bill.is_paid %}
 			<li><div class='button'><a href="{% url 'accounting.views.bill.quickpay' bill.id %}"><span class='iconic bolt'></span> Quickpay</a></div></li>
 			{% endif %}
+			{% if not bill.canceled %}
+			<li><div id='discount-button' class="button"><a href="#"><span class='iconic minus'></span> Discount</a></div></li>
 	    	<li><div class='button'><a href="{{ bill.get_edit_url }}"><span class='iconic pen'></span> Edit</a></div></li>
+	    	{% endif %}
 			{% if bill.cancelable %}
 			<li><div class='button'><a id="cancel-button" href="{% url 'accounting.views.bill.cancel' bill.id %}"><span class='iconic minus_alt'></span> Cancel</a></div></li>
 			{% endif %}
@@ -233,50 +296,41 @@ $(document).ready(function(){
 {% endwith %}
 <div id='details' class="col">
 	<table id="allocations" class="data">
-		<thead><tr><th colspan="2">ALLOCATIONS</th></tr></thead>
+		<thead><tr><th colspan="3">DETAILS</th></tr></thead>
 		<tbody>
-		{% for a in bill.allocations.all %}
 			<tr>
-				<td><a href="{{a.payment.get_view_url}}">{{a.payment.code}}</a></td>
-				<td>{{a.amount}}</td>
+				<td align="right">Amount:</td>
+				<td align="left" colspan="2">{{bill.amount|default:0|floatformat:2|intcomma}}</td>
 			</tr>
-		{% empty %}
+			{% for d in bill.discounts.all %}
 			<tr>
-				<td colspan="2">None</td>
+				<td align="right">{{d.label}}:</td>
+				<td align="left">{{d.amount|default:0|floatformat:2|intcomma}}</td>
+				<td>
+					<a href="{% url 'accounting.views.discount.delete' d.id %}">
+						<span class='iconic x'></span>
+					</a>
+				</td>
+			</li>
+			{% endfor %}
+			<tr>
+				<td align="right">Net Discounts:</td>
+				<td align="left" colspan="2">{{bill.total|default:0|floatformat:2|intcomma}}</td>				
 			</tr>
-		{% endfor %}
+			{% for a in bill.allocations.all %}
+			<tr>
+				<td align="right"><a href="{{a.payment.get_view_url}}">{{a.payment.code}}</a>:</td>
+				<td align="left" colspan="2">{{a.amount|default:0|floatformat:2|intcomma}}</td>
+			</tr>
+			{% endfor %}
+			<tr>
+				<td align="right">Outstanding:</td>
+				<td align="left" colspan="2">{{bill.outstanding|default:0|floatformat:2|intcomma}}</td>
+			</tr>			
 		</tbody>
 	</table>
-	<label>GROSS:</label>
-	<div>{{bill.amount|default:0|floatformat:2|intcomma}}</div>
 	<input type='hidden' id="bill-amount" value="{{bill.total}}"/>
-	<label>DISCOUNT:</label>
-	<div>{{bill.total_discount|default:0|floatformat:2|intcomma}}</div>
-	<label>NET:</label>
-	<div>{{bill.total|default:0|floatformat:2|intcomma}}</div>
-	<input type='hidden' id="bill-amount" value="{{bill.total}}"/>
-	<div class='spacing'></div>
-	<ul id='discount-table' class='table'>
-		<li class="header">
-			<div class='label'>Discount</div>
-			<div class='amount'>Amount</div>
-			<div class='delete'></div>
-		</li>
-		{% for d in bill.discounts.all %}
-		<li class="body">
-			<div class='label'>{{d.label}}</div>
-			<div class='amount'>{{d.amount|default:0|floatformat:2|intcomma}}</div>
-			<div class='delete'>
-				<a href="{% url 'accounting.views.discount.delete' d.id %}">
-					<span class='iconic x'></span>
-				</a>
-			</div>
-		</li>
-		{% empty %}
-		<li class='empty'><div class='empty'>None</div></li>
-		{% endfor %}
-	</ul>
-	<div id='discount-button' class="button"><a><span class='iconic plus'></span> Add</a></div>
+	
 </div>
 {% if bill.transfer %}
 <div id='transfer-details'>
@@ -307,6 +361,51 @@ $(document).ready(function(){
 	    </li>
 	{% endfor %}
 	</ul>
+    <div id='bottom-bar'>
+    	<div id='amount'/>{{bill.transfer.value|default:0|floatformat:2|intcomma}}</div>
+	    <div id='total'>GRAND TOTAL:</div>
+	</div>
+	
+	<div id='returns-title'><span class='iconic undo'></span> RETURNS</div>
+	{% for order_return in bill.transfer.returns.all %}
+	{% if order_return.canceled %}
+	<div class='return id canceled'>
+		Ref. No. {{order_return.code|default:"(None)"}} - {{order_return.date|date:"m/d/Y"}} - CANCELED
+	</div>
+    <ul class='return table canceled'>
+	{% else %}
+	<div class='return id'>
+		Ref. No. {{order_return.code|default:"(None)"}} - {{order_return.date|date:"m/d/Y"}}
+		&nbsp;
+		<a class='return iconic x_alt' href="{% url 'trade.views.orderreturn.cancel' order_return.id %}" title='Cancel'></a>
+	</div>
+    <ul class='return table'>
+	{% endif %}	
+        <li class='header'>
+            <div class='bullet'></div>
+            <div class='item'>Item</div>
+            <div class='description'>Description</div>
+            <div class='quantity'>Qty</div>
+            <div class='price'>Price</div>
+            <div class='total'>Total</div>
+            <div class='actions'></div>
+        </li>
+	{% for item in order_return.items.all %}
+        <li class='body'>
+            <div class='bullet'><span class='iconic arrow_left'></span></div>
+            <div class='item'><a href="{{ item.transfer.order.info.get_view_url }}">{{ item.transfer.order.info.name }}</a></div>
+            <div class='description'>{{ item.transfer.order.info.summary }}</div>
+            <div class='quantity'>{{ item.quantity }}</div>
+            <div class='price'>{{ item.transfer.order.price|default:0|floatformat:2|intcomma }}</div>
+            <div class='total'>{{ item.value|default:0|floatformat:2|intcomma }}</div>
+            <div class='actions'></div>
+        </li>
+	{% endfor %}
+		<li class='footer'>
+			<div class="grand total">GRAND TOTAL: &nbsp; {{order_return.value}}</div>
+		</li>
+    </ul>
+	{% endfor %}
 </div>
 <div class="clear" style="height: 15px;"></div>
 {% endif %}

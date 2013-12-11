@@ -185,7 +185,7 @@ Order No. <a href="{{transfer.order.get_view_url}}">{{transfer.order.reference}}
             <div class='ordered'>{{ item.order.quantity }}</div>
             <div class='balance'>{{ item.order.balance }}</div>
             <div class='quantity'><input type='text' name='item-quantity' class='quantity' readonly='readonly' required='required' value='{{ item.quantity }}'/></div>
-            <div class='price'><input type='text' class='price' readonly='readonly' value='{{ item.order.price|default:0|floatformat:2|intcomma }}'/></div>
+            <div class='price'><input type='text' class='price' readonly='readonly' value='{{ item.order.price|default:0|floatformat:2 }}'/></div>
             <div class='total'></div>
             <div class='actions'></div>
         </li>

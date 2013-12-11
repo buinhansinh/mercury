@@ -64,10 +64,12 @@ div#allocations {
 	width: 930px;
 }
 div#allocations-toolbar {
+	margin-top: 15px;
 	padding: 3px;
 }
 div#allocations table.data {
 	width: 100%;
+	margin-bottom: 250px;
 }
 div#allocations table.data input {
 	width: 90px;
@@ -98,10 +100,19 @@ li.suggestion span.amount {
 table.data tfoot tr td, table.data tfoot tr:hover td {
 	border-top: 2px solid #333;
 	background-color: #fff;
-}
-table.data tfoot td {
 	margin-top: 5px;
 	font-weight: bold;
+}
+table.data tfoot td {
+}
+table.data tfoot tr.toolbar td, table.data tfoot tr.toolbar:hover td {
+	background-color: #ccc;
+	border: none;
+	border-top: 1px solid;
+}
+div#allocations table.data input#bill-search {
+	text-align: left;
+	width: 300px;
 }
 </style>
 <script>
@@ -349,15 +360,7 @@ $(document).ready(function(){
     		</tr>
     		<tr>
     			<td align="right">Available:</td>
-    			<td align="left" id="funds-available">{{payment.total|default:0|floatformat:2}}</td>
-    		</tr>	        
-    		<tr>
-    			<td align="right">Allocated:</td>
-    			<td align="left" id="funds-allocated">0</td>
-    		</tr>	        
-    		<tr>
-    			<td align="right">Remaining:</td>
-    			<td align="left" id="funds-remaining">{{payment.total|default:0|floatformat:2}}</td>
+    			<td align="left">{{payment.total|default:0|floatformat:2}}</td>
     		</tr>	        
 	    </tbody>
     </table>
@@ -369,10 +372,6 @@ $(document).ready(function(){
 <div class="clear"></div>
 {% if payment.cancelable %}
 <div id='allocations'>
-	<div id='allocations-toolbar'>
-		<span class="iconic plus"></span>
-		<input id="bill-search" type="text" value="" placeholder="New Allocation"></input>
-	</div>
 	<form id="form" method="POST" >
 		<table id="allocations-table" class='allocations data'>
 			<thead>
@@ -405,9 +404,27 @@ $(document).ready(function(){
 					<td class="allocation">0</td>
 					<td></td>
 				</tr>
-			</tfoot>			
+				<tr class="toolbar">
+					<td colspan="3">
+						<span class="iconic plus"></span> 
+						<input id="bill-search" type="text" value="" placeholder="New Allocation"></input>
+					</td>
+	    			<td align="right">Available:</td>
+	    			<td align="left" id="funds-available">{{payment.total|default:0|floatformat:2}}</td>
+	    			<td align="right">Allocated:</td>
+	    			<td align="left" id="funds-allocated">0</td>
+	    			<td align="right">Remaining:</td>
+	    			<td align="left" id="funds-remaining">{{payment.total|default:0|floatformat:2}}</td>
+	    			<td></td>
+				</tr>			
+			</tfoot>
+			
 		</table>
 	</form>
+	<div id='allocations-toolbar'>
+		
+		
+	</div>
 </div>
 {% endif %}
 {% endblock content %}

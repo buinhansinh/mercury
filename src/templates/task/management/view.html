@@ -57,6 +57,21 @@ div.column ul.table li.empty {
 div.column ul.table li.more {
 	width: 225px;
 }
+div#year {
+	width: 760px;
+	margin: 10px 100px;
+	text-align: center;
+	font-size: xx-large;
+}
+div.next-year {
+	float: left;
+	margin: 3px 20px;
+}
+div.prev-year {
+	float: right;
+	margin: 3px 20px;
+}
+
 </style>
 {% endblock head %}
 
@@ -64,11 +79,23 @@ div.column ul.table li.more {
 <div class='button'>
 	<a href="{% url 'task.views.management.reports' %}">Monthly</a>
 </div>
+<!-- 
 <div class='button'><a class='collapse iconic minus'></a></div>
 <div class='button'><a class='expand iconic plus'></a></div>
+ -->
 {% endblock context-menu %}
 
 {% block content %}
+{% if offset < 0 %}
+<div class="next-year button">
+	<a href="?offset={{offset|add:'1'}}"><span class="iconic arrow_left"></span> Next</a>
+</div>
+{% endif %}
+<div class="prev-year button">
+	<a href="?offset={{offset|add:'-1'}}">Prev <span class="iconic arrow_right"></span></a>
+</div>
+<div id="year">YEAR {{year}}</div>
+<div class="clear"></div>
 <div class='column'>
 	<div class='title'>
 		<a href='#balance' class='toggler'>Balance Sheet</a>
@@ -148,7 +175,7 @@ div.column ul.table li.more {
 			<div class='name'>Name</div>
 			<div class='value'>Sales</div>
 		</li>
-		<a class='autoloader' href="{% url 'task.views.management.items' %}"></a>
+		<a class='autoloader' href="{% url 'task.views.management.items' %}?offset={{offset}}"></a>
 	</ul>
 </div>
 <div class='column'>
@@ -163,7 +190,7 @@ div.column ul.table li.more {
 				
 			</div>
 		</li>
-		<a class='autoloader' href="{% url 'task.views.management.customers' %}"></a>
+		<a class='autoloader' href="{% url 'task.views.management.customers' %}?offset={{offset}}"></a>
 		<li class="more">
 			<a href="{% url 'task.views.management.customers_full' %}">Show All</a>
 		</li>
@@ -179,7 +206,7 @@ div.column ul.table li.more {
 			<div class='name'>Name</div>
 			<div class='value'>Bought</div>
 		</li>
-		<a class='autoloader' href="{% url 'task.views.management.suppliers' %}"></a>
+		<a class='autoloader' href="{% url 'task.views.management.suppliers' %}?offset={{offset}}"></a>
 	</ul>
 </div>
 <div class='clear'></div>

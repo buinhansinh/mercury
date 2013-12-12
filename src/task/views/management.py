@@ -19,8 +19,9 @@ from trade.models import OrderTransfer, OrderTransferItem
 
 @group_required('management')
 def view(request):
+    offset = int(request.GET.get('offset', 0))
     primary = request.user.account.company
-    cutoff = primary.account.current_cutoff_date()
+    cutoff = primary.account.current_cutoff_date(offset)
     sales = primary.account.data(CompanyAccount.YEAR_SALES, cutoff)
     gross_profit = primary.account.data(CompanyAccount.YEAR_PROFIT, cutoff)
     cogs = primary.account.data(CompanyAccount.YEAR_COGS, cutoff)
@@ -44,14 +45,17 @@ def view(request):
              adjustments=adjustments,
              collections=collections,
              disbursements=disbursements,
-             net_cash=net_cash),
+             net_cash=net_cash,
+             year=cutoff.year,
+             offset=offset),
         context_instance=RequestContext(request))
     
 
 @group_required('management')
 def customers(request):
+    offset = int(request.GET.get('offset', 0))
     primary = request.user.account.company
-    cutoff = primary.account.current_cutoff_date()
+    cutoff = primary.account.current_cutoff_date(offset)
     customer_ids = TradeAccount.objects.filter(supplier=primary).values_list('id', flat=True)
     data = AccountData.objects.filter(label=TradeAccount.YEAR_PROFIT, 
                                       date=cutoff, 
@@ -62,8 +66,9 @@ def customers(request):
 
 @group_required('management')
 def customers_full(request):
+    offset = int(request.GET.get('offset', 0))
     primary = request.user.account.company
-    cutoff = primary.account.current_cutoff_date()
+    cutoff = primary.account.current_cutoff_date(offset)
     customers = TradeAccount.objects.filter(supplier=primary)
     customer_ids = customers.values_list('id', flat=True)
     profits = AccountData.objects.filter(label=TradeAccount.YEAR_PROFIT, 
@@ -99,8 +104,9 @@ def customers_full(request):
 @group_required('management')
 @cache_page(60*60*4)
 def suppliers(request):
+    offset = int(request.GET.get('offset', 0))
     primary = request.user.account.company
-    cutoff = primary.account.current_cutoff_date()
+    cutoff = primary.account.current_cutoff_date(offset)
     supplier_ids = TradeAccount.objects.filter(customer=primary).values_list('id', flat=True)
     data = AccountData.objects.filter(label=TradeAccount.YEAR_SALES, 
                                       date=cutoff,
@@ -112,8 +118,9 @@ def suppliers(request):
 @group_required('management')
 @cache_page(60*60*4)
 def items(request):
+    offset = int(request.GET.get('offset', 0))
     primary = request.user.account.company
-    cutoff = primary.account.current_cutoff_date()
+    cutoff = primary.account.current_cutoff_date(offset)
     item_ids = ItemAccount.objects.filter(owner=primary).values_list('id', flat=True)
     data = AccountData.objects.filter(label=ItemAccount.YEAR_SALES, 
                                       date=cutoff,

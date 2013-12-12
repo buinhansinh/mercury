@@ -259,6 +259,7 @@ class CompanyAccount(AccountBase):
     contact = models.OneToOneField(Contact, related_name='account')
     cutoff_date = models.DateTimeField(blank=True)
 
-    def current_cutoff_date(self):
-        return self.cutoff_date.replace(year=datetime.today().year)        
+    def current_cutoff_date(self, offset=0):
+        year = datetime.today().year + offset
+        return self.cutoff_date.replace(year)        
         

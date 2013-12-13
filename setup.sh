@@ -4,7 +4,7 @@ cd /web/mercury
 mkdir logs
 source bin/activate
 easy_install -U distribute setuptools
-python bootstrap.py -d -v 2.1.1
+python bootstrap.py
 bin/buildout
 sudo cp supervisor.conf /etc/supervisor/conf.d/mercury.conf
 sudo supervisorctl update

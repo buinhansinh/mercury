@@ -16,6 +16,7 @@ from accounting.views import bill
 from addressbook.models import Contact
 from common.utils import group_required
 import json
+from task.models import update_debt, update_credit
 
 
 PAYMENT_MODES = {
@@ -128,22 +129,11 @@ def allocate(request, _id):
             bill.save()
             bill.assess()
         payment.assess()
-        update_account(payment.account())
+        account = payment.account()
+        update_debt(account)
+        update_credit(account)
+        account.save()
         return HttpResponseRedirect(payment.get_view_url())
-
-
-def update_account(account):
-    payments = Payment.objects.filter(supplier=account.supplier, customer=account.customer, labels__name=Payment.UNALLOCATED)
-    credit = 0
-    for p in payments:
-        credit += p.available()
-    account.credit = credit
-    bills = Bill.objects.filter(supplier=account.supplier, customer=account.customer, labels__name=Bill.UNPAID)
-    debt = 0
-    for bill in bills:
-        debt += bill.outstanding()
-    account.debt = debt
-    account.save()
 
 
 def respond_in_json(bills):
@@ -215,54 +205,6 @@ def allocate_bills_allocated(request, _id):
         json.dumps(results),
         mimetype='application/json'
     )
-
-
-@group_required('accounting', 'management')
-def allocate_bak(request):
-    payment = Payment.objects.get(pk=request.POST['payment_id'])
-    bill_ids = request.POST.getlist('bill_id')
-    amounts = request.POST.getlist('amount')
-    for i, bill_id in enumerate(bill_ids):
-        bill = Bill.objects.get(pk=bill_id)
-        if amounts[i] > 0:
-            alloc = PaymentAllocation(bill=bill, payment=payment, amount=amounts[i])
-            alloc.save()
-            alloc.log(PaymentAllocation.REGISTER, request.user)
-        else:
-            return HttpResponseBadRequest()
-    return HttpResponseRedirect(payment.get_view_url())
-
-
-@group_required('accounting', 'management')
-def deallocate(request, _id):
-    alloc = PaymentAllocation.objects.get(pk=_id)
-    payment = alloc.payment
-    alloc.log(PaymentAllocation.ARCHIVE, request.user)
-    return HttpResponseRedirect(payment.get_view_url())
-
-
-@group_required('accounting', 'management')
-def toggle_withholding(request):
-    if request.method == 'POST':
-        bill_id = request.POST['bill_id']
-        bill = Bill.objects.get(pk=bill_id)
-        discount = bill.discounts.filter(label=BillDiscount.WITHHOLDING_TAX)
-        if discount.exists():
-            discount = discount[0]
-            bill.log(Bill.CHECKOUT, request.user)
-            discount.delete()
-            bill.log(Bill.CHECKIN, request.user)
-        else:
-            discount = BillDiscount()
-            discount.bill = bill
-            discount.label = BillDiscount.WITHHOLDING_TAX
-            discount.amount = bill.amount / 112 # that's 12% 
-            bill.log(Bill.CHECKOUT, request.user)
-            discount.save()
-            bill.log(Bill.CHECKIN, request.user)
-        payment_id = request.POST['payment_id']
-        payment = Payment.objects.get(pk=payment_id)
-        return HttpResponseRedirect(payment.get_view_url())
     
 
 class PaymentForm(ModelForm):

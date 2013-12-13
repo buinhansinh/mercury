@@ -254,21 +254,6 @@ def order(sender, instance, action, user, **kwargs):
     instance.unlabel(Order.AUDITED)
 
 
-def credit(supplier, customer, amount):
-    account, _ = TradeAccount.objects.get_or_create(supplier=supplier, customer=customer)
-    if (account.credit + amount) < 0:
-        raise IntegrityError("Account credit negative.")
-    account.credit += amount
-    account.save()
-
-def debit(supplier, customer, amount):
-    account, _ = TradeAccount.objects.get_or_create(supplier=supplier, customer=customer)
-    if (account.debt + amount) < 0:
-        raise IntegrityError("Account debt negative.")
-    account.debt += amount
-    account.save()
-
-
 @receiver(OrderTransfer.Event, sender=OrderTransfer)
 def order_transfer(sender, instance, action, user, **kwargs):
     if instance.labeled(OrderTransfer.CANCELED):
@@ -285,19 +270,12 @@ def order_transfer(sender, instance, action, user, **kwargs):
         for i in instance.items.products(): # only do it for products
             forward(i.order.info, i.net_quantity, instance.origin, instance.destination, i, user)
         # produce account effects
-        if instance.labeled(OrderTransfer.RETURN):
-            credit(instance.order.supplier, instance.order.customer, instance.value)
-        else:
-            create_or_update_bill(instance, user)
+        create_or_update_bill(instance, user)
     elif action == OrderTransfer.CHECKOUT:
         instance = OrderTransfer.objects.get(pk=instance.id)
         # reverse stock effects
         for i in instance.items.products(): # only do it for products
             reverse(i.order.info, i.net_quantity, instance.origin, instance.destination, i, user)
-        # reverse credit effects but not bill effects
-        if instance.labeled(OrderTransfer.RETURN):
-            #credit(instance.order.supplier, instance.order.customer, -instance.value) # subtract
-            pass
     elif action == OrderTransfer.CANCEL:
         instance.label(OrderTransfer.CANCELED)
         instance.unlabel(OrderTransfer.VALID)
@@ -335,6 +313,29 @@ def order_return(sender, instance, action, user, **kwargs):
 '''
     Accounting Trigger
 '''
+def update_credit(account):
+    payments = Payment.objects.filter(supplier=account.supplier, customer=account.customer, labels__name=Payment.UNALLOCATED)
+    credit = 0
+    for p in payments:
+        credit += p.available()
+    account.credit = credit
+    account.save()
+    
+
+def update_debt(account):
+    bills = Bill.objects.filter(supplier=account.supplier, customer=account.customer, labels__name=Bill.UNPAID)
+    debt = 0
+    for bill in bills:
+        debt += bill.outstanding()
+    account.debt = debt
+    account.save()
+
+
+def update_account(account):
+    update_credit(account)
+    update_debt(account)
+
+
 @receiver(Payment.Event, sender=Payment)
 def payment(sender, instance, action, user, **kwargs):
     if instance.labeled(Payment.CANCELED):
@@ -344,17 +345,16 @@ def payment(sender, instance, action, user, **kwargs):
         instance.total = instance.amount - instance.refunded()  
         instance.save()
         instance.assess()
-        credit(instance.supplier, instance.customer, instance.available())
+        update_credit(instance.account())
     elif action == Payment.CHECKOUT:
-        instance = Payment.objects.get(pk=instance.id) # the the old one
-        credit(instance.supplier, instance.customer, -instance.available())
+        pass
     elif action == Payment.CANCEL:
         instance.label(Payment.CANCELED)
         instance.unlabel(Payment.VALID)
         for a in instance.allocations.all():
             a.log(PaymentAllocation.ARCHIVE, user)
         instance.assess()
-        credit(instance.supplier, instance.customer, -instance.available())
+        update_account(instance.account())
 
 
 @receiver(Refund.Event, sender=Refund)
@@ -393,14 +393,15 @@ def create_or_update_bill(transfer, user):
 def undo_bill(bill, user):
     for a in bill.allocations.all():
         a.log(PaymentAllocation.ARCHIVE, user)
-    debit(bill.supplier, bill.customer, -bill.total)
 
 
 def cancel_bill(bill, user):
     undo_bill(bill, user)
     bill.label(Bill.CANCELED)
     bill.unlabel(Bill.VALID)
+    bill.unlabel(Bill.BAD)
     bill.assess()
+    update_account(bill.account())
 
 
 @receiver(Bill.Event, sender=Bill)
@@ -412,42 +413,29 @@ def bill(sender, instance, action, user, **kwargs):
         instance.total = instance.amount - instance.total_discount()
         instance.save()
         instance.assess()
-        debit(instance.supplier, instance.customer, instance.total)
+        update_debt(instance.account())
     elif action == Bill.CHECKOUT:
-        instance = Bill.objects.get(pk=instance.id) # get the old one
-        undo_bill(instance, user)
+        pass
     elif action == Bill.CANCEL:
-        if instance.transfer == None:
-            cancel_bill(instance, user)
-            instance.assess()
-        else:
+        if instance.transfer:
             raise WorkflowException("Canceling a transfer-based bill.")
+        else:
+            cancel_bill(instance, user)
 
 
 @receiver(PaymentAllocation.Event, sender=PaymentAllocation)
 def payment_allocation(sender, instance, action, user, **kwargs):
     if action == PaymentAllocation.REGISTER:
-        instance.payment.assess()
-        instance.bill.assess()
-        account = TradeAccount.objects.get(supplier=instance.bill.supplier, customer=instance.bill.customer)
-        amount = Decimal(instance.amount)
-        if (account.credit - amount) < 0:
-            raise IntegrityError("Account credit negative.")
-        if (account.debt - amount) < 0:
-            raise IntegrityError("Account debt negative.")
-        account.debt -= amount
-        account.credit -= amount
-        account.save()
+        pass
     elif action == PaymentAllocation.ARCHIVE:
-        account = TradeAccount.objects.get(supplier=instance.bill.supplier, customer=instance.bill.customer)
-        account.debt += instance.amount
-        account.credit += instance.amount
-        account.save()
         instance.delete()
-        instance.payment.assess()
-        instance.bill.assess()
+    instance.payment.assess()
+    instance.bill.assess()
+    account = instance.bill.account()
+    update_debt(account)
+    update_credit(account)
 
-        
+
 @receiver(Expense.Event, sender=Expense)
 def expense(sender, instance, action, user, **kwargs):
     if action == Expense.REGISTER: 

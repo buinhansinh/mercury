@@ -6,6 +6,7 @@
 		<option value='OVERDUE'>OVERDUE</option>
 		<option value='UNPAID' selected>UNPAID</option>
 		<option value='PAID'>PAID</option>
+		<option value='BAD'>BAD</option>		
 	</select>
 	<input id='payable-date' class='date' readonly='readonly' placeholder='Today'/>
 	<div class="button"><a href="{% url 'accounting.views.bill.payables_statement' contact.id %}">Print Statement</a></div>

@@ -113,6 +113,10 @@ div.prev-year {
 			<div class='account'>Adjustments</div>
 			<div class='value'>{% if adjustments > 0 %}+{% endif %}{{adjustments|default:0|floatformat:0|intcomma}}</div>
 		</li>
+		<li class='body'>
+			<div class='account'>Bad Debts</div>
+			<div class='value'>{{bad_debts|default:0|floatformat:0|intcomma}}</div>
+		</li>
 	</ul>
 	<div class='title'>
 		<a href='#income' class='toggler'>Income Statement</a>

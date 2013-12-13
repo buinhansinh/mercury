@@ -29,6 +29,7 @@ class Bill(Document):
     PAID = Enum('paid')
     OVERDUE = Enum('overdue')
     DUE_SOON = Enum('due soon')    
+    BAD = Enum('bad')
     
     transfer = models.OneToOneField(OrderTransfer, related_name="bill", null=True, blank=True)
     supplier = models.ForeignKey(Contact, related_name='receivables')
@@ -39,11 +40,14 @@ class Bill(Document):
     def is_paid(self):
         return self.labeled(Bill.PAID)
     
+    def is_bad(self):
+        return self.labeled(Bill.BAD)
+    
     def payable(self):
         return self.account().credit >= self.total
     
     def cancelable(self):
-        return not self.transfer
+        return not self.transfer and not self.labeled(Bill.CANCELED)
     
     def account(self):
         return TradeAccount.objects.get(supplier=self.supplier, customer=self.customer)
@@ -51,6 +55,8 @@ class Bill(Document):
     def status(self):
         if self.labeled(Bill.CANCELED):
             return 'CANCELED'
+        elif self.labeled(Bill.BAD):
+            return 'BAD'
         elif self.labeled(Bill.PAID):
             return 'PAID'
         elif self.labeled(Bill.UNPAID):
@@ -95,16 +101,30 @@ class Bill(Document):
     def outstanding(self):
         return self.amount - self.total_discount() - self.allocated()
 
+    def toggle_writeoff(self):
+        canceled = self.labeled(Bill.CANCELED)
+        if not canceled:
+            unpaid = self.labeled(Bill.UNPAID)
+            bad = self.labeled(Bill.BAD)
+            if not bad and unpaid:
+                self.label(Bill.BAD)
+                self.unlabel(Bill.UNPAID)
+            if bad:
+                self.unlabel(Bill.BAD)
+                self.label(Bill.UNPAID)
+
     def assess(self):
         outstanding = self.outstanding()
         canceled = self.labeled(Bill.CANCELED)
-        self.label_if(not canceled and outstanding <= 0, Bill.PAID)
-        self.label_if(not canceled and outstanding < 0, Bill.OVERPAID)
-        self.label_if(not canceled and outstanding > 0, Bill.UNPAID)
+        bad = self.labeled(Bill.BAD)
+        process = not canceled and not bad
+        self.label_if(process and outstanding <= 0, Bill.PAID)
+        self.label_if(process and outstanding < 0, Bill.OVERPAID)
+        self.label_if(process and outstanding > 0, Bill.UNPAID)
         account = self.account()
         delta = datetime.today() - self.date
-        self.label_if(not canceled and delta.days > account.credit_period, Bill.OVERDUE)
-        self.label_if(not canceled and delta.days > account.credit_period - 14, Bill.DUE_SOON)      
+        self.label_if(process and delta.days > account.credit_period, Bill.OVERDUE)
+        self.label_if(process and delta.days > account.credit_period - 14, Bill.DUE_SOON)      
 
 
 class BillDiscount(models.Model):

@@ -19,6 +19,7 @@ from company.models import TradeAccount
 from django.conf.urls.defaults import url
 from django.core.urlresolvers import reverse
 from datetime import date
+from task.models import update_debt
 
 
 def annotate(bill, company):
@@ -66,6 +67,8 @@ def search(request):
         bills = bills.filter(labels__name=Bill.PAID)
     elif status == 'CANCELED':
         bills = bills.filter(labels__name=Bill.CANCELED)
+    elif status == 'BAD':
+        bills = bills.filter(labels__name=Bill.BAD)
     
     return bills
     
@@ -176,18 +179,11 @@ def cancel(request, _id):
     bill.log(Bill.CANCEL, request.user)
     return HttpResponseRedirect(bill.get_view_url())
 
-   
-@group_required('accounting', 'management')
-def pay(request, _id):
-    bill = Bill.objects.get(pk=_id)
-    bill.log(Bill.PAY, request.user)
-    return HttpResponseRedirect(bill.get_view_url())
 
-
-@group_required('accounting', 'management')
-def unpay(request, _id):
+def toggle_writeoff(request, _id):
     bill = Bill.objects.get(pk=_id)
-    bill.log(Bill.UNPAY, request.user)
+    bill.toggle_writeoff()
+    update_debt(bill.account())
     return HttpResponseRedirect(bill.get_view_url())
 
 

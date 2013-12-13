@@ -248,6 +248,7 @@ class CompanyAccount(AccountBase):
     YEAR_PROFIT = Enum('year-profit')
     YEAR_COGS = Enum('year-cogs')
     YEAR_INVENTORY = Enum('year-inventory')
+    YEAR_BAD_DEBTS = Enum('year-bad-debts')
     YEAR_PURCHASES = Enum('year-purchases')
     YEAR_COLLECTIONS = Enum('year-collections')
     YEAR_DISBURSEMENTS = Enum('year-disbursements')

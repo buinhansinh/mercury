@@ -28,12 +28,15 @@ def view(request):
     expenses = primary.account.data(CompanyAccount.YEAR_EXPENSES, cutoff)
     net_profit = gross_profit - expenses
     purchases = primary.account.data(CompanyAccount.YEAR_PURCHASES, cutoff)
+    
     inventory = primary.account.data(CompanyAccount.YEAR_INVENTORY, cutoff)
     adjustments = primary.account.data(CompanyAccount.YEAR_ADJUSTMENTS, cutoff)
+    bad_debts = primary.account.data(CompanyAccount.YEAR_BAD_DEBTS, cutoff)
+    
     collections = primary.account.data(CompanyAccount.YEAR_COLLECTIONS, cutoff) 
     disbursements = primary.account.data(CompanyAccount.YEAR_DISBURSEMENTS, cutoff) 
     net_cash = primary.account.data(CompanyAccount.YEAR_NET_CASH, cutoff) 
-
+    
     return render_to_response('task/management/view.html',
         dict(sales=sales,
              cogs=cogs,
@@ -43,6 +46,7 @@ def view(request):
              purchases=purchases,
              inventory=inventory,
              adjustments=adjustments,
+             bad_debts=bad_debts,
              collections=collections,
              disbursements=disbursements,
              net_cash=net_cash,

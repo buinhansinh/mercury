@@ -222,7 +222,19 @@ $(document).ready(function(){
 		} else {
 			return false;
 		}
-	});			
+	});
+
+	$("a#writeoff-button").click(function() {
+		{% if bill.is_bad %}
+			var yes = confirm("Are you sure you want to unmark this bill as bad?");
+		{% else %}
+			var yes = confirm("Are you sure you want to mark this bill as bad?");
+		{% endif %}
+		if (yes) {
+		} else {
+			return false;
+		}
+	});
 });
 </script>
 {% endblock head %}
@@ -258,12 +270,17 @@ $(document).ready(function(){
 			{% if not bill.is_paid %}
 			<li><div class='button'><a href="{% url 'accounting.views.bill.quickpay' bill.id %}"><span class='iconic bolt'></span> Quickpay</a></div></li>
 			{% endif %}
-			{% if not bill.canceled %}
 			<li><div id='discount-button' class="button"><a href="#"><span class='iconic minus'></span> Discount</a></div></li>
 	    	<li><div class='button'><a href="{{ bill.get_edit_url }}"><span class='iconic pen'></span> Edit</a></div></li>
-	    	{% endif %}
 			{% if bill.cancelable %}
-			<li><div class='button'><a id="cancel-button" href="{% url 'accounting.views.bill.cancel' bill.id %}"><span class='iconic minus_alt'></span> Cancel</a></div></li>
+				<li><div class='button'><a id="cancel-button" href="{% url 'accounting.views.bill.cancel' bill.id %}"><span class='iconic minus_alt'></span> Cancel</a></div></li>
+			{% endif %}
+			{% if not bill.is_paid %}
+				<li>
+					<div class='button'>
+					<a id="writeoff-button" href="{% url 'accounting.views.bill.toggle_writeoff' bill.id %}"><span class='iconic document_stroke'></span> Toggle Writeoff</a>
+					</div>
+				</li>
 			{% endif %}
 		</ul>
 	</div>

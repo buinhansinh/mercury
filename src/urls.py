@@ -176,10 +176,8 @@ urlpatterns += patterns('accounting.views.bill',
     (r'^bill/(?P<_id>\d+)/$', 'view'),
     (r'^bill/(?P<_id>\d+)/edit/$', 'edit'),
     (r'^bill/(?P<_id>\d+)/cancel/$', 'cancel'),
-    (r'^bill/(?P<_id>\d+)/pay/$', 'pay'),
-    (r'^bill/(?P<_id>\d+)/unpay/$', 'unpay'),
     (r'^bill/(?P<_id>\d+)/quickpay/$', 'quickpay'),
-    (r'^bill/toggle/withholding/$', 'toggle_withholding'),    
+    (r'^bill/(?P<_id>\d+)/toggle/writeoff/$', 'toggle_writeoff'),    
 ) 
 
 urlpatterns += patterns('accounting.views.discount',
@@ -187,18 +185,15 @@ urlpatterns += patterns('accounting.views.discount',
     (r'^discount/(?P<_id>\d+)/delete/$', 'delete'),    
 )
 
-
 urlpatterns += patterns('accounting.views.payment',
     (r'^payment/(?P<_id>\d+)/$', 'view'),
     (r'^payment/(?P<_id>\d+)/edit/$', 'edit'),
     (r'^payment/(?P<_id>\d+)/cancel/$', 'cancel'),
     (r'^contact/(?P<contact_id>\d+)/disburse/$', 'disburse'),
     (r'^contact/(?P<contact_id>\d+)/collect/$', 'collect'),
-    (r'^payment/toggle/withholding/$', 'toggle_withholding'),
     (r'^payment/(?P<_id>\d+)/allocate/$', 'allocate'),
     (r'^payment/(?P<_id>\d+)/allocate/bills/unpaid/$', 'allocate_bills_unpaid'),
     (r'^payment/(?P<_id>\d+)/allocate/bills/allocated/$', 'allocate_bills_allocated'),
-    (r'^payment/deallocate/(?P<_id>\d+)/$', 'deallocate'),
 )
 
 

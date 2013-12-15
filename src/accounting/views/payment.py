@@ -3,6 +3,12 @@ Created on May 28, 2012
 
 @author: bratface
 '''
+import json
+
+from accounting.models import Payment, Bill, BillDiscount, PaymentAllocation
+from accounting.views import bill
+from addressbook.models import Contact
+from common.utils import group_required
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.forms.models import ModelForm
@@ -10,13 +16,7 @@ from django.http import HttpResponseRedirect, HttpResponseForbidden, \
     HttpResponseBadRequest, HttpResponse
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
-
-from accounting.models import Payment, Bill, BillDiscount, PaymentAllocation
-from accounting.views import bill
-from addressbook.models import Contact
-from common.utils import group_required
-import json
-from task.models import update_debt, update_credit
+from task.models import update_account
 
 
 PAYMENT_MODES = {
@@ -105,17 +105,17 @@ def allocate(request, _id):
         salesdiscs = request.POST.getlist('sales_discount')
         amounts = request.POST.getlist('amount')
         for i, alloc_id in enumerate(alloc_ids):
-            if cancels[i] == 'True':
-                if not alloc_id == '0':
-                    alloc = PaymentAllocation.objects.get(pk=alloc_id)
-                    alloc.delete()
-                continue
             bill = None
             if not alloc_id == '0':
                 alloc = PaymentAllocation.objects.get(pk=alloc_id)
-                alloc.amount = amounts[i]
-                alloc.save()
                 bill = alloc.bill
+                if cancels[i] == 'True':
+                    alloc.delete()
+                    bill.assess() #shortcut out
+                    continue
+                else:
+                    alloc.amount = amounts[i]
+                    alloc.save()
             else:
                 bill = Bill.objects.get(pk=bill_ids[i])
                 alloc = PaymentAllocation()
@@ -130,9 +130,7 @@ def allocate(request, _id):
             bill.assess()
         payment.assess()
         account = payment.account()
-        update_debt(account)
-        update_credit(account)
-        account.save()
+        update_account(account)
         return HttpResponseRedirect(payment.get_view_url())
 
 

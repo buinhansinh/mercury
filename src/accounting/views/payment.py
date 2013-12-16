@@ -100,7 +100,7 @@ def allocate(request, _id):
     elif request.method == 'POST':    
         alloc_ids = request.POST.getlist('id')
         bill_ids = request.POST.getlist('bill_id')
-        cancels = request.POST.getlist('canceled')
+        checks = request.POST.getlist('checked')
         wtaxes = request.POST.getlist('withholding_tax')
         salesdiscs = request.POST.getlist('sales_discount')
         amounts = request.POST.getlist('amount')
@@ -109,13 +109,13 @@ def allocate(request, _id):
             if not alloc_id == '0':
                 alloc = PaymentAllocation.objects.get(pk=alloc_id)
                 bill = alloc.bill
-                if cancels[i] == 'True':
+                if checks[i] == 'True':
+                    alloc.amount = amounts[i]
+                    alloc.save()
+                else:
                     alloc.delete()
                     bill.assess() #shortcut out
                     continue
-                else:
-                    alloc.amount = amounts[i]
-                    alloc.save()
             else:
                 bill = Bill.objects.get(pk=bill_ids[i])
                 alloc = PaymentAllocation()

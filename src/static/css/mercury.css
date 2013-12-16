@@ -318,6 +318,9 @@ input[type=text], input.date, input[type=number], input[type=decimal], input[typ
 	border: 1px solid #999;
 	padding: 3px 3px 3px 3px;
 }
+input[disabled] {
+	color: #999;
+}
 input[readonly=readonly] {
 	border: none;
 	padding: 3px 1px 3px 1px;

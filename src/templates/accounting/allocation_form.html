@@ -69,7 +69,7 @@ div#allocations-toolbar {
 }
 div#allocations table.data {
 	width: 100%;
-	margin-bottom: 250px;
+	margin-bottom: 15px;
 }
 div#allocations table.data input {
 	width: 90px;
@@ -110,9 +110,11 @@ table.data tfoot tr.toolbar td, table.data tfoot tr.toolbar:hover td {
 	border: none;
 	border-top: 1px solid;
 }
-div#allocations table.data input#bill-search {
-	text-align: left;
-	width: 250px;
+div#allocations table.data input[type=checkbox] {
+	width: 20px;
+}
+#unpaid-table a.auto-withhold, #unpaid-table a.auto-allocate {
+	display: none;
 }
 </style>
 <script>
@@ -121,14 +123,15 @@ to_int_currency = function(x) {
 }
 
 currency = function(x) {
-	return x / 100;
+	return (x / 100).toFixed(2);
 }
 
 var allocation_row = 
 	"<tr>\
 		<input type='hidden' name='id' class='id' value='{}'/>\
 		<input type='hidden' name='bill_id' class='bill-id' value='{}'/>\
-		<input type='hidden' name='canceled' class='canceled' value='False'/>\
+		<input type='hidden' name='checked' class='checked' value='False'/>\
+		<td class='checkbox'><input name='checked' type='checkbox' value='True'/></td>\
 		<td class='code'><a href='{}' target='_'>{}</a></td>\
 		<td class='date'>{}</td>\
 		<td class='amount'>{}</td>\
@@ -138,7 +141,6 @@ var allocation_row =
 		<td class='allocated'>{}</td>\
 		<td class='outstanding'>{}</td>\
 		<td class='allocation'><a href='#' class='auto-allocate'><span class='iconic bolt'></span></a> <input type='text' name='amount' class='allocation' value='{}'/></td>\
-		<td class='action'>&nbsp;<a href='#' class='iconic x'></a>&nbsp;</td>\
 	</tr>";
 
 allocated_bills = new Array();
@@ -163,7 +165,7 @@ $(document).ready(function(){
 	
 	
 	// get unpaid bills and fill up autocomplete
-	var insert_allocation_row = function(allocation) {
+	var insert_allocation_row = function(table, allocation) {
 		if($("tr input.bill-id[value={}]".format(allocation.bill_id)).length == 0) {
 			row = allocation_row.format(
 					allocation.id,
@@ -178,61 +180,78 @@ $(document).ready(function(){
 					allocation.allocated,
 					allocation.outstanding,
 					allocation.amount);
-			$("#allocations-table tbody").append(row);
+			$(table).append(row);
 			total_rows();
 		} else {
 			alert("There's already an allocation for this bill!");
 		}
 	};
 
+	var get_date_from_row = function(row) {
+		var date_str = row.children('td.date').html();
+		var mdy = date_str.split('/');
+		return new Date(mdy[2], mdy[0], mdy[1]);
+	} 
+	
 	// Removing allocations 
-	$('#allocations-table').on("click", "a.iconic.x", function(e) {
+	$('#allocations-table').on("click", "input[type=checkbox]", function(e) {
 		var yes = confirm("Are you sure you want to remove this allocation?");
 		if (yes) {
-			var allocation_id = $(this).closest("tr").children("input.id").val();
-			var row = $(this).parents("tr"); 
-			if (allocation_id == '0') {
-				row.remove();			
-			}
-			else
-			{
-				row.hide();
-				row.children('input.canceled').val('True');
-			}
-			$('#form').validate();
+			var row = $(this).closest("tr");
+			row.fadeOut('fast', function(){
+				row.find('input[type=text]').attr('disabled', true);
+				var row_date = get_date_from_row(row);
+				row.detach();
+				$("#unpaid-table tbody tr").each(function(){
+					var date = get_date_from_row($(this));
+					if (row_date < date) {
+						$(this).before(row);
+						return false;
+					}
+				});
+				row.fadeIn('fast', function(){
+					total_rows();
+				});
+			});
+		} else {
+			e.preventDefault();
 		}
-		e.preventDefault();
 	});	
+	
+	// Adding allocations 
+	$('#unpaid-table').on("click", "input[type=checkbox]", function(e) {
+		var row = $(this).closest("tr");
+		row.fadeOut('fast', function() {
+			row.find('input[type=text]').attr('disabled', false);
+			row.detach();
+			$("#allocations-table tbody").append(row);
+			row.fadeIn('fast', function(){
+				total_rows();
+			});
+		});
+	});		
 	
 	$.getJSON("{% url 'accounting.views.payment.allocate_bills_allocated' payment.id %}", function(data) {
-		var i = 0;
-		for (i=0; i<data.length; i++) {
-			insert_allocation_row(data[i]);
+		var table = "#allocations-table tbody";
+		for (var i=0; i<data.length; i++) {
+			insert_allocation_row(table, data[i]);
 		}
 		$('#form').validate();
-		$("#bill-search").focus();
+		$("#allocations-table input[type=checkbox]").attr('checked', true);
 	});	
 	
-	$("#bill-search").addClass("loading");
 	$.getJSON("{% url 'accounting.views.payment.allocate_bills_unpaid' payment.id %}", function(data) {
-		$("#bill-search").autocomplete({
-			source: data,
-			minLength: 0,
-			select: function(e, ui) {
-				insert_allocation_row(ui.item);
-				$(this).val('');
-				$(this).focus();
-				e.preventDefault();
-			},
-		}).data("autocomplete")._renderItem = function(ul, item) {
-			var li = null;
-			li = $("<li class='suggestion'>").data("item.autocomplete", item)
-				.append("<a><span class='code'>" + item.label + 
-						"</span><span class='date'>" + item.date + 
-						"</span><span class='amount'> " + item.bill_amount + "</span></a>"); 
-	        return li.appendTo(ul);
-		};
-		$("#bill-search").removeClass("loading");
+		if (data.length > 0) {
+			var i = 0;
+			var table = "#unpaid-table tbody";
+			for (i=0; i < data.length; i++) {
+				insert_allocation_row(table, data[i]);
+			}
+			$("#unpaid-table input[type=text]").attr('disabled', true);
+			$("#unpaid-table tr.empty").remove();
+		} else {
+			$("#unpaid-table tr.empty td").html("Empty");
+		}		
 	});
 	
 	$('#form').on('click', "a.auto-withhold", function(e) {
@@ -252,7 +271,7 @@ $(document).ready(function(){
 		e.preventDefault();
 		$("#form").validate();
 		input.focus();
-	});	
+	});
 	
 	$.validation.outstanding = function(input) {
 		var tr = $(input).parents('tr');
@@ -263,14 +282,17 @@ $(document).ready(function(){
 		var other_discount = tr.find('td.other-discount').html();		
 		var outstanding = to_int_currency(amount) - to_int_currency(allocated) - to_int_currency(withholding_tax) - to_int_currency(sales_discount) - to_int_currency(other_discount);
 		var outstanding = currency(outstanding);
-		if (outstanding < 0)
-			$(input).invalidate($.validation.ERROR, 'Discounts cannot be greater than the bill amount.');
 		tr.children('td.outstanding').html(outstanding);
-		
-		// if allocation > outstanding, set it to outstanding
-		var allocation = tr.find('input.allocation').val();
-		if (to_int_currency(allocation) > to_int_currency(outstanding)) {
-			tr.find('input.allocation').val(outstanding);
+		if (outstanding < 0) {
+			$(input).invalidate($.validation.ERROR, 'Discounts cannot be greater than the bill amount.');
+		}
+		else 
+		{
+			// if allocation > outstanding, set it to outstanding
+			var allocation = tr.find('input.allocation').val();
+			if (to_int_currency(allocation) > to_int_currency(outstanding)) {
+				tr.find('input.allocation').val(outstanding);
+			}
 		}
 	}
 
@@ -312,10 +334,6 @@ $(document).ready(function(){
 		selector: "input.allocation",
 		validators: ['required', 'positive_decimal', 'allocation', 'totals'],
 	}, ], function() {
-		if($('#allocations-table tbody tr').length < 1) {
-			alert("But you haven't allocated anything!");
-			return false;
-		}	
 		var funds_remaining = currency(to_int_currency($("#funds-remaining").html()));
 		if (funds_remaining < 0) {
 			alert("Total allocations cannot exceed available funds.");
@@ -323,8 +341,30 @@ $(document).ready(function(){
 		}		
 	});
 	
+	var send_deleted = function() {
+		var for_deletion = Array();
+		$("#unpaid-table input.id").each(function() {
+			var id = $(this).val()
+			if (id > 0) {
+				for_deletion.push(this);
+			}
+		});
+		for (var i=0; i<for_deletion.length; i++) {
+			var row = $(for_deletion[i]).parents('tr');
+			row.detach();
+			row.find('input').attr('disabled', false);
+			row.hide();			
+			row.appendTo('#allocations-table tbody');
+		}
+		$("#allocations-table input[type=checkbox]:checked").parents('tr').find('input[type=hidden].checked').remove();
+	}
+	
 	$('#save-button').click(function() {
-		$('#form').submit();
+		$('#form').validate();
+		if ($('#form').isValid()) {
+			send_deleted();
+			$('#form').submit();
+		}
 		return false;
 	});
 });
@@ -360,8 +400,16 @@ $(document).ready(function(){
     		</tr>
     		<tr>
     			<td align="right">Available:</td>
-    			<td align="left">{{payment.total|default:0|floatformat:2}}</td>
-    		</tr>	        
+    			<td align="left" id="funds-available">{{payment.total|default:0|floatformat:2}}</td>
+    		</tr>
+    		<tr>
+	    		<td align="right">Allocated:</td>
+	    		<td align="left" id="funds-allocated">0</td>
+	    	</tr>
+	    	<tr>
+	    		<td align="right">Remaining:</td>
+	    		<td align="left" id="funds-remaining">{{payment.total|default:0|floatformat:2}}</td>
+	    	</tr>    		        
 	    </tbody>
     </table>
     </div>
@@ -379,6 +427,7 @@ $(document).ready(function(){
 					<th colspan='10'>ALLOCATIONS</th>
 				</tr>
 				<tr>
+					<th></th>
 					<th>Bill No.</th>
 					<th>Date</th>
 					<th>Amount</th>
@@ -388,12 +437,12 @@ $(document).ready(function(){
 					<th>Allocated</th>
 					<th>Outstanding</th>
 					<th>Allocation</th>
-					<th></th>
 				</tr>			
 			</thead>
 			<tbody></tbody>
 			<tfoot>
 				<tr>
+					<td></td>
 					<td colspan="2">Total</td>
 					<td class="amount">0</td>
 					<td class="withholding-tax">0</td>
@@ -402,29 +451,32 @@ $(document).ready(function(){
 					<td class="allocated">0</td>
 					<td class="outstanding">0</td>
 					<td class="allocation">0</td>
-					<td></td>
 				</tr>
-				<tr class="toolbar">
-					<td colspan="3">
-						<span class="iconic plus"></span> 
-						<input id="bill-search" type="text" value="" placeholder="New Allocation"></input>
-					</td>
-	    			<td align="right">Available:</td>
-	    			<td align="left" id="funds-available">{{payment.total|default:0|floatformat:2}}</td>
-	    			<td align="right">Allocated:</td>
-	    			<td align="left" id="funds-allocated">0</td>
-	    			<td align="right">Remaining:</td>
-	    			<td align="left" id="funds-remaining">{{payment.total|default:0|floatformat:2}}</td>
-	    			<td></td>
-				</tr>			
 			</tfoot>
-			
 		</table>
 	</form>
-	<div id='allocations-toolbar'>
-		
-		
-	</div>
+	<table id="unpaid-table" class='data'>
+		<thead>
+			<tr>
+				<th colspan='10'>UNPAID BILLS</th>
+			</tr>
+			<tr>
+				<th></th>
+				<th>Bill No.</th>
+				<th>Date</th>
+				<th>Amount</th>
+				<th>W. Tax</th>
+				<th>Sales Disc.</th>
+				<th>Other Disc.</th>
+				<th>Allocated</th>
+				<th>Outstanding</th>
+				<th>Allocation</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr class="empty"><td colspan="10">Loading...</td></tr>
+		</tbody>
+	</table>
 </div>
 {% endif %}
 {% endblock content %}

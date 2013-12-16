@@ -78,7 +78,7 @@ class Bill(Document):
             try:
                 d = self.discounts.get(label=label)
             except BillDiscount.DoesNotExist:
-                return 0
+                return Decimal('0.00')
             return d.amount
         elif amount > 0:
             d, _ = self.discounts.get_or_create(label=label)
@@ -96,7 +96,7 @@ class Bill(Document):
         total = 0
         for a in allocations:
             total += a.amount
-        return total
+        return Decimal(total).quantize(Decimal('.01'))
     
     def outstanding(self):
         return self.amount - self.total_discount() - self.allocated()
@@ -105,11 +105,12 @@ class Bill(Document):
         canceled = self.labeled(Bill.CANCELED)
         if not canceled:
             unpaid = self.labeled(Bill.UNPAID)
+            paid = self.labeled(Bill.PAID)
             bad = self.labeled(Bill.BAD)
             if not bad and unpaid:
                 self.label(Bill.BAD)
                 self.unlabel(Bill.UNPAID)
-            if bad:
+            if bad and not paid:
                 self.unlabel(Bill.BAD)
                 self.label(Bill.UNPAID)
 
@@ -117,14 +118,13 @@ class Bill(Document):
         outstanding = self.outstanding()
         canceled = self.labeled(Bill.CANCELED)
         bad = self.labeled(Bill.BAD)
-        process = not canceled and not bad
-        self.label_if(process and outstanding <= 0, Bill.PAID)
-        self.label_if(process and outstanding < 0, Bill.OVERPAID)
-        self.label_if(process and outstanding > 0, Bill.UNPAID)
+        self.label_if(not canceled and outstanding <= 0, Bill.PAID)
+        self.label_if(not canceled and outstanding < 0, Bill.OVERPAID)
+        self.label_if(not canceled and not bad and outstanding > 0, Bill.UNPAID)
         account = self.account()
         delta = datetime.today() - self.date
-        self.label_if(process and delta.days > account.credit_period, Bill.OVERDUE)
-        self.label_if(process and delta.days > account.credit_period - 14, Bill.DUE_SOON)      
+        self.label_if(not canceled and delta.days > account.credit_period, Bill.OVERDUE)
+        self.label_if(not canceled and delta.days > account.credit_period - 14, Bill.DUE_SOON)      
 
 
 class BillDiscount(models.Model):

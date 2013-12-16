@@ -60,14 +60,18 @@ $.validation = {
 	}
 	
 	$.fn.isValid = function() {
+		var valid = true;
 		var config = this.data('validation-config');
 		for (var i=0; i<config.length; i++) {
 			if ($(this).find(config[i].selector).hasClass('error')) {
-				alert('Whoops!  Looks like there are still errors on the form.  Please correct them and try again.  In particular, ' + config[i].selector);
-				return false;
+				valid = false;
+				break;
 			}
 		}
-		return true;
+		if (valid && config.onSubmit) {
+			valid = config.onSubmit();
+		}
+		return !(valid==false);
 	}
 	
 	$.fn.validation = function(config, onSubmit) {
@@ -76,6 +80,7 @@ $.validation = {
 			return;
 		}
 
+		config.onSubmit = onSubmit;
 		this.data('validation-config', config);
 		
 		$('body').append("<div id='tip' class='error'><span class='icon iconic x_alt'></span> <span class='message'></span></div>");

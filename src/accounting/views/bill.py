@@ -262,7 +262,7 @@ def receivables(request, contact_id):
 def receivables_statement(request, contact_id):
     primary = request.user.account.company
     contact = Contact.objects.get(pk=contact_id)
-    bills = Bill.objects.filter(customer=contact, supplier=primary, labels__name=Bill.UNPAID)
+    bills = Bill.objects.filter(customer=contact, supplier=primary, labels__name=Bill.UNPAID).order_by('date')
     title = "PAYABLES"
     today = date.today()
     return render_to_response(
@@ -289,7 +289,7 @@ def payables(request, contact_id):
 def payables_statement(request, contact_id):
     primary = request.user.account.company
     contact = Contact.objects.get(pk=contact_id)
-    bills = Bill.objects.filter(customer=primary, supplier=contact, labels__name=Bill.UNPAID)
+    bills = Bill.objects.filter(customer=primary, supplier=contact, labels__name=Bill.UNPAID).order_by('date')
     title = "RECEIVABLES"
     today = date.today()
     return render_to_response(

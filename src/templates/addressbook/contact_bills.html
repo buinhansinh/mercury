@@ -2,7 +2,7 @@
 {% load url from future %}
 {% load humanize %}
 {% block columns %}
-	<div class='code'><a href="{{ result.get_view_url }}">{{result.code}}</a></div>
+	<div class='code'><a href="{{ result.get_view_url }}">{{result.code|default:"None"}}</a></div>
 	<div class='date'>{{result.date|date:'Y-m-d'}}</div>
 	<div class='amount'>{{result.amount|default:0|floatformat:2|intcomma}}</div>
 	<div class='amount'>{{result.outstanding|default:0|floatformat:2|intcomma}}</div>

@@ -382,22 +382,22 @@ class Command(BaseCommand):
         logger.info("Costing End")
 
         logger.info("Order Assessment Start")
-        #self.bookkeep_orders()
+        self.bookkeep_orders()
         logger.info("Order Assessment End")
         
         logger.info("Aging Start")
-        #self.bookkeep_aging2()
+        self.bookkeep_aging2()
         logger.info("Aging End")
         
         # only do this if it's the current year
         if self.start_date.year == datetime.today().year:
             # value of inventory
             logger.info("Item Bookkeep Start")
-            #self.bookkeep_items()
+            self.bookkeep_items()
             self.bookkeep_adjustments()
             logger.info("Item Bookkeep End")
             logger.info("Account Bookkeep Start")
-            #self.bookkeep_accounts()
+            self.bookkeep_accounts()
             logger.info("Account Bookkeep End")
         
         print "Bookkeeping complete."

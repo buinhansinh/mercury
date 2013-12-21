@@ -5,13 +5,13 @@
 	<input type='hidden' name='item-info-id' class='item-info-id' value='{{ item.info.id }}'/>		
 	<input type='hidden' name='item-info-type-id' class='item-info-type-id' value='{{item.info_type.id}}'/>
 	<div class='handle'>
-		<a href='#'><span class='iconic move_vertical_alt2'></span></a>
+		<a href='#' tabindex="-1"><span class='iconic move_vertical_alt2'></span></a>
 	</div>
 	<div class='name'>
-		<a class='item-info' href="#">{{item.info.name}}</a>
+		<a class='item-info' href="#" tabindex="-1">{{item.info.name}}</a>
 	</div>
 	<div class='description'>
-		<a class='item-info' href="#">{{ item.info.summary }}</a>
+		<a class='item-info' href="#" tabindex="-1">{{ item.info.summary }}</a>
 	</div>
 	<div class='quantity'>
 		<input class='quantity' type='decimal' required='required' name='item-qty' value='{{item.quantity|default:"1"}}'/>

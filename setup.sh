@@ -4,6 +4,7 @@ cd /web/mercury
 mkdir logs
 source bin/activate
 easy_install -U distribute setuptools
+pip install eventlet
 python bootstrap.py
 bin/buildout
 sudo cp supervisor.conf /etc/supervisor/conf.d/mercury.conf

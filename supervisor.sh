@@ -5,4 +5,4 @@ git pull origin
 python dropbox.py start
 source bin/activate
 django rebuild_index --noinput
-exec django run_gunicorn
+exec django run_gunicorn -k eventlet -t 120

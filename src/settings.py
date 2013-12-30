@@ -228,14 +228,14 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': True,
         },
-        'task.models': {
-            'handlers': ['debug_log'],
-            'level': 'DEBUG',
-        },
         'task.management.commands.bookkeep': {
             'handlers': ['bookkeep_log'],
             'level': 'DEBUG',
-        }
+        },
+        'task.management.commands.bookkeep2': {
+            'handlers': ['bookkeep_log'],
+            'level': 'DEBUG',
+        }                
     }
 }
 

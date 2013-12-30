@@ -101,9 +101,9 @@ def physical(sender, instance, action, user, **kwargs):
 logger = logging.getLogger(__name__)
 
 
-@receiver(post_save, sender=Stock)
-def stock(sender, instance, created, **kwargs):
-    logger.debug("Stock: {} {} {} created: {}".format(instance.product.name(), instance.location.name, instance.quantity, created))
+#@receiver(post_save, sender=Stock)
+#def stock(sender, instance, created, **kwargs):
+#    logger.debug("Stock: {} {} {} created: {}".format(instance.product.name(), instance.location.name, instance.quantity, created))
 
 
 #def transfer(product, quantity, origin, destination, action):

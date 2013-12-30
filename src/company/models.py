@@ -32,9 +32,84 @@ class UserAccount(models.Model):
             self._groups = self.user.groups.values_list('name', flat=True) 
         return self._groups
 
+
 @receiver(post_save, sender=User)
 def on_user_save(sender, instance, created, **kwargs):
     UserAccount.objects.get_or_create(user=instance)
+
+
+class YearData(models.Model):
+    SALES = Enum('sales')
+    SALES_QUANTITY = Enum('sales-quantity')
+    PURCHASES = Enum('purchases')
+    PURCHASES_QUANTITY = Enum('purchases-quantity')
+    COGS = Enum('cogs')
+    PROFIT = Enum('profit')
+    ADJUSMENTS = Enum('adjustment')
+    COLLECTIONS = Enum('collections')
+    DISBURSEMENTS = Enum('collections')
+    EXPENSES = Enum('expenses')
+        
+    account_type = models.ForeignKey(ContentType)
+    account_id = models.PositiveIntegerField()    
+    account = generic.GenericForeignKey('account_type', 'account_id')
+    label = common.fields.EnumField()
+    year = models.PositiveIntegerField()
+    jan = common.fields.DecimalField(default=0)
+    feb = common.fields.DecimalField(default=0)
+    mar = common.fields.DecimalField(default=0)
+    apr = common.fields.DecimalField(default=0)
+    may = common.fields.DecimalField(default=0)
+    jun = common.fields.DecimalField(default=0)
+    jul = common.fields.DecimalField(default=0)
+    aug = common.fields.DecimalField(default=0)
+    sep = common.fields.DecimalField(default=0)
+    oct = common.fields.DecimalField(default=0)
+    nov = common.fields.DecimalField(default=0)
+    dec = common.fields.DecimalField(default=0)
+    total = common.fields.DecimalField(default=0)
+
+    MONTH_MAP = {1:'jan', 
+                 2:'feb',
+                 3:'mar',
+                 4:'apr',
+                 5:'may',
+                 6:'jun',
+                 7:'jul',
+                 8:'aug',
+                 9:'sep',
+                 10:'oct',
+                 11:'nov',
+                 12:'dec'}
+
+    def add(self, month, value):
+        new_val = self.get(month) + value
+        self.set(month, new_val)
+    
+    def set(self, month, value):
+        setattr(self, YearData.MONTH_MAP[month], value)
+
+    def get(self, month):
+        return getattr(self, YearData.MONTH_MAP[month])
+
+    def reset(self):
+        self.jan = 0
+        self.feb = 0
+        self.mar = 0
+        self.apr = 0
+        self.may = 0
+        self.jun = 0
+        self.jul = 0
+        self.aug = 0
+        self.sep = 0
+        self.oct = 0
+        self.nov = 0
+        self.dec = 0
+        self.total = 0
+        
+    def save(self, *args, **kwargs):
+        for month in range(1, 12): self.total += self.get(month)        
+        super(YearData, self).save(*args, **kwargs)
 
 
 class AccountData(models.Model):
@@ -76,6 +151,12 @@ class AccountBase(models.Model):
             data.value = value
             data.save()
 
+    def year_data(self, label, year):
+        data, _ = YearData.objects.get_or_create(label=label, 
+                                                 year=year, 
+                                                 account_type=self.content_type(),
+                                                 account_id=self.id)
+        return data
 
 
 class ItemAccount(AccountBase):
@@ -215,7 +296,7 @@ class ItemAccount(AccountBase):
 
     def rank(self):
         return self.data()
-
+    
 
 class TradeAccount(AccountBase):
     YEAR_SALES = Enum('year-sales')

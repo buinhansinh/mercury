@@ -336,7 +336,7 @@ $(document).ready(function(){
 			</tr>
 			{% for a in bill.allocations.all %}
 			<tr>
-				<td align="right"><a href="{{a.payment.get_view_url}}">{{a.payment.code}}</a>:</td>
+				<td align="right"><a href="{{a.payment.get_view_url}}">{{a.payment.code|default:"None"}}</a>:</td>
 				<td align="left" colspan="2">{{a.amount|default:0|floatformat:2|intcomma}}</td>
 			</tr>
 			{% endfor %}

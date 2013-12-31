@@ -228,7 +228,7 @@ class Command(BaseCommand):
             key = account.item_id
             adjustment = delta_map.get(key, 0) * self.context.estimate(account.item)
             total += adjustment
-            account.data(ItemAccount.YEAR_ADJUSMENT, self.cutoff, adjustment)
+            account.data(ItemAccount.YEAR_ADJUSTMENTS, self.cutoff, adjustment)
         
         self.primary.account.data(CompanyAccount.YEAR_ADJUSTMENTS, 
                      self.cutoff, 

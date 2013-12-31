@@ -45,7 +45,7 @@ class YearData(models.Model):
     PURCHASES_QUANTITY = Enum('purchases-quantity')
     COGS = Enum('cogs')
     PROFIT = Enum('profit')
-    ADJUSMENTS = Enum('adjustment')
+    ADJUSTMENTS = Enum('adjustment')
     COLLECTIONS = Enum('collections')
     DISBURSEMENTS = Enum('collections')
     EXPENSES = Enum('expenses')
@@ -165,7 +165,7 @@ class ItemAccount(AccountBase):
     YEAR_PROFIT = Enum('year-profit')
     YEAR_AVERAGE_COST = Enum('year-average-cost')
     YEAR_RANK = Enum('rank')
-    YEAR_ADJUSMENT = Enum('year-adjustment')
+    YEAR_ADJUSTMENTS = Enum('year-adjustment')
     
     owner = models.ForeignKey(Contact, related_name='items')
 

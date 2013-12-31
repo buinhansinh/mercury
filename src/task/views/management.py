@@ -35,7 +35,7 @@ def view(request):
     
     collections = primary.account.data(CompanyAccount.YEAR_COLLECTIONS, cutoff) 
     disbursements = primary.account.data(CompanyAccount.YEAR_DISBURSEMENTS, cutoff) 
-    net_cash = primary.account.data(CompanyAccount.YEAR_NET_CASH, cutoff) 
+    net_cash = collections - disbursements
     
     return render_to_response('task/management/view.html',
         dict(sales=sales,

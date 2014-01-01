@@ -147,12 +147,11 @@ class Command(BaseCommand):
             # average cost
             cost = self.context.estimate(account.item)
             account.data(ItemAccount.YEAR_AVERAGE_COST, self.cutoff, cost)
-            stock = account.stock
-            inventory += stock * cost
+            inventory += account.stock * cost
             
         self.primary.account.data(CompanyAccount.YEAR_INVENTORY, self.cutoff, inventory)
         transaction.commit()
-    
+        
     @transaction.commit_manually
     def bookkeep_accounts(self):
         # Sales, Purchases, Cost, Profit
@@ -174,49 +173,51 @@ class Command(BaseCommand):
         acct_cogs = {}
         acct_profits = {}
         
-#         for t in transfers:
-#             item_key = (t.order.info_id, t.order.info_type, t.date.month)
-#             quantity = t.net_quantity
-#             value = t.net_quantity * t.order.price
-#             
-#             if t.order.order.customer == self.primary: # purchase
-#                 #item stuff
-#                 plus_equal(item_purchases_qty, item_key, quantity)
-#                 plus_equal(item_purchases, item_key, value)
-#                 
-#                 #trade stuff
-#                 account_key = (t.order.order.supplier.id, t.date.month)
-#                 plus_equal(acct_purchases_qty, account_key, quantity)
-#                 plus_equal(acct_purchases, account_key, value)
-# 
-#             elif t.order.order.supplier == self.primary: # sale
-#                 cogs = t.net_quantity * self.context.estimate(t.order.info)
-#                 profit = value - cogs
-#                 
-#                 #item stuff
-#                 plus_equal(item_sales_qty, item_key, quantity)
-#                 plus_equal(item_sales, item_key, value)
-#                 plus_equal(item_cogs, item_key, cogs)
-#                 plus_equal(item_profits, item_key, profit)
-# 
-#                 #trade stuff
-#                 account_key = (t.order.order.customer.id, t.date.month)
-#                 plus_equal(acct_sales_qty, account_key, quantity)
-#                 plus_equal(acct_sales, account_key, value)
-#                 plus_equal(acct_cogs, account_key, cogs)
-#                 plus_equal(acct_profits, account_key, profit)
+        for t in transfers:
+            item_key = (t.order.info_id, t.order.info_type, t.date.month)
+            quantity = t.net_quantity
+            value = t.net_quantity * t.order.price
+             
+            if t.order.order.customer == self.primary: # purchase
+                #item stuff
+                plus_equal(item_purchases_qty, item_key, quantity)
+                plus_equal(item_purchases, item_key, value)
+                 
+                #trade stuff
+                account_key = (t.order.order.supplier.id, t.date.month)
+                plus_equal(acct_purchases_qty, account_key, quantity)
+                plus_equal(acct_purchases, account_key, value)
+ 
+            elif t.order.order.supplier == self.primary: # sale
+                cogs = t.net_quantity * self.context.estimate(t.order.info)
+                profit = value - cogs
+                 
+                #item stuff
+                plus_equal(item_sales_qty, item_key, quantity)
+                plus_equal(item_sales, item_key, value)
+                plus_equal(item_cogs, item_key, cogs)
+                plus_equal(item_profits, item_key, profit)
+ 
+                #trade stuff
+                account_key = (t.order.order.customer.id, t.date.month)
+                plus_equal(acct_sales_qty, account_key, quantity)
+                plus_equal(acct_sales, account_key, value)
+                plus_equal(acct_cogs, account_key, cogs)
+                plus_equal(acct_profits, account_key, profit)
         
         # Payment data
         logger.info("Calculating Payments")
         collections = Payment.objects.filter(supplier=self.primary, labels__name=Payment.VALID)
         acct_collections = {}
         for c in collections:
-            plus_equal(acct_collections, c.customer, c.total)
+            key = (c.customer.id, c.date.month)
+            plus_equal(acct_collections, key, c.total)
             
         disbursements = Payment.objects.filter(customer=self.primary, labels__name=Payment.VALID)
         acct_disbursements = {}
         for d in disbursements:
-            plus_equal(acct_disbursements, d.supplier, d.total)
+            key = (d.supplier.id, d.date.month)
+            plus_equal(acct_disbursements, key, d.total)
         
         # Adjustment data
         logger.info("Calculating Adjustments")
@@ -264,7 +265,7 @@ class Command(BaseCommand):
                     d.set(month, data.get(key, 0))
                 d.save()
             return affected
-        
+         
         affected = fill_item_year_data(item_sales, YearData.SALES, self.start_date.year)
         affected.intersection_update(fill_item_year_data(item_sales_qty, YearData.SALES, self.start_date.year))
         affected.intersection_update(fill_item_year_data(item_purchases, YearData.SALES, self.start_date.year))
@@ -272,9 +273,9 @@ class Command(BaseCommand):
         affected.intersection_update(fill_item_year_data(item_cogs, YearData.SALES, self.start_date.year))
         affected.intersection_update(fill_item_year_data(item_profits, YearData.SALES, self.start_date.year))
         affected.intersection_update(fill_item_year_data(item_adjustments, YearData.SALES, self.start_date.year))
-
+ 
         items = ItemAccount.objects.filter(owner=self.primary).exclude(id__in=affected)
-        
+         
         for i in items:
             sales_data = i.year_data(label=YearData.SALES, year=self.start_date.year)
             sales_qty_data = i.year_data(label=YearData.SALES_QUANTITY, year=self.start_date.year)
@@ -302,13 +303,11 @@ class Command(BaseCommand):
         
         logger.info("Updating Supplier Stats")
         accounts = TradeAccount.objects.filter(customer=self.primary)
-        total_purchases = 0
-        total_disbursements = 0
-        
+         
         for a in accounts:
             purchases_data = a.year_data(label=YearData.PURCHASES, year=self.start_date.year)
-            purchases_qty_data = i.year_data(label=YearData.PURCHASES_QUANTITY, year=self.start_date.year)
-            disbursements_data = i.year_data(label=YearData.DISBURSEMENTS, year=self.start_date.year)
+            purchases_qty_data = a.year_data(label=YearData.PURCHASES_QUANTITY, year=self.start_date.year)
+            disbursements_data = a.year_data(label=YearData.DISBURSEMENTS, year=self.start_date.year)
             for month in range(1, 12):
                 key = (a.supplier.id, month)
                 purchases_data.set(month, acct_purchases.get(key, 0))
@@ -317,22 +316,16 @@ class Command(BaseCommand):
             purchases_data.save()
             purchases_qty_data.save()
             disbursements_data.save()
-            total_purchases += purchases_data.total
-            total_disbursements += disbursements_data.total
-
+ 
         logger.info("Updating Customer Stats")
         accounts = TradeAccount.objects.filter(supplier=self.primary)
-        total_sales = 0
-        total_cogs = 0
-        total_profit = 0
-        total_collections = 0
-        
+         
         for a in accounts:
             sales_data = a.year_data(label=YearData.SALES, year=self.start_date.year)
             sales_qty_data = a.year_data(label=YearData.SALES_QUANTITY, year=self.start_date.year)
             cogs_data = a.year_data(label=YearData.COGS, year=self.start_date.year)
             profit_data = a.year_data(label=YearData.PROFIT, year=self.start_date.year)
-            collections_data = i.year_data(label=YearData.COLLECTIONS, year=self.start_date.year)
+            collections_data = a.year_data(label=YearData.COLLECTIONS, year=self.start_date.year)
             for month in range(1, 12):
                 key = (a.customer.id, month)
                 sales_data.set(month, acct_sales.get(key, 0))
@@ -345,33 +338,30 @@ class Command(BaseCommand):
             cogs_data.save()
             profit_data.save()
             collections_data.save()
-            total_sales += sales_data.total
-            total_cogs += cogs_data.total
-            total_profit += profit_data.total
-            total_collections += collections_data.total
             
         logger.info("Updating Company Stats")
-        self.primary.account.data(CompanyAccount.YEAR_SALES, 
-                                  self.cutoff, 
-                                  total_sales)
-        self.primary.account.data(CompanyAccount.YEAR_PURCHASES, 
-                                  self.cutoff, 
-                                  total_purchases)
-        self.primary.account.data(CompanyAccount.YEAR_COGS, 
-                                  self.cutoff, 
-                                  total_cogs)
-        self.primary.account.data(CompanyAccount.YEAR_PROFIT, 
-                                  self.cutoff, 
-                                  total_profit)
-#         self.primary.account.data(CompanyAccount.YEAR_ADJUSTMENTS,
-#                                   self.cutoff, 
-#                                   total_adjustments)
-        self.primary.account.data(CompanyAccount.YEAR_DISBURSEMENTS,
-                                  self.cutoff, 
-                                  total_disbursements)
-        self.primary.account.data(CompanyAccount.YEAR_COLLECTIONS, 
-                                  self.cutoff, 
-                                  total_collections)
+        def fill_company_year_data(label, data):
+            year_data = self.primary.account.year_data(label, self.cutoff.year)
+            year_data.reset()
+            for key, value in data.iteritems():
+                _, month = key
+                year_data.add(month, value)
+            year_data.save()
+        
+        logger.info("Sales")    
+        fill_company_year_data(YearData.SALES, acct_sales)
+        logger.info("Purchases")    
+        fill_company_year_data(YearData.PURCHASES, acct_purchases)
+        logger.info("Cogs")    
+        fill_company_year_data(YearData.COGS, acct_cogs)
+        logger.info("Profits")    
+        fill_company_year_data(YearData.PROFIT, acct_profits)
+        logger.info("Disbursements")    
+        fill_company_year_data(YearData.DISBURSEMENTS, acct_disbursements)
+        logger.info("Collections")    
+        fill_company_year_data(YearData.COLLECTIONS, acct_collections)
+        
+        logger.info("Commiting Transaction")
         transaction.commit()
     
     @transaction.commit_manually
@@ -385,6 +375,7 @@ class Command(BaseCommand):
         expenses_data = self.primary.account.year_data(YearData.EXPENSES, self.cutoff.year)
         for e in expenses:
             expenses_data.add(e.date.month, e.amount) 
+        expenses_data.save()
         
         # Calculate bad debts
         bad_debts = Bill.objects.filter(supplier=self.primary, 
@@ -410,7 +401,7 @@ class Command(BaseCommand):
         logger.info("Bookkeeping Start")
         year = options['year']
         
-        self.cutoff = self.primary.account.current_cutoff_date().replace(year=year)
+        self.cutoff = self.primary.account.current_cutoff_date().replace(year=int(year))
         self.start_date = self.cutoff
         self.end_date = self.start_date + timedelta(days=365)
         self.recalculate = options['recalculate']

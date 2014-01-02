@@ -88,11 +88,11 @@ div.prev-year {
 {% block content %}
 {% if offset < 0 %}
 <div class="next-year button">
-	<a href="?offset={{offset|add:'1'}}"><span class="iconic arrow_left"></span> Next</a>
+	<a href="?year_offset={{year_offset|add:'1'}}"><span class="iconic arrow_left"></span> Next</a>
 </div>
 {% endif %}
 <div class="prev-year button">
-	<a href="?offset={{offset|add:'-1'}}">Prev <span class="iconic arrow_right"></span></a>
+	<a href="?year_offset={{year_offset|add:'-1'}}">Prev <span class="iconic arrow_right"></span></a>
 </div>
 <div id="year">YEAR {{year}}</div>
 <div class="clear"></div>
@@ -179,7 +179,7 @@ div.prev-year {
 			<div class='name'>Name</div>
 			<div class='value'>Sales</div>
 		</li>
-		<a class='autoloader' href="{% url 'task.views.management.items' %}?offset={{offset}}"></a>
+		<a class='autoloader' href="{% url 'task.views.management.items' %}?year_offset={{year_offset}}"></a>
 	</ul>
 </div>
 <div class='column'>
@@ -194,7 +194,7 @@ div.prev-year {
 				
 			</div>
 		</li>
-		<a class='autoloader' href="{% url 'task.views.management.customers' %}?offset={{offset}}"></a>
+		<a class='autoloader' href="{% url 'task.views.management.customers' %}?year_offset={{year_offset}}"></a>
 		<li class="more">
 			<a href="{% url 'task.views.management.customers_full' %}">Show All</a>
 		</li>
@@ -210,7 +210,7 @@ div.prev-year {
 			<div class='name'>Name</div>
 			<div class='value'>Bought</div>
 		</li>
-		<a class='autoloader' href="{% url 'task.views.management.suppliers' %}?offset={{offset}}"></a>
+		<a class='autoloader' href="{% url 'task.views.management.suppliers' %}?year_offset={{year_offset}}"></a>
 	</ul>
 </div>
 <div class='clear'></div>

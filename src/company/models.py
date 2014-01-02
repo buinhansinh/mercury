@@ -47,7 +47,7 @@ class YearData(models.Model):
     PROFIT = Enum('profit')
     ADJUSTMENTS = Enum('adjustment')
     COLLECTIONS = Enum('collections')
-    DISBURSEMENTS = Enum('collections')
+    DISBURSEMENTS = Enum('disbursements')
     EXPENSES = Enum('expenses')
         
     account_type = models.ForeignKey(ContentType)
@@ -108,7 +108,9 @@ class YearData(models.Model):
         self.total = 0
         
     def save(self, *args, **kwargs):
-        for month in range(1, 12): self.total += self.get(month)        
+        #for month in range(1, 12): self.total += self.get(month)
+        self.total = self.jan + self.feb + self.mar + self.apr + self.may + self.jun + \
+                     self.jul + self.aug + self.sep + self.oct + self.nov + self.dec        
         super(YearData, self).save(*args, **kwargs)
 
 

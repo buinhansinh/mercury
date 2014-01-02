@@ -13,28 +13,30 @@ from operator import itemgetter
 from common.utils import group_required
 from common.views.search import paginate
 from company.models import TradeAccount, ItemAccount, AccountData, \
-    CompanyAccount
+    CompanyAccount, YearData
 from trade.models import OrderTransfer, OrderTransferItem
 
 
 @group_required('management')
 def view(request):
-    offset = int(request.GET.get('offset', 0))
+    offset = int(request.GET.get('year_offset', 0))
     primary = request.user.account.company
     cutoff = primary.account.current_cutoff_date(offset)
-    sales = primary.account.data(CompanyAccount.YEAR_SALES, cutoff)
-    gross_profit = primary.account.data(CompanyAccount.YEAR_PROFIT, cutoff)
-    cogs = primary.account.data(CompanyAccount.YEAR_COGS, cutoff)
-    expenses = primary.account.data(CompanyAccount.YEAR_EXPENSES, cutoff)
+    year = cutoff.year
+    sales = primary.account.year_data(YearData.SALES, year).total
+    gross_profit = primary.account.year_data(YearData.PROFIT, year).total
+    cogs = primary.account.year_data(YearData.COGS, year).total
+    expenses = primary.account.year_data(YearData.EXPENSES, year).total
     net_profit = gross_profit - expenses
-    purchases = primary.account.data(CompanyAccount.YEAR_PURCHASES, cutoff)
+    purchases = primary.account.year_data(YearData.PURCHASES, year).total
     
     inventory = primary.account.data(CompanyAccount.YEAR_INVENTORY, cutoff)
-    adjustments = primary.account.data(CompanyAccount.YEAR_ADJUSTMENTS, cutoff)
+    adjustments = primary.account.year_data(YearData.ADJUSTMENTS, year).total
+    
     bad_debts = primary.account.data(CompanyAccount.YEAR_BAD_DEBTS, cutoff)
     
-    collections = primary.account.data(CompanyAccount.YEAR_COLLECTIONS, cutoff) 
-    disbursements = primary.account.data(CompanyAccount.YEAR_DISBURSEMENTS, cutoff) 
+    collections = primary.account.year_data(YearData.COLLECTIONS, year).total 
+    disbursements = primary.account.year_data(YearData.DISBURSEMENTS, year).total
     net_cash = collections - disbursements
     
     return render_to_response('task/management/view.html',
@@ -50,21 +52,21 @@ def view(request):
              collections=collections,
              disbursements=disbursements,
              net_cash=net_cash,
-             year=cutoff.year,
-             offset=offset),
+             year=year,
+             year_offset=offset),
         context_instance=RequestContext(request))
     
 
 @group_required('management')
 def customers(request):
-    offset = int(request.GET.get('offset', 0))
+    offset = int(request.GET.get('year_offset', 0))
     primary = request.user.account.company
     cutoff = primary.account.current_cutoff_date(offset)
     customer_ids = TradeAccount.objects.filter(supplier=primary).values_list('id', flat=True)
-    data = AccountData.objects.filter(label=TradeAccount.YEAR_PROFIT, 
-                                      date=cutoff, 
-                                      account_type=TradeAccount.content_type(),
-                                      account_id__in=customer_ids).order_by('-value')
+    data = YearData.objects.filter(label=YearData.PROFIT, 
+                                   year=cutoff.year,
+                                   account_type=TradeAccount.content_type().id,
+                                   account_id__in=customer_ids).order_by('-total')
     return paginate(request, data, 'task/management/customers.html', cap=25)
 
 
@@ -106,30 +108,29 @@ def customers_full(request):
 
 
 @group_required('management')
-@cache_page(60*60*4)
 def suppliers(request):
-    offset = int(request.GET.get('offset', 0))
+    offset = int(request.GET.get('year_offset', 0))
     primary = request.user.account.company
     cutoff = primary.account.current_cutoff_date(offset)
     supplier_ids = TradeAccount.objects.filter(customer=primary).values_list('id', flat=True)
-    data = AccountData.objects.filter(label=TradeAccount.YEAR_SALES, 
-                                      date=cutoff,
-                                      account_type=TradeAccount.content_type(),
-                                      account_id__in=supplier_ids).order_by('-value')
-    return paginate(request, data, 'task/management/suppliers.html')
+    data = YearData.objects.filter(label=YearData.PURCHASES,
+                                   year=cutoff.year,
+                                   account_type=TradeAccount.content_type().id,
+                                   account_id__in=supplier_ids).order_by('-total')
+    return paginate(request, data, 'task/management/suppliers.html') 
 
 
 @group_required('management')
 @cache_page(60*60*4)
 def items(request):
-    offset = int(request.GET.get('offset', 0))
+    offset = int(request.GET.get('year_offset', 0))
     primary = request.user.account.company
     cutoff = primary.account.current_cutoff_date(offset)
     item_ids = ItemAccount.objects.filter(owner=primary).values_list('id', flat=True)
-    data = AccountData.objects.filter(label=ItemAccount.YEAR_SALES, 
-                                      date=cutoff,
-                                      account_type=ItemAccount.content_type(),
-                                      account_id__in=item_ids).order_by('-value')
+    data = YearData.objects.filter(label=YearData.SALES, 
+                                   year=cutoff.year,
+                                   account_type=ItemAccount.content_type(),
+                                   account_id__in=item_ids).order_by('-total')
     return paginate(request, data, 'task/management/items.html')
 
 

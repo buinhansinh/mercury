@@ -44,8 +44,8 @@ class YearData(models.Model):
     PURCHASES = Enum('purchases')
     PURCHASES_QUANTITY = Enum('purchases-quantity')
     COGS = Enum('cogs')
-    PROFIT = Enum('profit')
-    ADJUSTMENTS = Enum('adjustment')
+    PROFITS = Enum('profits')
+    ADJUSTMENTS = Enum('adjustments')
     COLLECTIONS = Enum('collections')
     DISBURSEMENTS = Enum('disbursements')
     EXPENSES = Enum('expenses')
@@ -92,6 +92,12 @@ class YearData(models.Model):
     def get(self, month):
         return getattr(self, YearData.MONTH_MAP[month])
 
+    def array(self, months):
+        array = []
+        for m in months:
+            array.append(self.get(m))
+        return array
+
     def reset(self):
         self.jan = 0
         self.feb = 0
@@ -106,11 +112,15 @@ class YearData(models.Model):
         self.nov = 0
         self.dec = 0
         self.total = 0
-        
-    def save(self, *args, **kwargs):
-        #for month in range(1, 12): self.total += self.get(month)
+    
+    def sum(self):
         self.total = self.jan + self.feb + self.mar + self.apr + self.may + self.jun + \
-                     self.jul + self.aug + self.sep + self.oct + self.nov + self.dec        
+                     self.jul + self.aug + self.sep + self.oct + self.nov + self.dec
+        return self.total     
+    
+    def save(self, *args, **kwargs):
+        self.sum()
+        #for month in range(1, 12): self.total += self.get(month)
         super(YearData, self).save(*args, **kwargs)
 
 

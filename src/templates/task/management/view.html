@@ -196,7 +196,7 @@ div.prev-year {
 		</li>
 		<a class='autoloader' href="{% url 'task.views.management.customers' %}?year_offset={{year_offset}}"></a>
 		<li class="more">
-			<a href="{% url 'task.views.management.customers_full' %}">Show All</a>
+			<a href="{% url 'task.views.management.customers_full' %}?year_offset={{year_offset}}">Show All</a>
 		</li>
 	</ul>
 </div>

@@ -3,7 +3,7 @@ Created on Nov 12, 2012
 
 @author: bratface
 '''
-from datetime import date
+from datetime import date, timedelta
 from django.db.models.aggregates import Sum
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
@@ -15,7 +15,7 @@ from common.views.search import paginate
 from company.models import TradeAccount, ItemAccount, AccountData, \
     CompanyAccount, YearData
 from trade.models import OrderTransfer, OrderTransferItem
-
+import calendar
 
 @group_required('management')
 def view(request):
@@ -24,7 +24,7 @@ def view(request):
     cutoff = primary.account.current_cutoff_date(offset)
     year = cutoff.year
     sales = primary.account.year_data(YearData.SALES, year).total
-    gross_profit = primary.account.year_data(YearData.PROFIT, year).total
+    gross_profit = primary.account.year_data(YearData.PROFITS, year).total
     cogs = primary.account.year_data(YearData.COGS, year).total
     expenses = primary.account.year_data(YearData.EXPENSES, year).total
     net_profit = gross_profit - expenses
@@ -63,7 +63,8 @@ def customers(request):
     primary = request.user.account.company
     cutoff = primary.account.current_cutoff_date(offset)
     customer_ids = TradeAccount.objects.filter(supplier=primary).values_list('id', flat=True)
-    data = YearData.objects.filter(label=YearData.PROFIT, 
+    print YearData.PROFITS
+    data = YearData.objects.filter(label=YearData.PROFITS, 
                                    year=cutoff.year,
                                    account_type=TradeAccount.content_type().id,
                                    account_id__in=customer_ids).order_by('-total')
@@ -72,30 +73,30 @@ def customers(request):
 
 @group_required('management')
 def customers_full(request):
-    offset = int(request.GET.get('offset', 0))
+    offset = int(request.GET.get('year_offset', 0))
     primary = request.user.account.company
     cutoff = primary.account.current_cutoff_date(offset)
     customers = TradeAccount.objects.filter(supplier=primary)
     customer_ids = customers.values_list('id', flat=True)
-    profits = AccountData.objects.filter(label=TradeAccount.YEAR_PROFIT, 
-                                         date=cutoff, 
-                                         account_type=TradeAccount.content_type(),
-                                         account_id__in=customer_ids)
-    sales = AccountData.objects.filter(label=TradeAccount.YEAR_SALES, 
-                                       date=cutoff, 
-                                       account_type=TradeAccount.content_type(),
-                                       account_id__in=customer_ids)
+    profits = YearData.objects.filter(label=YearData.PROFITS, 
+                                      year=cutoff.year, 
+                                      account_type=TradeAccount.content_type(),
+                                      account_id__in=customer_ids)
+    sales = YearData.objects.filter(label=YearData.SALES, 
+                                    year=cutoff.year, 
+                                    account_type=TradeAccount.content_type(),
+                                    account_id__in=customer_ids)
     accounts = {}
     for s in sales:
-        if s.value > 0:
+        if s.total > 0:
             account = accounts.get(s.account_id, {})
-            account['sales'] = s.value
+            account['sales'] = s.total
             account['name'] = s.account.customer.name
             accounts[s.account_id] = account
     for p in profits:
-        if p.value > 0:
+        if p.total > 0:
             account = accounts.get(p.account_id, {})
-            account['profit'] = p.value
+            account['profit'] = p.total
             account['name'] = p.account.customer.name
             accounts[p.account_id] = account
     
@@ -103,7 +104,7 @@ def customers_full(request):
     
     return render_to_response('task/management/customers_full.html',
         dict(accounts=accounts,
-             today=date.today()),
+             year=cutoff.year),
         context_instance=RequestContext(request))
 
 
@@ -158,47 +159,60 @@ def costing_items(request):
     items = ItemAccount.objects.filter(cost=0, owner=primary)
     return paginate(request, items, 'task/management/costing_items.html')
 
-
-def move_month(_date, delta):
-    month = _date.month + delta
-    year = _date.year
-    if month < 1:
-        month += 12
-        year -= 1
-    elif month > 12:
-        month -= 12
-        year += 1
-    return date(year, month, 1)
-
     
 @group_required('management')
 def reports(request):
     primary = request.user.account.company
     today = date.today()
-    month = int(request.GET.get('month', today.month))
     year = int(request.GET.get('year', today.year))
-    month_start = date(year, month, 1)
-    month_end = move_month(month_start, 1)
-    report = []
-    for _ in range(1, 7):
-        data = OrderTransfer.objects.filter(order__supplier=primary, 
-                                            date__gte=month_start, 
-                                            date__lte=month_end,
-                                            labels__name=OrderTransfer.VALID) \
-                                    .aggregate(sales=Sum('value'), cogs=Sum('cost'), profit=Sum('profit'))
-        report.append((month_start, data['sales'], data['cogs'], data['profit']))
-        print "report {} {}".format(month_start, month_end) 
-        month_start = move_month(month_start, -1)
-        month_end = move_month(month_end, -1)
+    month = int(request.GET.get('month', today.month))
+    if month < 1: month = 1
+    elif month > 7: month = 7
+    months = range(month, month + 6)
+    print months
     
-    newer = None
-    older = month_start
-    start = date(year, month, 1)
-    this_month = date(today.year, today.month, 1)
-    if start < this_month:
-        newer = move_month(start, 6)
+    sales = primary.account.year_data(YearData.SALES, year)
+    cogs = primary.account.year_data(YearData.COGS, year) 
+    profits = primary.account.year_data(YearData.PROFITS, year)
+    expenses = primary.account.year_data(YearData.EXPENSES, year)
+    
+    purchases = primary.account.year_data(YearData.PURCHASES, year)
+    adjustments = primary.account.year_data(YearData.ADJUSTMENTS, year)
+    
+    collections = primary.account.year_data(YearData.COLLECTIONS, year)
+    disbursements = primary.account.year_data(YearData.DISBURSEMENTS, year)
+    
+    month_labels = []
+    for m in months:
+        month_labels.append(calendar.month_abbr[m])
+    
+    if month == 1:
+        new_year = year
+        new_month = 7
+        old_year = year - 1
+        old_month = 7
+    elif month == 7:
+        new_year = year + 1
+        new_month = 1
+        old_year = year
+        old_month = 1
+
+    if new_year > today.year:
+        new_year = None
+    
     return render_to_response('task/management/reports.html',
-        dict(report=report,
-             newer=newer,
-             older=older,),
+        dict(sales=sales.array(months),
+             cogs=cogs.array(months),
+             profits=profits.array(months),
+             expenses=expenses.array(months),
+             purchases=purchases.array(months),
+             adjustments=adjustments.array(months),
+             collections=collections.array(months),
+             disbursements=disbursements.array(months),
+             month_labels=month_labels,
+             year=year,
+             new_year=new_year,
+             new_month=new_month,
+             old_year=old_year,
+             old_month=old_month),
         context_instance=RequestContext(request))      

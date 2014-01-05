@@ -18,30 +18,24 @@ MONTHLY REPORTS
 
 {% block head %}
 <style>
-.column {
+div.year {
+	font-size: xx-large;
 	width: 100px;
-	margin: 15px;
-	float: left;
+	margin: 15px auto;
 }
-.column.firstcol {
-	margin-left: 30px;
+table.data {
+    margin: 15px auto;
+    width: 94%;
+	table-layout: fixed;    
 }
-div.column div.title {
-	margin-top: 0px;
+table.data td {
+	width: 7%;  
 }
-ul.table.statement div.account {
-	width: 100px;
-	text-align: left;
-}
-ul.table.statement div.value {
-	width: 100px;
-	text-align: right;
-}
-#older-link {
+#newer-link {
 	float: right;
 	margin: 15px 30px 0 0;
 }
-#newer-link {
+#older-link {
 	float: left;
 	margin: 15px 0 0 30px;
 }
@@ -55,85 +49,79 @@ ul.table.statement div.value {
 {% endblock context-menu %}
 
 {% block content %}
-	{% if newer %}
-	<div id='newer-link' class='button'>
-		<a href="?month={{newer.month}}&year={{newer.year}}">
-			<span class='iconic arrow_left'></span> Newer
+	<div class="year">{{year}}</div>
+	<div id='older-link' class='button'>
+		<a href="?month={{old_month}}&year={{old_year}}">
+			<span class='iconic arrow_left'></span> Older
 		</a>
 	</div>
-	{% endif %}
-	
-	{% if older %}
-	<div id='older-link' class='button'>
-		<a href="?month={{older.month}}&year={{older.year}}">
-			Older <span class='iconic arrow_right'></span>
+	{% if new_year %}
+	<div id='newer-link' class='button'>
+		<a href="?month={{new_month}}&year={{new_year}}">
+			 Newer <span class='iconic arrow_right'></span>
 		</a>
 	</div>
 	{% endif %}
 <div class='clear'></div>
-<div class='column firstcol'>
-	<ul id='income' class='table statement'>
-		<li class='header'>
-			<div class='account'>Month</div>
-		</li>
-		<li class='body'>
-			<div class='account'>Sales</div>
-		</li>
-		<li class='body'>
-			<div class='account'>COGS</div>
-		</li>
-		<li class='body'>
-			<div class='account'>Gross Profit</div>
-		</li>
-		<li class='body'>
-			<div class='account'>Expenses</div>
-		</li>
-		<li class='body'>
-			<div class='account'>Profit</div>
-		</li>
-		<li class='body'>
-			<div class='account'>Collections</div>
-		</li>
-		<li class='body'>
-			<div class='account'>Disbursements</div>
-		</li>
-		<li class='body'>
-			<div class='account'>Net Cash Flow</div>
-		</li>
-	</ul>
-</div>
-{% for month, sales, cogs, profit in report %}
-<div class='column'>
-	<ul id='income' class='table statement'>
-		<li class='header'>
-			<div class='value'>{{month|date:"M Y"}}</div>
-		</li>
-		<li class='body'>
-			<div class='value'>{{sales|default:0|floatformat:0|intcomma}}</div>
-		</li>
-		<li class='body'>
-			<div class='value'>{{cogs|default:0|floatformat:0|intcomma}}</div>
-		</li>
-		<li class='body'>
-			<div class='value'>{{profit|default:0|floatformat:0|intcomma}}</div>
-		</li>
-		<li class='body'>
-			<div class='value'>{{expenses|default:0|floatformat:0|intcomma}}</div>
-		</li>
-		<li class='body'>
-			<div class='value'>{{net_profit|default:0|floatformat:0|intcomma}}</div>
-		</li>
-		<li class='body'>
-			<div class='value'>{{collections|default:0|floatformat:0|intcomma}}</div>
-		</li>
-		<li class='body'>
-			<div class='value'>{{disbursements|default:0|floatformat:0|intcomma}}</div>
-		</li>
-		<li class='body'>
-			<div class='value'>{{net_cash|default:0|floatformat:0|intcomma}}</div>
-		</li>
-	</ul>
-</div>
-{% endfor %}
+<table class="data">
+	<thead>
+		<tr>
+			<th></th>
+			{% for label in month_labels %}
+			<th>{{label}}</th>
+			{% endfor %}
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>Sales</td>
+			{% for value in sales %}
+			<td align="right">{{value|default:0|floatformat:2|intcomma}}</td>
+			{% endfor %}
+		</tr>
+		<tr>
+			<td>Cogs</td>
+			{% for value in cogs %}
+			<td align="right">{{value|default:0|floatformat:2|intcomma}}</td>
+			{% endfor %}
+		</tr>
+		<tr>
+			<td>Profits</td>
+			{% for value in profits %}
+			<td align="right">{{value|default:0|floatformat:2|intcomma}}</td>
+			{% endfor %}
+		</tr>
+		<tr>
+			<td>Expenses</td>
+			{% for value in expenses %}
+			<td align="right">{{value|default:0|floatformat:2|intcomma}}</td>
+			{% endfor %}
+		</tr>
+		<tr>
+			<td>Purchases</td>
+			{% for value in purchases %}
+			<td align="right">{{value|default:0|floatformat:2|intcomma}}</td>
+			{% endfor %}
+		</tr>
+		<tr>
+			<td>Adjustments</td>
+			{% for value in adjustments %}
+			<td align="right">{{value|default:0|floatformat:2|intcomma}}</td>
+			{% endfor %}
+		</tr>
+		<tr>
+			<td>Collections</td>
+			{% for value in collections %}
+			<td align="right">{{value|default:0|floatformat:2|intcomma}}</td>
+			{% endfor %}
+		</tr>
+		<tr>
+			<td>Disbursements</td>
+			{% for value in disbursements %}
+			<td align="right">{{value|default:0|floatformat:2|intcomma}}</td>
+			{% endfor %}
+		</tr>
+	</tbody>
+</table>
 <div class='clear'></div>
 {% endblock content %}

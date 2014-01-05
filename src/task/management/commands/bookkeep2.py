@@ -3,19 +3,21 @@ Created on Dec 28, 2013
 
 @author: terence
 '''
-from accounting.models import Bill, Payment, Expense
-from company.models import TradeAccount, ItemAccount, CompanyAccount, YearData,\
-    AccountData
 from datetime import datetime, timedelta
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
-from optparse import make_option
-from trade.models import OrderTransferItem, OrderTransfer
+from django.db import transaction, connection
 import logging
-from inventory.models import AdjustmentItem, Physical, Adjustment
-from catalog.models import Product, Service
-from django.db import transaction
+from optparse import make_option
 import sys
+import traceback
+
+from accounting.models import Bill, Payment, Expense
+from catalog.models import Product, Service
+from company.models import TradeAccount, ItemAccount, CompanyAccount, YearData, \
+    AccountData
+from inventory.models import AdjustmentItem, Physical, Adjustment
+from trade.models import OrderTransferItem, OrderTransfer
 
 
 logger = logging.getLogger(__name__)   
@@ -94,6 +96,7 @@ def catch(func):
             func(*args, **kwargs)
         except Exception, e:
             print e
+            traceback.format_exc()
             transaction.rollback()
             sys.exit()
     return decorated
@@ -182,7 +185,7 @@ class Command(BaseCommand):
             
         self.primary.account.data(CompanyAccount.YEAR_INVENTORY, self.cutoff, inventory)
         transaction.commit()
-        
+    
     @transaction.commit_manually
     @catch
     def bookkeep_accounts(self):
@@ -206,7 +209,7 @@ class Command(BaseCommand):
         acct_profits = {}
          
         for t in transfers:
-            item_key = (t.order.info_id, t.order.info_type, t.date.month)
+            item_key = (t.order.info_id, t.order.info_type.id, t.date.month)
             quantity = t.net_quantity
             value = t.net_quantity * t.order.price
                
@@ -277,9 +280,8 @@ class Command(BaseCommand):
             key = (a.product.id, Product.content_type().id, a.adjustment.date.month)
             plus_equal(item_adjustments, key, a.delta * self.context.estimate(a.product))        
         
-        # Write Out Everything
-        logger.info("Updating Item Stats")
         
+        logger.info("Updating Company Stats")
         # write out adjustments first
         year_adjustments = self.primary.account.year_data(YearData.ADJUSTMENTS, self.cutoff.year)
         year_adjustments.reset()
@@ -287,102 +289,7 @@ class Command(BaseCommand):
             _, _, month = key
             year_adjustments.add(month, value)
         year_adjustments.save()
-    
-        # use existing year data first to minimize database hits
-        def fill_item_year_data(data, label, year):
-            year_data = YearData.objects.filter(account_type=ItemAccount.content_type().id, 
-                                                label=label, 
-                                                year=year)
-            affected = set()
-            for d in year_data:
-                if d.account == None:
-                    d.delete()
-                    continue
-                affected.add(d.account.id)
-                for month in range(1, 12):
-                    key = (d.account.item_id, d.account.item_type, month)
-                    d.set(month, data.get(key, 0))
-                d.save()
-            return affected
-         
-        affected = fill_item_year_data(item_sales, YearData.SALES, self.start_date.year)
-        affected.intersection_update(fill_item_year_data(item_sales_qty, YearData.SALES, self.start_date.year))
-        affected.intersection_update(fill_item_year_data(item_purchases, YearData.SALES, self.start_date.year))
-        affected.intersection_update(fill_item_year_data(item_purchases_qty, YearData.SALES, self.start_date.year))
-        affected.intersection_update(fill_item_year_data(item_cogs, YearData.SALES, self.start_date.year))
-        affected.intersection_update(fill_item_year_data(item_profits, YearData.SALES, self.start_date.year))
-        affected.intersection_update(fill_item_year_data(item_adjustments, YearData.SALES, self.start_date.year))
-        transaction.commit()
-   
-        items = ItemAccount.objects.filter(owner=self.primary).exclude(id__in=affected)
-           
-        for i in items:
-            sales_data = i.year_data(label=YearData.SALES, year=self.start_date.year)
-            sales_qty_data = i.year_data(label=YearData.SALES_QUANTITY, year=self.start_date.year)
-            purchases_data = i.year_data(label=YearData.PURCHASES, year=self.start_date.year)
-            purchases_qty_data = i.year_data(label=YearData.PURCHASES_QUANTITY, year=self.start_date.year)
-            cogs_data = i.year_data(label=YearData.COGS, year=self.start_date.year)
-            profits_data = i.year_data(label=YearData.PROFIT, year=self.start_date.year)
-            adjustments_data = i.year_data(label=YearData.ADJUSTMENTS, year=self.start_date.year)
-            for month in range(1, 12):
-                key = (i.item_id, i.item_type, month)
-                sales_data.set(month, item_sales.get(key, 0))
-                sales_qty_data.set(month, item_sales_qty.get(key, 0))
-                purchases_data.set(month, item_purchases.get(key, 0))
-                purchases_qty_data.set(month, item_purchases_qty.get(key, 0))
-                cogs_data.set(month, item_cogs.get(key, 0))
-                profits_data.set(month, item_profits.get(key, 0))
-                adjustments_data.set(month, item_adjustments.get(key, 0))
-            sales_data.save()
-            sales_qty_data.save()
-            purchases_data.save()
-            purchases_qty_data.save()
-            cogs_data.save()
-            profits_data.save()
-            adjustments_data.save()
-        transaction.commit()
-            
-        logger.info("Updating Supplier Stats")
-        accounts = TradeAccount.objects.filter(customer=self.primary)
-           
-        for a in accounts:
-            purchases_data = a.year_data(label=YearData.PURCHASES, year=self.start_date.year)
-            purchases_qty_data = a.year_data(label=YearData.PURCHASES_QUANTITY, year=self.start_date.year)
-            disbursements_data = a.year_data(label=YearData.DISBURSEMENTS, year=self.start_date.year)
-            for month in range(1, 12):
-                key = (a.supplier.id, month)
-                purchases_data.set(month, acct_purchases.get(key, 0))
-                purchases_qty_data.set(month, acct_purchases_qty.get(key, 0))
-                disbursements_data.set(month, acct_disbursements.get(key, 0))
-            purchases_data.save()
-            purchases_qty_data.save()
-            disbursements_data.save()
-        transaction.commit()
-   
-        logger.info("Updating Customer Stats")
-        accounts = TradeAccount.objects.filter(supplier=self.primary)
-           
-        for a in accounts:
-            sales_data = a.year_data(label=YearData.SALES, year=self.start_date.year)
-            sales_qty_data = a.year_data(label=YearData.SALES_QUANTITY, year=self.start_date.year)
-            cogs_data = a.year_data(label=YearData.COGS, year=self.start_date.year)
-            profit_data = a.year_data(label=YearData.PROFIT, year=self.start_date.year)
-            collections_data = a.year_data(label=YearData.COLLECTIONS, year=self.start_date.year)
-            for month in range(1, 12):
-                key = (a.customer.id, month)
-                sales_data.set(month, acct_sales.get(key, 0))
-                sales_qty_data.set(month, acct_sales_qty.get(key, 0))
-                cogs_data.set(month, acct_cogs.get(key, 0))
-                profit_data.set(month, acct_profits.get(key, 0))
-                collections_data.set(month, acct_collections.get(key, 0))
-            sales_data.save()
-            sales_qty_data.save()
-            cogs_data.save()
-            profit_data.save()
-            collections_data.save()
-        transaction.commit()
-      
-        logger.info("Updating Company Stats")
+
         def fill_company_year_data(label, data):
             year_data = self.primary.account.year_data(label, self.cutoff.year)
             year_data.reset()
@@ -398,14 +305,115 @@ class Command(BaseCommand):
         logger.info("Cogs")    
         fill_company_year_data(YearData.COGS, acct_cogs)
         logger.info("Profits")
-        fill_company_year_data(YearData.PROFIT, acct_profits)
+        fill_company_year_data(YearData.PROFITS, acct_profits)
         logger.info("Disbursements")    
         fill_company_year_data(YearData.DISBURSEMENTS, acct_disbursements)
         logger.info("Collections")    
         fill_company_year_data(YearData.COLLECTIONS, acct_collections)
-        
-        logger.info("Commiting Transaction")
+          
+        logger.info("Updating Item Stats")
+        logger.info("Sales")
+        self.update_item_data(item_sales, YearData.SALES, self.start_date.year)
+        logger.info("Sales Qty")
+        self.update_item_data(item_sales_qty, YearData.SALES_QUANTITY, self.start_date.year)
+        logger.info("Purchases")
+        self.update_item_data(item_purchases, YearData.PURCHASES, self.start_date.year)
+        logger.info("Purchases Qty")
+        self.update_item_data(item_purchases_qty, YearData.PURCHASES_QUANTITY, self.start_date.year)
+        logger.info("Cogs")
+        self.update_item_data(item_cogs, YearData.COGS, self.start_date.year)
+        logger.info("Profits")
+        self.update_item_data(item_profits, YearData.PROFITS, self.start_date.year)
+        logger.info("Adjustments")
+        self.update_item_data(item_adjustments, YearData.ADJUSTMENTS, self.start_date.year)
+          
+        logger.info("Updating Supplier Stats")
+        self.update_supplier_data(acct_purchases, YearData.PURCHASES, self.cutoff.year)
+        self.update_supplier_data(acct_purchases_qty, YearData.PURCHASES_QUANTITY, self.cutoff.year)
+        self.update_supplier_data(acct_disbursements, YearData.DISBURSEMENTS, self.cutoff.year)
+   
+        logger.info("Updating Customer Stats")
+        self.update_customer_data(acct_sales, YearData.SALES, self.cutoff.year)
+        self.update_customer_data(acct_sales_qty, YearData.SALES_QUANTITY, self.cutoff.year)
+        self.update_customer_data(acct_cogs, YearData.COGS, self.cutoff.year)
+        self.update_customer_data(acct_profits, YearData.PROFITS, self.cutoff.year)
+        self.update_customer_data(acct_collections, YearData.COLLECTIONS, self.cutoff.year)
         transaction.commit()
+    
+    def update_item_data(self, data, label, year):
+        year_data = YearData.objects.filter(account_type=ItemAccount.content_type(), 
+                                            label=label, 
+                                            year=year)
+        affected = set()
+        for d in year_data:
+            if d.account == None:
+                d.delete()
+                continue
+            affected.add(d.account.id)
+            for month in range(1, 13):
+                key = (d.account.item_id, d.account.item_type.id, month)
+                d.set(month, data.get(key, 0))
+            d.save()
+    
+        accounts = ItemAccount.objects.filter(owner=self.primary).exclude(id__in=affected)
+        for a in accounts:
+            year_data = a.year_data(label=label, year=year)
+            for month in range(1, 13):
+                key = (a.item_id, a.item_type.id, month)
+                year_data.set(month, data.get(key, 0))
+            year_data.save()
+        transaction.commit()
+
+    
+    def update_supplier_data(self, data, label, year):
+        year_data = YearData.objects.filter(account_type=TradeAccount.content_type(), 
+                                            label=label, 
+                                            year=year)
+        affected = set()
+        for d in year_data:
+            if d.account == None:
+                d.delete()
+                continue
+            elif d.account.customer == self.primary:
+                affected.add(d.account.id)
+                for month in range(1, 13):
+                    key = (d.account.supplier.id, month)
+                    d.set(month, data.get(key, 0))
+                d.save()
+    
+        accounts = TradeAccount.objects.filter(customer=self.primary).exclude(id__in=affected)
+        for a in accounts:
+            year_data = a.year_data(label=label, year=year)
+            for month in range(1, 13):
+                key = (a.supplier.id, month)
+                year_data.set(month, data.get(key, 0))
+            year_data.save()
+  
+    
+    def update_customer_data(self, data, label, year):
+        year_data = YearData.objects.filter(account_type=TradeAccount.content_type(), 
+                                            label=label, 
+                                            year=year)
+        affected = set()
+        for d in year_data:
+            if d.account == None:
+                d.delete()
+                continue
+            elif d.account.supplier == self.primary:
+                affected.add(d.account.id)
+                for month in range(1, 13):
+                    key = (d.account.customer.id, month)
+                    d.set(month, data.get(key, 0))
+                d.save()
+    
+        accounts = TradeAccount.objects.filter(supplier=self.primary).exclude(id__in=affected)
+        for a in accounts:
+            year_data = a.year_data(label=label, year=year)
+            for month in range(1, 13):
+                key = (a.customer.id, month)
+                year_data.set(month, data.get(key, 0))
+            year_data.save()
+
     
     @transaction.commit_manually
     @catch
@@ -437,13 +445,13 @@ class Command(BaseCommand):
         
         transaction.commit()
     
+    
     def handle(self, *args, **options):
         user = User.objects.get(username__exact=options['username'])
         if not user.is_superuser:
             print "Administrator priveleges required."
             return
         self.primary = user.account.company
-        logger.info("Bookkeeping Start")
         year = options['year']
         
         self.cutoff = self.primary.account.current_cutoff_date().replace(year=int(year))
@@ -452,6 +460,7 @@ class Command(BaseCommand):
         self.recalculate = options['recalculate']
 
         start_time = datetime.now()
+        logger.info("Bookkeeping Start {}".format(year))
         
         logger.info("Costing Start")
         self.context = Costing(self.primary.id, self.end_date)
@@ -476,6 +485,9 @@ class Command(BaseCommand):
             self.bookkeep_aging()
             logger.info("Aging End")
     
+        for k, v in connection.queries.iteritems():
+            logger.debug("{}: {}".format(k, v))
+        
         elapsed_time = datetime.now() - start_time
         logger.info("Bookkeeping Complete. Total Time: {}".format(elapsed_time))
             

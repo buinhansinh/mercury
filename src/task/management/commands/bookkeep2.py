@@ -485,9 +485,6 @@ class Command(BaseCommand):
             self.bookkeep_aging()
             logger.info("Aging End")
     
-        for k, v in connection.queries.iteritems():
-            logger.debug("{}: {}".format(k, v))
-        
         elapsed_time = datetime.now() - start_time
         logger.info("Bookkeeping Complete. Total Time: {}".format(elapsed_time))
             

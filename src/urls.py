@@ -248,16 +248,23 @@ urlpatterns += patterns('task.views.management',
     url(r'^management/sales/negative/$', 'negative_sales'),
 )
 
-urlpatterns += patterns('task.views',
-    url(r'^$', 'home', name='home'),
+urlpatterns += patterns('task.views.home',
+    url(r'^$', 'view', name='home'),
 )
 
 """
     Login Logout Views
 """
 urlpatterns += patterns('',
-    url(r'^login/$', 'django.contrib.auth.views.login', {'template_name': 'account/login.html'}, name='login'),
+    url(r'^login/$', 
+        'django.contrib.auth.views.login', 
+        {'template_name': 'account/login.html'}, 
+        name='login'),
     url(r'^logout/$', 'django.contrib.auth.views.logout_then_login', name='logout'),
+    url(r'^password/$', 
+        'django.contrib.auth.views.password_change', 
+        {'template_name': 'account/change_password.html', 'post_change_redirect': '/'}, 
+        name='change_password'),
 )
 
 #if settings.DEBUG:

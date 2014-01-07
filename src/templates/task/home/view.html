@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+
+{% block head %}
+<style>
+h1 {
+	width: 50%;
+	display: block;
+	margin: 15px auto;
+	text-align: center;
+}
+img#photo {
+	margin: 30px;
+	float: left;
+}
+div#profile {
+	float: left;
+	width: 200px;
+	margin-top: 50px;
+}
+div#username {
+	font-size: xx-large;
+}
+div#sections {
+	float: right;
+	width: 328px;
+	padding: 0px 15px 0px 15px;
+}
+div#sections div.button {
+	float: right;
+	width: 300px;
+	margin-top: 15px;
+	margin-left: 15px;
+	font-size: large;
+	text-align: center;
+	border: 1px solid #ccc;
+}
+</style>
+<script>
+</script>
+{% endblock head %}
+
+{% block toolbar %}
+{% endblock toolbar %}
+
+{% block main-title %}
+WELCOME
+{% endblock main-title %}
+
+{% block sub-title %}
+{% endblock sub-title %}  
+
+{% block content %}
+<img id="photo" src="{% get_static_prefix %}images/empty_profile.png">
+<div id="profile">
+	<div id="username">{{request.user.username}}</div>
+	<a href="{% url 'change_password' %}">Change Password</a>
+</div>
+<div id="sections">
+	{% if 'sales' in request.user.account.groups or request.user.is_superuser %}
+	<div class='button'><a href="{% url 'sales' %}"><span class="iconic pin"></span> Sales</a></div>
+	{% endif %}
+	{% if 'purchasing' in request.user.account.groups or request.user.is_superuser %}
+	<div class='button'><a href="{% url 'purchasing' %}"><span class="iconic pin"></span> Purchasing</a></div>
+	{% endif %}
+	{% if 'inventory' in request.user.account.groups or request.user.is_superuser %}
+	<div class='button'><a href="{% url 'inventory' %}"><span class="iconic pin"></span> Inventory</a></div>
+	{% endif %}
+	{% if 'accounting' in request.user.account.groups or request.user.is_superuser %}
+	<div class='button'><a href="{% url 'accounting' %}"><span class="iconic pin"></span> Accounting</a></div>
+	{% endif %}
+	{% if 'management' in request.user.account.groups or request.user.is_superuser %}
+	<div class='button'><a href="{% url 'management' %}"><span class="iconic pin"></span> Management</a></div>
+	{% endif %}
+</div>
+<div class='clear' style='height: 0px'></div>
+{% endblock content %}

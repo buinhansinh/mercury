@@ -33,11 +33,11 @@ table.data td {
 }
 #newer-link {
 	float: right;
-	margin: 15px 30px 0 0;
+	margin: 5px 30px 0 0;
 }
 #older-link {
 	float: left;
-	margin: 15px 0 0 30px;
+	margin: 5px 0 0 30px;
 }
 </style>
 {% endblock head %}
@@ -49,19 +49,19 @@ table.data td {
 {% endblock context-menu %}
 
 {% block content %}
-	<div class="year">{{year}}</div>
 	<div id='older-link' class='button'>
 		<a href="?month={{old_month}}&year={{old_year}}">
-			<span class='iconic arrow_left'></span> Older
+			<span class='iconic arrow_left'></span> Prev
 		</a>
 	</div>
 	{% if new_year %}
 	<div id='newer-link' class='button'>
 		<a href="?month={{new_month}}&year={{new_year}}">
-			 Newer <span class='iconic arrow_right'></span>
+			 Next <span class='iconic arrow_right'></span>
 		</a>
 	</div>
 	{% endif %}
+	<div class="year">{{year}}</div>
 <div class='clear'></div>
 <table class="data">
 	<thead>

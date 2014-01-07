@@ -63,11 +63,11 @@ div#year {
 	text-align: center;
 	font-size: xx-large;
 }
-div.next-year {
+div.prev-year {
 	float: left;
 	margin: 3px 20px;
 }
-div.prev-year {
+div.next-year {
 	float: right;
 	margin: 3px 20px;
 }
@@ -86,13 +86,13 @@ div.prev-year {
 {% endblock context-menu %}
 
 {% block content %}
-{% if offset < 0 %}
+{% if year_offset < 0 %}
 <div class="next-year button">
-	<a href="?year_offset={{year_offset|add:'1'}}"><span class="iconic arrow_left"></span> Next</a>
+	<a href="?year_offset={{year_offset|add:'1'}}">Next <span class="iconic arrow_right"></span></a>
 </div>
 {% endif %}
 <div class="prev-year button">
-	<a href="?year_offset={{year_offset|add:'-1'}}">Prev <span class="iconic arrow_right"></span></a>
+	<a href="?year_offset={{year_offset|add:'-1'}}"><span class="iconic arrow_left"></span> Prev</a>
 </div>
 <div id="year">YEAR {{year}}</div>
 <div class="clear"></div>

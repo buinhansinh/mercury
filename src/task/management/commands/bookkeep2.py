@@ -171,10 +171,13 @@ class Command(BaseCommand):
                                           date=self.cutoff)
         for d in data:
             affected.append(d.account_id)
-            cost = self.context.estimate(d.account.item)
-            d.value = cost
-            d.save()
-            inventory += d.account.stock * cost
+            if d.account == None:
+                d.delete()
+            else:
+                cost = self.context.estimate(d.account.item)
+                d.value = cost
+                d.save()
+                inventory += d.account.stock * cost
         
         accounts = ItemAccount.objects.filter(owner=self.primary).exclude(id__in=affected)
         for account in accounts:

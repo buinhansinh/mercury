@@ -166,10 +166,9 @@ def reports(request):
     today = date.today()
     year = int(request.GET.get('year', today.year))
     month = int(request.GET.get('month', today.month))
-    if month < 1: month = 1
-    elif month > 7: month = 7
+    if month < 7: month = 1 
+    else: month = 7
     months = range(month, month + 6)
-    print months
     
     sales = primary.account.year_data(YearData.SALES, year)
     cogs = primary.account.year_data(YearData.COGS, year) 

@@ -96,6 +96,7 @@ def physical(sender, instance, action, user, **kwargs):
         stock.last_physical = instance
         stock.save()
         create_or_update_txn(stock, instance.delta, instance.date, instance)
+        update_item_account(stock.product, user)
 
 
 logger = logging.getLogger(__name__)

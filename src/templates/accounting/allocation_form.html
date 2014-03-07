@@ -202,13 +202,22 @@ $(document).ready(function(){
 				row.find('input[type=text]').attr('disabled', true);
 				var row_date = get_date_from_row(row);
 				row.detach();
-				$("#unpaid-table tbody tr").each(function(){
-					var date = get_date_from_row($(this));
-					if (row_date < date) {
-						$(this).before(row);
-						return false;
-					}
-				});
+				var empty_tr = $("#unpaid-table tbody tr.empty");
+				if (empty_tr.length > 0) 
+				{
+					empty_tr.before(row);
+					empty_tr.remove();
+				}
+				else 
+				{
+					$("#unpaid-table tbody tr").each(function(){
+						var date = get_date_from_row($(this));
+						if (row_date < date) {
+							$(this).before(row);
+							return false;
+						}
+					});
+				}
 				row.fadeIn('fast', function(){
 					total_rows();
 				});

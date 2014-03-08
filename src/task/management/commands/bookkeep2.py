@@ -175,6 +175,7 @@ class Command(BaseCommand):
                 d.delete()
             else:
                 cost = self.context.estimate(d.account.item)
+                d.account.assess()
                 d.value = cost
                 d.save()
                 inventory += d.account.stock * cost
@@ -184,6 +185,7 @@ class Command(BaseCommand):
             # average cost
             cost = self.context.estimate(account.item)
             account.data(ItemAccount.YEAR_AVERAGE_COST, self.cutoff, cost)
+            account.assess()
             inventory += account.stock * cost
             
         self.primary.account.data(CompanyAccount.YEAR_INVENTORY, self.cutoff, inventory)

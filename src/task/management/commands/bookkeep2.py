@@ -47,7 +47,7 @@ class Costing():
             key = (item.order.info_id, item.order.info_type.id)
             if item.net_quantity > 0:
                 quantities[key] = quantities.get(key, 0) + item.net_quantity
-                values[key] = values.get(key, 0) + ((item.value / item.quantity) * item.net_quantity) 
+                values[key] = values.get(key, 0) + (item.order.price * item.net_quantity) 
         for key in quantities.keys():
             self.cache[key] = values[key] / quantities[key]
     
@@ -56,6 +56,7 @@ class Costing():
             last = OrderTransferItem.objects.filter(transfer__labels__name=OrderTransfer.VALID, 
                                                     order__info_id=product.id,
                                                     order__info_type=product.content_type(),
+                                                    transfer__order__customer__id=self.primary_id,
                                                     transfer__date__lte=self.end_date).latest('transfer__date')
         except OrderTransferItem.DoesNotExist:
             return 0

@@ -52,6 +52,10 @@ label {
 	width: 100px;
 	font-weight: bold;	
 }
+#clear-all-button {
+	float: right;
+	margin: 0 5px 5px 0;
+}
 #buttons {
 	clear: both;
 	text-align: center;
@@ -191,37 +195,41 @@ $(document).ready(function(){
 		var date_str = row.children('td.date').html();
 		var mdy = date_str.split('/');
 		return new Date(mdy[2], mdy[0], mdy[1]);
-	} 
+	};
+	
+	var remove_row = function(row) {
+		row.fadeOut('fast', function(){
+			row.find('input[type=text]').attr('disabled', true);
+			var row_date = get_date_from_row(row);
+			row.detach();
+			var empty_tr = $("#unpaid-table tbody tr.empty");
+			if (empty_tr.length > 0) 
+			{
+				empty_tr.before(row);
+				empty_tr.remove();
+			}
+			else 
+			{
+				$("#unpaid-table tbody tr").each(function(){
+					var date = get_date_from_row($(this));
+					if (row_date < date) {
+						$(this).before(row);
+						return false;
+					}
+				});
+			}
+			row.fadeIn('fast', function(){
+				total_rows();
+			});
+		});	
+	};
 	
 	// Removing allocations 
 	$('#allocations-table').on("click", "input[type=checkbox]", function(e) {
 		var yes = confirm("Are you sure you want to remove this allocation?");
 		if (yes) {
 			var row = $(this).closest("tr");
-			row.fadeOut('fast', function(){
-				row.find('input[type=text]').attr('disabled', true);
-				var row_date = get_date_from_row(row);
-				row.detach();
-				var empty_tr = $("#unpaid-table tbody tr.empty");
-				if (empty_tr.length > 0) 
-				{
-					empty_tr.before(row);
-					empty_tr.remove();
-				}
-				else 
-				{
-					$("#unpaid-table tbody tr").each(function(){
-						var date = get_date_from_row($(this));
-						if (row_date < date) {
-							$(this).before(row);
-							return false;
-						}
-					});
-				}
-				row.fadeIn('fast', function(){
-					total_rows();
-				});
-			});
+			remove_row(row);
 		} else {
 			e.preventDefault();
 		}
@@ -376,6 +384,18 @@ $(document).ready(function(){
 		}
 		return false;
 	});
+	
+	$('#clear-all-button').click(function() {
+		var yes = confirm("Are you sure you want to remove all allocations?");
+		if (yes)
+		{
+			$("#allocations-table input[type=checkbox]:checked").attr('checked', false);
+			$("#allocations-table tbody tr").each(function() {
+				remove_row($(this));
+			});
+		}
+		return false;
+	});
 });
 </script>
 {% endblock head %}
@@ -429,6 +449,7 @@ $(document).ready(function(){
 <div class="clear"></div>
 {% if payment.cancelable %}
 <div id='allocations'>
+	<div class="button" id="clear-all-button"><a href="#"><span class="iconic x_alt"></span> Clear All</a></div>
 	<form id="form" method="POST" >
 		<table id="allocations-table" class='allocations data'>
 			<thead>

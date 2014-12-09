@@ -91,6 +91,7 @@ urlpatterns += patterns('inventory.views.stock',
     (r'^stock/(?P<_id>\d+)/physical/$', 'physical'),
     (r'^stock/(?P<_id>\d+)/alarms/$', 'alarms'),
     (r'^stock/transfer/$', 'transfer'),
+    (r'^stock/report/$', 'report'),
 )
 urlpatterns += patterns('inventory.views.stocktransfer',
     (r'^stock/transfer/new/$', 'new'),
@@ -177,12 +178,12 @@ urlpatterns += patterns('accounting.views.bill',
     (r'^bill/(?P<_id>\d+)/edit/$', 'edit'),
     (r'^bill/(?P<_id>\d+)/cancel/$', 'cancel'),
     (r'^bill/(?P<_id>\d+)/quickpay/$', 'quickpay'),
-    (r'^bill/(?P<_id>\d+)/toggle/writeoff/$', 'toggle_writeoff'),    
-) 
+    (r'^bill/(?P<_id>\d+)/toggle/writeoff/$', 'toggle_writeoff'),
+)
 
 urlpatterns += patterns('accounting.views.discount',
     (r'^bill/(?P<_id>\d+)/discount/$', 'new'),
-    (r'^discount/(?P<_id>\d+)/delete/$', 'delete'),    
+    (r'^discount/(?P<_id>\d+)/delete/$', 'delete'),
 )
 
 urlpatterns += patterns('accounting.views.payment',
@@ -199,7 +200,7 @@ urlpatterns += patterns('accounting.views.payment',
 
 urlpatterns += patterns('accounting.views.refund',
     (r'^payment/(?P<_id>\d+)/refund/$', 'new'),
-    (r'^refund/(?P<_id>\d+)/cancel/$', 'cancel'),    
+    (r'^refund/(?P<_id>\d+)/cancel/$', 'cancel'),
 )
 
 """
@@ -221,7 +222,7 @@ urlpatterns += patterns('task.views.purchasing',
     url(r'^purchasing/$', 'view', name='purchasing'),
     (r'^purchasing/urgent/$', 'urgent'),
     (r'^purchasing/incoming/$', 'incoming'),
-    (r'^purchasing/pending/$', 'pending'),    
+    (r'^purchasing/pending/$', 'pending'),
     (r'^purchasing/order/$', 'order'),
 )
 
@@ -242,7 +243,7 @@ urlpatterns += patterns('task.views.management',
     url(r'^management/customers/full/$', 'customers_full'),
     url(r'^management/suppliers/$', 'suppliers'),
     url(r'^management/items/$', 'items'),
-    
+
     url(r'^management/costing/items/$', 'costing_items'),
     url(r'^management/costing/$', 'costing'),
     url(r'^management/sales/negative/$', 'negative_sales'),
@@ -256,14 +257,14 @@ urlpatterns += patterns('task.views.home',
     Login Logout Views
 """
 urlpatterns += patterns('',
-    url(r'^login/$', 
-        'django.contrib.auth.views.login', 
-        {'template_name': 'account/login.html'}, 
+    url(r'^login/$',
+        'django.contrib.auth.views.login',
+        {'template_name': 'account/login.html'},
         name='login'),
     url(r'^logout/$', 'django.contrib.auth.views.logout_then_login', name='logout'),
-    url(r'^password/$', 
-        'django.contrib.auth.views.password_change', 
-        {'template_name': 'account/change_password.html', 'post_change_redirect': '/'}, 
+    url(r'^password/$',
+        'django.contrib.auth.views.password_change',
+        {'template_name': 'account/change_password.html', 'post_change_redirect': '/'},
         name='change_password'),
 )
 

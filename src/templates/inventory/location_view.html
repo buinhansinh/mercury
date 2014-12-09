@@ -78,13 +78,13 @@ search = function() {
 	var sort = $("select#sort").val();
 	var offset = 0;
 	$.get(
-		"", 
+		"",
 		{
 			terms: terms,
 			location_id: {{location.id}},
 			sort: sort,
 			offset: offset,
-		}, 
+		},
 		function(data) {
 			$("#ul-stock li.header").nextAll().remove();
 			$("#ul-stock li.header").after(data);
@@ -105,27 +105,34 @@ $(document).ready(function(){
 			destination_id: destination_id,
 		});
 	});
-	
+
 	$('#stock-search').keyup(function(e) {
 		if(e.which == KEYCODES.ENTER) {
 			$.get("{% url 'inventory.views.location.stocks' %}",
-				{ location_id: $("#location_id").val(), terms: $('#stock-search').val(), }, 
+				{ location_id: $("#location_id").val(), terms: $('#stock-search').val(), },
 				function(data) {
 					$('#stocks-table li.body').remove();
 					$('#stocks-table').append(data);
 				});
 		}
 	});
-	
+
+	$("#stock-report").click(function() {
+		var url = "{% url 'inventory.views.stock.report' %}";
+		var location_id = $('#location_id').val();
+		var terms = $("#stock-search").val();
+		$(this).attr('href', url + '?' + $.param({location_id: location_id, terms: terms}));
+	});
+
 	$('input.date').datepicker({
 		format: "mm/dd/yyyy",
 		buttonText: "...",
 		showOn: "button",
 	});
-	
+
 	$('#transfer-date').change(function() {
 		$.get("{% url 'inventory.views.location.transfers' %}",
-			{ location_id: $("#location_id").val(), date: $('#transfer-date').val(), }, 
+			{ location_id: $("#location_id").val(), date: $('#transfer-date').val(), },
 			function(data) {
 				$('#transfers-table li.body').remove();
 				$('#transfers-table').append(data);
@@ -134,7 +141,7 @@ $(document).ready(function(){
 
 	$('#adjustment-date').change(function() {
 		$.get("{% url 'inventory.views.location.adjustments' %}",
-			{ location_id: $("#location_id").val(), date: $('#adjustment-date').val(), }, 
+			{ location_id: $("#location_id").val(), date: $('#adjustment-date').val(), },
 			function(data) {
 				$('#adjustments-table li.body').remove();
 				$('#adjustments-table').append(data);
@@ -149,7 +156,7 @@ $(document).ready(function(){
 {% endblock main-title %}
 {% block sub-title %}
 {{ location.address }}
-{% endblock sub-title %}  
+{% endblock sub-title %}
 
 {% block context-menu %}
 	<div class='button'><a class='trigger' href="{% url 'inventory.views.stock.transfer' %}"><span class='iconic transfer'></span> Transfer</a></div>
@@ -165,6 +172,7 @@ $(document).ready(function(){
 	</div>
 	<div id='stocks' class='content'>
 		<input type="text" id='stock-search' placeholder="Search"/>
+		<div class='button'><a id="stock-report" href="#" target="_blank"><span class='iconic document_alt_stroke'></span> Report</a></div>
 		<ul id='stocks-table' class='table'>
 		    <li class='header'>
 		        <div class='item'>Item</div>

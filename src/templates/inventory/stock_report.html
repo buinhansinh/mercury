@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% load compress %}
+{% load static %}
+{% load url from future %}
+
+{% block head %}
+<style>
+#stocks-table {
+	margin: 15px;
+	width: 930px;
+}
+</style>
+<script>
+search = function() {
+	var terms = $("#input-search").val();
+	var location = $("#select-location").val();
+	var sort = $("select#sort").val();
+	var offset = 0;
+	$.get(
+		"",
+		{
+			terms: terms,
+			location_id: {{location.id}},
+			sort: sort,
+			offset: offset,
+		},
+		function(data) {
+			$("#ul-stock li.header").nextAll().remove();
+			$("#ul-stock li.header").after(data);
+	  	}
+	);
+}
+
+$(document).ready(function(){
+});
+</script>
+{% endblock head %}
+
+{% block main-title %}
+{{ location.name }}
+{% endblock main-title %}
+{% block sub-title %}
+{{ location.address }}
+{% endblock sub-title %}
+
+{% block context-menu %}
+	<div class='button'><a href=""><span class='iconic book'></span> Back</a></div>
+{% endblock context-menu %}
+
+{% block content %}
+<table id='stocks-table' class='data'>
+    <tr class='header'>
+        <th class='item'>Item</th>
+        <th class='description'>Description</th>
+        <th class='quantity'>Quantity</th>
+        <th class='last-physical'>Last Physical</th>
+    </tr>
+	{% for stock in results %}
+	<tr>
+		<td class='item' align="left"><a href="{{stock.product.get_view_url}}">{{stock.product.name}}</a></td>
+		<td class='description' align="left">{{stock.product.summary}}</td>
+		<td class='quantity'>{{stock.quantity}}</td>
+		<td class='last-physical'><a class="physical trigger" href="{% url 'inventory.views.stock.physical' stock.id %}">{{stock.last_physical|date:"M d, Y"|default:"None"}}</a></td>
+	</tr>
+	{% endfor %}
+</table>
+<div class='clear' style='height: 15px;'></div>
+{% endblock content %}

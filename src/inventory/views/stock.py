@@ -15,13 +15,13 @@ from django.db.models import Q
 def search(request):
     locations = request.user.account.company.locations.all()
     stocks = Stock.objects.filter(location__in=locations)
-    
+
     terms = request.GET.get('terms', None)
     if terms:
         terms = terms.split(' ')
         for t in terms:
-            stocks = stocks.filter(Q(product__model__icontains=t) | 
-                                   Q(product__brand__icontains=t) | 
+            stocks = stocks.filter(Q(product__model__icontains=t) |
+                                   Q(product__brand__icontains=t) |
                                    Q(product__summary__icontains=t))
     location_id = request.GET.get('location_id', None)
     if location_id:
@@ -29,10 +29,18 @@ def search(request):
     product_id = request.GET.get('product_id', None)
     if product_id:
         stocks = stocks.filter(product__id=product_id)
-    
+
     return stocks
 
-    
+
+@group_required('inventory', 'management')
+def report(request):
+    results = search(request)
+    return render_to_response('inventory/stock_report.html',
+                              dict(results=results),
+                              context_instance=RequestContext(request))
+
+
 @group_required('inventory', 'management')
 def physical(request, _id):
     stock = Stock.objects.get(pk=_id)
@@ -75,4 +83,3 @@ def transfer(request):
         dict(locations=locations),
         context_instance=RequestContext(request)
     )
-        

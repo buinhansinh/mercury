@@ -123,12 +123,13 @@ div#bottom-bar {
 div#bottom-bar > * {
 	display: inline-block;
 }
-div#total {
+div#bottom-bar div.label {
 	float: right;
 	font-weight: bold;
 }
-div#amount {
+div#bottom-bar div.value {
 	float: right;
+	clear: right;
 	display: inline-block;
 	font-weight: bold;
 	background-color: #fff;
@@ -150,16 +151,16 @@ $(document).ready(function(){
 		}
 	});
 	$("ul.tabs").tabs(".pane");
-	
+
 	$('a.transfer-link').click(function() {
 		transfer_url = $(this).attr('href');
 		overlay("{% url 'trade.views.order.transfer' %}");
 		return false;
 	});
-	
+
 	$('#overlay').on('click', '#next-button', function() {
 		location_id = $('select#location').val();
-		window.location = transfer_url + '?location_id=' + location_id; 
+		window.location = transfer_url + '?location_id=' + location_id;
 	});
 
 	$("a#cancel-button").click(function() {
@@ -168,7 +169,15 @@ $(document).ready(function(){
 		} else {
 			return false;
 		}
-	});	
+	});
+
+	var total = parseFloat($("input#total").val());
+	alert(total);
+	var vat = total * 0.12;
+	var net = total - vat;
+
+	$('div#vat').html(vat.toFixed(2));
+	$('div#net').html(net.toFixed(2));
 });
 </script>
 {% endblock head %}
@@ -176,17 +185,17 @@ $(document).ready(function(){
 {% block toolbar %}
 {% endblock toolbar %}
 
-{% block main-title %} 
+{% block main-title %}
 {% if contact == order.customer %}
 	SALES ORDER
 {% endif %}
 {% if contact == order.supplier %}
 	PURCHASE ORDER
 {% endif %}
-{% endblock main-title %} 
+{% endblock main-title %}
 {% block sub-title %}
 <span id='order-number'>No. {{order.reference}}</span>
-{% endblock sub-title %}  
+{% endblock sub-title %}
 
 {% block context-menu %}
 	<label>Status: </label><span>{{order.status}}</span>
@@ -204,7 +213,7 @@ $(document).ready(function(){
 	{% if not order.canceled %}
 	<div id='more-dropdown' class='dropdown'>
 	    <div class='button'>
-	    	<a><span class='icon iconic dropdown'></span></a> 
+	    	<a><span class='icon iconic dropdown'></span></a>
 	    </div>
 		<ul class='menu right'>
 		{% if order.editable %}
@@ -218,7 +227,7 @@ $(document).ready(function(){
 			</li>
 		{% endif %}
 		</ul>
-	</div>	
+	</div>
 	{% endif %}
 {% endblock context-menu %}
 
@@ -280,11 +289,16 @@ $(document).ready(function(){
 	        	<div class='total'><span>{{item.total|default:0|floatformat:2|intcomma}}</span></div>
 	        	<div class='actions'></div>
 	        </li>
-			{% endfor %}			
+			{% endfor %}
 	    </ul>
 	    <div id='bottom-bar'>
-    		<div id='amount'/>{{order.value|default:0|floatformat:2|intcomma}}</div>
-	    	<div id='total'>GRAND TOTAL:</div>
+			<input id='total' type="hidden" value="{{order.value|default:0}}"/>
+    		<div class='value'>{{order.value|default:0|floatformat:2|intcomma}}</div>
+	    	<div class='label'>TOTAL:</div>
+    		<div class='value' id='vat'>0.00</div>
+	    	<div class='label'>VAT:</div>
+    		<div class='value' id='net'>0.00</div>
+	    	<div class='label'>NET TOTAL:</div>
 		</div>
 		</div>
 	    <ul class='pane'>
@@ -292,7 +306,7 @@ $(document).ready(function(){
 	    	{% for t in order.transfers.all %}
 	    	<li>
 	    		<div>
-	    			<a href="{{ t.get_view_url }}">{{t.date|date:"Y F d  h:i:s"}}</a> - {{t.status}} 
+	    			<a href="{{ t.get_view_url }}">{{t.date|date:"Y F d  h:i:s"}}</a> - {{t.status}}
 	    		</div>
 	    	</li>
 	    	{% endfor %}

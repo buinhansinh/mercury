@@ -82,11 +82,30 @@ div#bottom-bar > * {
 div#bottom-bar input {
 	width: 500px;
 }
-div#total {
+div#bottom-bar div.total input {
+	font-weight: bold;
+	background-color: #fff;
+	width: 110px;
+	text-align: right;
+	margin-right: 25px;
+}
+div#bottom-bar div.total {
+	clear: right;
 	font-weight: bold;
 	float: right;
 }
-div#total input#amount {
+div.vat-box {
+	float: right;
+	margin: 0px 0px 0px 15px;
+	padding: 0px 11px;
+	font-weight: bold;
+}
+div.vat-box div {
+	float: right;
+	clear: right;
+	font-weight: bold;
+}
+div.vat-box input {
 	font-weight: bold;
 	background-color: #fff;
 	width: 110px;
@@ -146,7 +165,7 @@ div#price-tables ul.table {
 div#price-tables div.label {
 	width: 100px;
 	text-align: left;
-} 
+}
 div#price-tables div.price {
 	width: 50px;
 	text-align: right;
@@ -181,16 +200,22 @@ $.validation.total = function(input) {
 		product = product * $(this).val();
 	});
 	row.children('.total').html(product.toFixed(2));
-	
-	// total amount of the order			
+
+	// total amount of the order
 	var total = 0;
 	$('#product-table .body .total').each(function() {
 		var li = $(this).closest('li');
-		if (li.children('input.item-cancel').val() != 'True') {		
+		if (li.children('input.item-cancel').val() != 'True') {
 			total = total + parseFloat($(this).html());
 		}
 	});
+
+	var vat = total * 0.12;
+	var net = total - vat;
+
 	$('#amount').val(total.toFixed(2));
+	$('#vat').val(vat.toFixed(2));
+	$('#net').val(net.toFixed(2));
 };
 
 
@@ -223,7 +248,7 @@ $.validation.quantity = function(input) {
 	if (value > stock) {
 		$(input).invalidate($.validation.WARNING, 'The quantity on stock is: ' + stock);
 		return false;
-	}	
+	}
 	{% endif %}
 }
 
@@ -232,10 +257,10 @@ $(document).ready(function(){
 		$('#form').first().submit();
 		return false;
 	});
-	
+
 	// form validation
 	$("#form").validation([{
-		selector: '#document-code', 
+		selector: '#document-code',
 		validators: [],
 	}, {
 		selector: '#document-date',
@@ -250,13 +275,13 @@ $(document).ready(function(){
 		if($('#product-table li.body').length < 1) {
 			alert("But you haven't ordered anything!");
 			return false;
-		}	
-	});	
-	
+		}
+	});
+
 	open_item_info = function() {
-		var item_id = selected_li.children('input.item-info-id').val();	
+		var item_id = selected_li.children('input.item-info-id').val();
 		var item_type_id = selected_li.children('input.item-info-type-id').val();
-		$('#overlay').load("{% url 'trade.views.order.item_info' %}", 
+		$('#overlay').load("{% url 'trade.views.order.item_info' %}",
 			{
 				partner_id: {{contact.id}},
 				mode: "{{mode}}",
@@ -269,16 +294,16 @@ $(document).ready(function(){
 				var quantity = selected_li.find('input.quantity').val();
 				$('div#price-info input').val(price);
 				$('div#stock-info input').val(quantity);
-			});	
+			});
 	};
-	
+
 	// enable selection of items
 	$("input#item").autocomplete({
 		source: "{% url 'catalog.views.suggestions' %}",
 		minLength: 2,
 		select: function(e, ui) {
 			$.post(
-				"{% url 'trade.views.order.item' %}", 
+				"{% url 'trade.views.order.item' %}",
 				{
 					contact_id: {{ contact.id }},
 					info_id: ui.item.id,
@@ -293,7 +318,7 @@ $(document).ready(function(){
 			        $('#form').validate();
 			        //$('input#item').focus();
 			        $('#form input.quantity').last().focus();
-			    }, 
+			    },
 			    'html'
 			);
 			$(this).val(''); // clear the input
@@ -304,20 +329,20 @@ $(document).ready(function(){
 		if (item.more) {
 			li = $("<li class='more'>").data( "item.autocomplete", item )
 				.append( "<a><span>" + item.name + "</span></a>" )
-		} 
+		}
 		else {
 			li = $("<li class='suggestion'>").data( "item.autocomplete", item )
-				.append( "<a><span class='name'>" + item.name + "</span> <span class='summary'>" + item.summary + "</span></a>" ) 
+				.append( "<a><span class='name'>" + item.name + "</span> <span class='summary'>" + item.summary + "</span></a>" )
 		}
         return li.appendTo( ul );
 	};
-	
+
 	// make the table sortable
 	$('#product-table').sortable({
 		handle: '.handle .iconic',
 		items: '.body',
 	});
-	
+
 	// make the items cancellable
 	$('#product-table').on('click', '.actions a.trash', function(e) {
 		var li = $(this).closest('li');
@@ -335,21 +360,21 @@ $(document).ready(function(){
 			$('#form').validate();
 		}
 	});
-	
+
 	// make the cancelled items hidden
 	$('#product-table .item-cancel').each(function(i, el) {
 		if ($(this).val() == 'True') {
 			$(this).closest('li').hide();
 		}
 	});
-	
+
 	// show item info dialog box
 	$('#product-table').on('click', 'a.item-info', function(e) {
 		selected_li = $(this).closest('li');
 		open_item_info();
 		e.preventDefault();
 	});
-	
+
 	// allow clicking on prices to populate the input field
 	$('div#overlay').on('click', 'div#price-info a.price', function(e) {
 		var value = $(this).html();
@@ -365,14 +390,14 @@ $(document).ready(function(){
 			$('div#stock-info input').val(value);
 		}
 	});
-	
+
 	// push the input values from the dialog into the item row fields
 	$('div#overlay').on('click', '#item-info-apply.button', function(e) {
-		var price = $('div#price-info input').val(); 
-		var quantity = $('div#stock-info input').val(); 
+		var price = $('div#price-info input').val();
+		var quantity = $('div#stock-info input').val();
 		selected_li.find('input.price').val(price)
 		selected_li.find('input.quantity').val(quantity);
-		$('#overlay').overlay().close();		
+		$('#overlay').overlay().close();
 	});
 });
 </script>
@@ -383,7 +408,7 @@ $(document).ready(function(){
 {% if form.instance.id %}
 <span id='order-number'>No. {{form.instance.reference}}</span>
 {% endif %}
-{% endblock sub-title %}  
+{% endblock sub-title %}
 
 {% block context-menu %}
 <div id='order-button' class='button submit'>
@@ -395,7 +420,7 @@ $(document).ready(function(){
     <div class='button'>
     	<a href='#'>
 	    	<span class='icon iconic dropdown'></span>
-    	</a> 
+    	</a>
     </div>
 	<ul class='menu right'>
 		<li class='right'>
@@ -433,12 +458,15 @@ $(document).ready(function(){
 {% endfor %}
     </ul>
     <div id='bottom-bar'>
-        <span class='iconic plus'></span> 
+        <span class='iconic plus'></span>
     	<div>ADD ITEM: </div>
         <input id="item" type="text" placeholder="Search"></input>
-    <div id='total'>GRAND TOTAL: <input type="text" id='amount' name='amount' readonly="readonly" value='{{form.amount.value|default:0|floatformat:2|intcomma}}'/></div>	
+        <div class='total'>TOTAL: <input type="text" id='amount' name='amount' readonly="readonly" value='{{form.amount.value|default:0|floatformat:2|intcomma}}'/></div>
     </div>
 </form>
+<div class='vat-box' style='float: right; margin-top: 10px; margin-right: 15px;'>
+    <div>VAT: <input type="text" id='vat' readonly="readonly" value='0.00'/></div>
+    <div>NET TOTAL: <input type="text" id='net' readonly="readonly" value='0.00'/></div>
+</div>
 <div class="clear" style="height: 15px;"></div>
 {% endblock content %}
-

@@ -215,7 +215,8 @@ $.validation.total = function(input) {
 
 	$('#amount').val(total.toFixed(2));
 	$('#vat').val(asCurrency(vat));
-	$('#net').val(asCurrency(net));
+	$('#amount-due').val(asCurrency(net));
+	$('#total-amount-due').val(asCurrency(total));
 };
 
 
@@ -465,8 +466,9 @@ $(document).ready(function(){
     </div>
 </form>
 <div class='vat-box' style='float: right; margin-top: 10px; margin-right: 15px;'>
+    <div>AMOUNT DUE: <input type="text" id='amount-due' readonly="readonly" value='0.00'/></div>
     <div>VAT: <input type="text" id='vat' readonly="readonly" value='0.00'/></div>
-    <div>NET TOTAL: <input type="text" id='net' readonly="readonly" value='0.00'/></div>
+    <div>TOTAL AMOUNT DUE: <input type="text" id='total-amount-due' readonly="readonly" value='0.00'/></div>
 </div>
 <div class="clear" style="height: 15px;"></div>
 {% endblock content %}

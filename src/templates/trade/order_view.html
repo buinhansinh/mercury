@@ -134,7 +134,9 @@ div#bottom-bar div.value {
 	font-weight: bold;
 	background-color: #fff;
 	width: 100px;
-	margin-right: 20px;
+	margin-top: 2px;
+	margin-bottom: 2px;
+	margin-right: 23px;
 	text-align: right;
 }
 {% if contact == order.supplier %}
@@ -292,12 +294,12 @@ $(document).ready(function(){
 	    </ul>
 	    <div id='bottom-bar'>
 			<input id='total' type="hidden" value="{{order.value|default:0}}"/>
-    		<div class='value'>{{order.value|default:0|floatformat:2|intcomma}}</div>
-	    	<div class='label'>TOTAL:</div>
+    		<div class='value' id='net'>0.00</div>
+	    	<div class='label'>AMOUNT DUE:</div>
     		<div class='value' id='vat'>0.00</div>
 	    	<div class='label'>VAT:</div>
-    		<div class='value' id='net'>0.00</div>
-	    	<div class='label'>NET TOTAL:</div>
+    		<div class='value'>{{order.value|default:0|floatformat:2|intcomma}}</div>
+	    	<div class='label'>TOTAL AMOUNT DUE:</div>
 		</div>
 		</div>
 	    <ul class='pane'>

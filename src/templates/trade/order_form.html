@@ -210,12 +210,12 @@ $.validation.total = function(input) {
 		}
 	});
 
-	var vat = total * 0.12;
-	var net = total - vat;
+	var net = total / 1.12;
+	var vat = total - net;
 
 	$('#amount').val(total.toFixed(2));
-	$('#vat').val(vat.toFixed(2));
-	$('#net').val(net.toFixed(2));
+	$('#vat').val(asCurrency(vat));
+	$('#net').val(asCurrency(net));
 };
 
 

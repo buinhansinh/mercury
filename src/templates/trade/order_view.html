@@ -172,12 +172,11 @@ $(document).ready(function(){
 	});
 
 	var total = parseFloat($("input#total").val());
-	alert(total);
-	var vat = total * 0.12;
-	var net = total - vat;
+	var net = total / 1.12;
+	var vat = total - net;
 
-	$('div#vat').html(vat.toFixed(2));
-	$('div#net').html(net.toFixed(2));
+	$('div#vat').html(asCurrency(vat));
+	$('div#net').html(asCurrency(net));
 });
 </script>
 {% endblock head %}

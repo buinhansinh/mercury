@@ -29,16 +29,19 @@ def view(request):
     expenses = primary.account.year_data(YearData.EXPENSES, year).total
     net_profit = gross_profit - expenses
     purchases = primary.account.year_data(YearData.PURCHASES, year).total
-    
+
     inventory = primary.account.data(CompanyAccount.YEAR_INVENTORY, cutoff)
     adjustments = primary.account.year_data(YearData.ADJUSTMENTS, year).total
-    
+
     bad_debts = primary.account.data(CompanyAccount.YEAR_BAD_DEBTS, cutoff)
-    
-    collections = primary.account.year_data(YearData.COLLECTIONS, year).total 
+
+    collections = primary.account.year_data(YearData.COLLECTIONS, year).total
     disbursements = primary.account.year_data(YearData.DISBURSEMENTS, year).total
     net_cash = collections - disbursements
-    
+
+    receivables = TradeAccount.objects.filter(supplier=primary, debt__gt=0).aggregate(Sum('debt'), Sum('credit'))
+    payables = TradeAccount.objects.filter(customer=primary, debt__gt=0).aggregate(Sum('debt'), Sum('credit'))
+
     return render_to_response('task/management/view.html',
         dict(sales=sales,
              cogs=cogs,
@@ -53,9 +56,14 @@ def view(request):
              disbursements=disbursements,
              net_cash=net_cash,
              year=year,
-             year_offset=offset),
+             year_offset=offset,
+             receivables=receivables['debt__sum'],
+             receivable_credit=receivables['credit__sum'],
+             payables=payables['debt__sum'],
+             payable_credit=payables['credit__sum'],
+             ),
         context_instance=RequestContext(request))
-    
+
 
 @group_required('management')
 def customers(request):
@@ -64,7 +72,7 @@ def customers(request):
     cutoff = primary.account.current_cutoff_date(offset)
     customer_ids = TradeAccount.objects.filter(supplier=primary).values_list('id', flat=True)
     print YearData.PROFITS
-    data = YearData.objects.filter(label=YearData.PROFITS, 
+    data = YearData.objects.filter(label=YearData.PROFITS,
                                    year=cutoff.year,
                                    account_type=TradeAccount.content_type().id,
                                    account_id__in=customer_ids).order_by('-total')
@@ -78,12 +86,12 @@ def customers_full(request):
     cutoff = primary.account.current_cutoff_date(offset)
     customers = TradeAccount.objects.filter(supplier=primary)
     customer_ids = customers.values_list('id', flat=True)
-    profits = YearData.objects.filter(label=YearData.PROFITS, 
-                                      year=cutoff.year, 
+    profits = YearData.objects.filter(label=YearData.PROFITS,
+                                      year=cutoff.year,
                                       account_type=TradeAccount.content_type(),
                                       account_id__in=customer_ids)
-    sales = YearData.objects.filter(label=YearData.SALES, 
-                                    year=cutoff.year, 
+    sales = YearData.objects.filter(label=YearData.SALES,
+                                    year=cutoff.year,
                                     account_type=TradeAccount.content_type(),
                                     account_id__in=customer_ids)
     accounts = {}
@@ -99,9 +107,9 @@ def customers_full(request):
             account['profit'] = p.total
             account['name'] = p.account.customer.name
             accounts[p.account_id] = account
-    
+
     accounts = sorted(accounts.values(), key=lambda k: k.get('profit', 0), reverse=True)
-    
+
     return render_to_response('task/management/customers_full.html',
         dict(accounts=accounts,
              year=cutoff.year),
@@ -118,7 +126,7 @@ def suppliers(request):
                                    year=cutoff.year,
                                    account_type=TradeAccount.content_type().id,
                                    account_id__in=supplier_ids).order_by('-total')
-    return paginate(request, data, 'task/management/suppliers.html') 
+    return paginate(request, data, 'task/management/suppliers.html')
 
 
 @group_required('management')
@@ -128,7 +136,7 @@ def items(request):
     primary = request.user.account.company
     cutoff = primary.account.current_cutoff_date(offset)
     item_ids = ItemAccount.objects.filter(owner=primary).values_list('id', flat=True)
-    data = YearData.objects.filter(label=YearData.SALES, 
+    data = YearData.objects.filter(label=YearData.SALES,
                                    year=cutoff.year,
                                    account_type=ItemAccount.content_type(),
                                    account_id__in=item_ids).order_by('-total')
@@ -159,32 +167,32 @@ def costing_items(request):
     items = ItemAccount.objects.filter(cost=0, owner=primary)
     return paginate(request, items, 'task/management/costing_items.html')
 
-    
+
 @group_required('management')
 def reports(request):
     primary = request.user.account.company
     today = date.today()
     year = int(request.GET.get('year', today.year))
     month = int(request.GET.get('month', today.month))
-    if month < 7: month = 1 
+    if month < 7: month = 1
     else: month = 7
     months = range(month, month + 6)
-    
+
     sales = primary.account.year_data(YearData.SALES, year)
-    cogs = primary.account.year_data(YearData.COGS, year) 
+    cogs = primary.account.year_data(YearData.COGS, year)
     profits = primary.account.year_data(YearData.PROFITS, year)
     expenses = primary.account.year_data(YearData.EXPENSES, year)
-    
+
     purchases = primary.account.year_data(YearData.PURCHASES, year)
     adjustments = primary.account.year_data(YearData.ADJUSTMENTS, year)
-    
+
     collections = primary.account.year_data(YearData.COLLECTIONS, year)
     disbursements = primary.account.year_data(YearData.DISBURSEMENTS, year)
-    
+
     month_labels = []
     for m in months:
         month_labels.append(calendar.month_abbr[m])
-    
+
     if month == 1:
         new_year = year
         new_month = 7
@@ -198,7 +206,7 @@ def reports(request):
 
     if new_year > today.year:
         new_year = None
-    
+
     return render_to_response('task/management/reports.html',
         dict(sales=sales.array(months),
              cogs=cogs.array(months),
@@ -214,4 +222,4 @@ def reports(request):
              new_month=new_month,
              old_year=old_year,
              old_month=old_month),
-        context_instance=RequestContext(request))      
+        context_instance=RequestContext(request))

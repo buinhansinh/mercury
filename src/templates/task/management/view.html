@@ -79,7 +79,7 @@ div.next-year {
 <div class='button'>
 	<a href="{% url 'task.views.management.reports' %}">Monthly</a>
 </div>
-<!-- 
+<!--
 <div class='button'><a class='collapse iconic minus'></a></div>
 <div class='button'><a class='expand iconic plus'></a></div>
  -->
@@ -168,6 +168,31 @@ div.next-year {
 			<div class='value'>{{net_cash|default:0|floatformat:0|intcomma}}</div>
 		</li>
 	</ul>
+	<div class='title'>
+		<a href='#cash' class='toggler'>Receivables & Payables</a>
+	</div>
+	<ul id='cash' class='table statement'>
+		<li class='header'>
+			<div class='account'>Account</div>
+			<div class='value'>&nbsp;</div>
+		</li>
+		<li class='body'>
+			<div class='account'>Receivables</div>
+			<div class='value'>{{receivables|default:0|floatformat:0|intcomma}}</div>
+		</li>
+		<li class='body'>
+			<div class='account'>&nbsp; Credit</div>
+			<div class='value'>{{receivable_credit|default:0|floatformat:0|intcomma}}</div>
+		</li>
+		<li class='body'>
+			<div class='account'>Payables</div>
+			<div class='value'>{{payables|default:0|floatformat:0|intcomma}}</div>
+		</li>
+		<li class='body'>
+			<div class='account'>&nbsp; Credit</div>
+			<div class='value'>{{payable_credit|default:0|floatformat:0|intcomma}}</div>
+		</li>
+	</ul>
 </div>
 <div class='column'>
 	<div class='title'>
@@ -190,8 +215,8 @@ div.next-year {
 		<li class='header'>
 			<div class='rank'>#</div>
 			<div class='name'>Name</div>
-			<div class='value'>Profit		
-				
+			<div class='value'>Profit
+
 			</div>
 		</li>
 		<a class='autoloader' href="{% url 'task.views.management.customers' %}?year_offset={{year_offset}}"></a>

@@ -221,19 +221,22 @@ $.validation.total = function(input) {
 
 
 $.validation.price = function(input) {
+	$("#message").html("");
 	var value = Number($(input).val());
 	if (value <= 0) {
 		$(input).invalidate($.validation.ERROR, 'The price cannot be less than or zero.');
 		return false;
 	}
 	var year_high_purchase = Number($(input).nextAll('input.year_high_purchase').val());
-	if (value < year_high_purchase) {
+	if (value < (year_high_purchase * 1.08)) {
 		$(input).invalidate($.validation.WARNING, 'Year high purchase price was: ' + year_high_purchase);
+		$("#message").html("<div class='errorlist'><span class='iconic x_alt'></span> POTENTIAL PROFIT LOSS IN THIS TRANSACTION</div>");
 		return false;
 	}
 	var last_purchase = Number($(input).nextAll('input.last_purchase').val());
-	if (value < last_purchase) {
+	if (value < (last_purchase * 1.08)) {
 		$(input).invalidate($.validation.WARNING, 'The last purchase price was: ' + last_purchase);
+		$("#message").html("<div class='errorlist'><span class='iconic x_alt'></span> POTENTIAL PROFIT LOSS IN THIS TRANSACTION</div>");
 		return false;
 	}
 }

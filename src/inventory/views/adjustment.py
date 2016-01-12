@@ -14,7 +14,7 @@ from django.template.context import RequestContext
 from inventory.models import Adjustment, Location, AdjustmentItem
 
 
-@group_required('inventory')
+@group_required('accounting')
 def search(request):
     results = Adjustment.objects.all()
 
@@ -25,7 +25,7 @@ def search(request):
     return results
 
 
-@group_required('inventory', 'management')
+@group_required('accounting', 'management')
 def view(request, _id):
     adjustment = Adjustment.objects.get(pk=_id)
     return render_to_response('inventory/adjustment_view.html',
@@ -37,12 +37,12 @@ class AdjustmentForm(ModelForm):
     class Meta:
         model = Adjustment
 
-ADJUSTMENT_TYPES = { 
+ADJUSTMENT_TYPES = {
     'ASSEMBLY': Adjustment.ASSEMBLY,
     'EXPENSE': Adjustment.EXPENSE,
 }
 
-@group_required('inventory', 'management')
+@group_required('accounting', 'management')
 def new(request, location_id):
     location = Location.objects.get(pk=location_id)
     if request.method == 'POST':
@@ -81,7 +81,7 @@ def new(request, location_id):
                               context_instance=RequestContext(request))
 
 
-@group_required('inventory', 'management')
+@group_required('accounting', 'management')
 def edit(request, _id):
     adjustment = Adjustment.objects.get(pk=_id)
     if request.method == 'GET':
@@ -97,7 +97,7 @@ def edit(request, _id):
             adjustment.log(Adjustment.CHECKOUT, request.user)
             adjustment = form.save()
 #            for i, _id in enumerate(ids):
-#                cancel = cancels[i] == 'True' 
+#                cancel = cancels[i] == 'True'
 #                if _id == 'None':
 #                    if cancel: continue
 #                    item = AdjustmentItem()
@@ -131,14 +131,14 @@ def edit(request, _id):
                               context_instance=RequestContext(request))
 
 
-@group_required('inventory', 'management')
+@group_required('accounting', 'management')
 def cancel(request, _id):
     a = Adjustment.objects.get(pk=_id)
     a.log(Adjustment.CANCEL, request.user)
     return HttpResponseRedirect(a.get_view_url())
 
 
-@group_required('inventory', 'management')
+@group_required('accounting', 'management')
 def item(request):
     location_id = request.POST['location_id']
     product_id = request.POST['product_id']

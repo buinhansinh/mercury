@@ -41,7 +41,7 @@ def report(request):
                               context_instance=RequestContext(request))
 
 
-@group_required('inventory', 'management')
+@group_required('accounting', 'management')
 def physical(request, _id):
     stock = Stock.objects.get(pk=_id)
     if request.method == "GET":

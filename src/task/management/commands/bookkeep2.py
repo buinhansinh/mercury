@@ -176,9 +176,8 @@ class Command(BaseCommand):
                 d.delete()
             else:
                 cost = self.context.estimate(d.account.item)
-                d.account.assess()
                 d.value = cost
-                d.save()
+                d.account.assess()
                 inventory += d.account.stock * cost
         
         accounts = ItemAccount.objects.filter(owner=self.primary).exclude(id__in=affected)

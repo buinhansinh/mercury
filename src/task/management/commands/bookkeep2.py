@@ -20,12 +20,12 @@ from inventory.models import AdjustmentItem, Physical, Adjustment
 from trade.models import OrderTransferItem, OrderTransfer
 
 
-logger = logging.getLogger(__name__)   
-    
-    
+logger = logging.getLogger(__name__)
+
+
 class Costing():
     cache = {}
-    
+
     def __init__(self, primary_id, end_date):
         self.primary_id = primary_id
         today = datetime.today()
@@ -35,7 +35,7 @@ class Costing():
             self.end_date = end_date
         self.start_date = end_date - timedelta(days=365)
         self.preload()
-    
+
     def preload(self):
         purchases = OrderTransferItem.objects.filter(transfer__labels__name=OrderTransfer.VALID,
                                                      transfer__date__lte=self.end_date,
@@ -47,13 +47,13 @@ class Costing():
             key = (item.order.info_id, item.order.info_type.id)
             if item.net_quantity > 0:
                 quantities[key] = quantities.get(key, 0) + item.net_quantity
-                values[key] = values.get(key, 0) + (item.order.price * item.net_quantity) 
+                values[key] = values.get(key, 0) + (item.order.price * item.net_quantity)
         for key in quantities.keys():
             self.cache[key] = values[key] / quantities[key]
-    
+
     def get_last(self, product):
         try:
-            last = OrderTransferItem.objects.filter(transfer__labels__name=OrderTransfer.VALID, 
+            last = OrderTransferItem.objects.filter(transfer__labels__name=OrderTransfer.VALID,
                                                     order__info_id=product.id,
                                                     order__info_type=product.content_type(),
                                                     transfer__order__customer__id=self.primary_id,
@@ -61,14 +61,14 @@ class Costing():
         except OrderTransferItem.DoesNotExist:
             return 0
         return last.order.price
-    
+
     def get_default(self, product):
-        account = ItemAccount.objects.get(item_type=product.content_type(), 
-                                          item_id=product.id, 
+        account = ItemAccount.objects.get(item_type=product.content_type(),
+                                          item_id=product.id,
                                           owner__id=self.primary_id)
         cost = account.cost
         return cost
-    
+
     def estimate(self, item):
         # no cost for services
         if item.content_type() == Service.content_type():
@@ -80,12 +80,12 @@ class Costing():
                 cost = self.get_default(item)
             self.cache[key] = cost
         return self.cache[key]
-    
-        
+
+
 def plus_equal(value_map, key, value):
     value_map[key] = value_map.get(key, 0) + value
-    
-    
+
+
 def catch(func):
     """
     Usage:
@@ -131,7 +131,7 @@ class Command(BaseCommand):
             default=False,
             help='Ignore AUDITED flag and bookkeep all orders'),
         )
-    
+
     @transaction.commit_manually
     @catch
     def bookkeep_aging(self):
@@ -152,7 +152,7 @@ class Command(BaseCommand):
                 receivables_060[account_key] = receivables_060.get(account_key, 0) + bill.outstanding()
             elif diff.days > 30:
                 receivables_030[account_key] = receivables_030.get(account_key, 0) + bill.outstanding()
-    
+
         accounts = TradeAccount.objects.all()
         for account in accounts:
             account_key = (account.customer.id, account.supplier.id)
@@ -161,13 +161,13 @@ class Command(BaseCommand):
             account.data(TradeAccount.RECEIVABLES_060, datetime.min, receivables_060.get(account_key, 0))
             account.data(TradeAccount.RECEIVABLES_030, datetime.min, receivables_030.get(account_key, 0))
         transaction.commit()
-    
+
     @transaction.commit_manually
     @catch
     def bookkeep_inventory(self):
         inventory = 0
         affected = []
-        data = AccountData.objects.filter(account_type=ItemAccount.content_type().id, 
+        data = AccountData.objects.filter(account_type=ItemAccount.content_type().id,
                                           label=ItemAccount.YEAR_AVERAGE_COST,
                                           date=self.cutoff)
         for d in data:
@@ -177,9 +177,10 @@ class Command(BaseCommand):
             else:
                 cost = self.context.estimate(d.account.item)
                 d.value = cost
+                d.save()
                 d.account.assess()
                 inventory += d.account.stock * cost
-        
+
         accounts = ItemAccount.objects.filter(owner=self.primary).exclude(id__in=affected)
         for account in accounts:
             # average cost
@@ -187,10 +188,10 @@ class Command(BaseCommand):
             account.data(ItemAccount.YEAR_AVERAGE_COST, self.cutoff, cost)
             account.assess()
             inventory += account.stock * cost
-            
+
         self.primary.account.data(CompanyAccount.YEAR_INVENTORY, self.cutoff, inventory)
         transaction.commit()
-    
+
     @transaction.commit_manually
     @catch
     def bookkeep_accounts(self):
@@ -205,46 +206,46 @@ class Command(BaseCommand):
         item_purchases_qty = {}
         item_cogs = {}
         item_profits = {}
-         
+
         acct_sales = {}
         acct_sales_qty = {}
         acct_purchases = {}
         acct_purchases_qty = {}
         acct_cogs = {}
         acct_profits = {}
-         
+
         for t in transfers:
             item_key = (t.order.info_id, t.order.info_type.id, t.date.month)
             quantity = t.net_quantity
             value = t.net_quantity * t.order.price
-               
+
             if t.order.order.customer == self.primary: # purchase
                 #item stuff
                 plus_equal(item_purchases_qty, item_key, quantity)
                 plus_equal(item_purchases, item_key, value)
-                   
+
                 #trade stuff
                 account_key = (t.order.order.supplier.id, t.date.month)
                 plus_equal(acct_purchases_qty, account_key, quantity)
                 plus_equal(acct_purchases, account_key, value)
-   
+
             elif t.order.order.supplier == self.primary: # sale
                 cogs = t.net_quantity * self.context.estimate(t.order.info)
                 profit = value - cogs
-                   
+
                 #item stuff
                 plus_equal(item_sales_qty, item_key, quantity)
                 plus_equal(item_sales, item_key, value)
                 plus_equal(item_cogs, item_key, cogs)
                 plus_equal(item_profits, item_key, profit)
-   
+
                 #trade stuff
                 account_key = (t.order.order.customer.id, t.date.month)
                 plus_equal(acct_sales_qty, account_key, quantity)
                 plus_equal(acct_sales, account_key, value)
                 plus_equal(acct_cogs, account_key, cogs)
                 plus_equal(acct_profits, account_key, profit)
-        
+
         # Payment data
         logger.info("Calculating Payments")
         collections = Payment.objects.filter(supplier=self.primary,
@@ -255,7 +256,7 @@ class Command(BaseCommand):
         for c in collections:
             key = (c.customer.id, c.date.month)
             plus_equal(acct_collections, key, c.total)
-            
+
         disbursements = Payment.objects.filter(customer=self.primary,
                                                date__lte=self.end_date,
                                                date__gte=self.start_date,
@@ -264,14 +265,14 @@ class Command(BaseCommand):
         for d in disbursements:
             key = (d.supplier.id, d.date.month)
             plus_equal(acct_disbursements, key, d.total)
-        
-        
+
+
         # Adjustment data
         logger.info("Calculating Adjustments")
-        physicals = Physical.objects.filter(date__lte=self.end_date, 
-                                            date__gte=self.start_date, 
+        physicals = Physical.objects.filter(date__lte=self.end_date,
+                                            date__gte=self.start_date,
                                             stock__location__owner=self.primary)
-        adjustments = AdjustmentItem.objects.filter(adjustment__date__lte=self.end_date, 
+        adjustments = AdjustmentItem.objects.filter(adjustment__date__lte=self.end_date,
                                                     adjustment__date__gte=self.start_date,
                                                     adjustment__location__owner=self.primary,
                                                     adjustment__labels__name=Adjustment.VALID)
@@ -280,12 +281,12 @@ class Command(BaseCommand):
         for p in physicals:
             key = (p.stock.product.id, Product.content_type().id, p.date.month)
             plus_equal(item_adjustments, key, p.delta * self.context.estimate(p.stock.product))
-        
+
         for a in adjustments:
             key = (a.product.id, Product.content_type().id, a.adjustment.date.month)
-            plus_equal(item_adjustments, key, a.delta * self.context.estimate(a.product))        
-        
-        
+            plus_equal(item_adjustments, key, a.delta * self.context.estimate(a.product))
+
+
         logger.info("Updating Company Stats")
         # write out adjustments first
         year_adjustments = self.primary.account.year_data(YearData.ADJUSTMENTS, self.cutoff.year)
@@ -302,20 +303,20 @@ class Command(BaseCommand):
                 _, month = key
                 year_data.add(month, value)
             year_data.save()
-         
-        logger.info("Sales")    
+
+        logger.info("Sales")
         fill_company_year_data(YearData.SALES, acct_sales)
-        logger.info("Purchases")    
+        logger.info("Purchases")
         fill_company_year_data(YearData.PURCHASES, acct_purchases)
-        logger.info("Cogs")    
+        logger.info("Cogs")
         fill_company_year_data(YearData.COGS, acct_cogs)
         logger.info("Profits")
         fill_company_year_data(YearData.PROFITS, acct_profits)
-        logger.info("Disbursements")    
+        logger.info("Disbursements")
         fill_company_year_data(YearData.DISBURSEMENTS, acct_disbursements)
-        logger.info("Collections")    
+        logger.info("Collections")
         fill_company_year_data(YearData.COLLECTIONS, acct_collections)
-          
+
         logger.info("Updating Item Stats")
         logger.info("Sales")
         self.update_item_data(item_sales, YearData.SALES, self.start_date.year)
@@ -331,12 +332,12 @@ class Command(BaseCommand):
         self.update_item_data(item_profits, YearData.PROFITS, self.start_date.year)
         logger.info("Adjustments")
         self.update_item_data(item_adjustments, YearData.ADJUSTMENTS, self.start_date.year)
-          
+
         logger.info("Updating Supplier Stats")
         self.update_supplier_data(acct_purchases, YearData.PURCHASES, self.cutoff.year)
         self.update_supplier_data(acct_purchases_qty, YearData.PURCHASES_QUANTITY, self.cutoff.year)
         self.update_supplier_data(acct_disbursements, YearData.DISBURSEMENTS, self.cutoff.year)
-   
+
         logger.info("Updating Customer Stats")
         self.update_customer_data(acct_sales, YearData.SALES, self.cutoff.year)
         self.update_customer_data(acct_sales_qty, YearData.SALES_QUANTITY, self.cutoff.year)
@@ -344,10 +345,10 @@ class Command(BaseCommand):
         self.update_customer_data(acct_profits, YearData.PROFITS, self.cutoff.year)
         self.update_customer_data(acct_collections, YearData.COLLECTIONS, self.cutoff.year)
         transaction.commit()
-    
+
     def update_item_data(self, data, label, year):
-        year_data = YearData.objects.filter(account_type=ItemAccount.content_type(), 
-                                            label=label, 
+        year_data = YearData.objects.filter(account_type=ItemAccount.content_type(),
+                                            label=label,
                                             year=year)
         affected = set()
         for d in year_data:
@@ -359,7 +360,7 @@ class Command(BaseCommand):
                 key = (d.account.item_id, d.account.item_type.id, month)
                 d.set(month, data.get(key, 0))
             d.save()
-    
+
         accounts = ItemAccount.objects.filter(owner=self.primary).exclude(id__in=affected)
         for a in accounts:
             year_data = a.year_data(label=label, year=year)
@@ -369,10 +370,10 @@ class Command(BaseCommand):
             year_data.save()
         transaction.commit()
 
-    
+
     def update_supplier_data(self, data, label, year):
-        year_data = YearData.objects.filter(account_type=TradeAccount.content_type(), 
-                                            label=label, 
+        year_data = YearData.objects.filter(account_type=TradeAccount.content_type(),
+                                            label=label,
                                             year=year)
         affected = set()
         for d in year_data:
@@ -385,7 +386,7 @@ class Command(BaseCommand):
                     key = (d.account.supplier.id, month)
                     d.set(month, data.get(key, 0))
                 d.save()
-    
+
         accounts = TradeAccount.objects.filter(customer=self.primary).exclude(id__in=affected)
         for a in accounts:
             year_data = a.year_data(label=label, year=year)
@@ -393,11 +394,11 @@ class Command(BaseCommand):
                 key = (a.supplier.id, month)
                 year_data.set(month, data.get(key, 0))
             year_data.save()
-  
-    
+
+
     def update_customer_data(self, data, label, year):
-        year_data = YearData.objects.filter(account_type=TradeAccount.content_type(), 
-                                            label=label, 
+        year_data = YearData.objects.filter(account_type=TradeAccount.content_type(),
+                                            label=label,
                                             year=year)
         affected = set()
         for d in year_data:
@@ -410,7 +411,7 @@ class Command(BaseCommand):
                     key = (d.account.customer.id, month)
                     d.set(month, data.get(key, 0))
                 d.save()
-    
+
         accounts = TradeAccount.objects.filter(supplier=self.primary).exclude(id__in=affected)
         for a in accounts:
             year_data = a.year_data(label=label, year=year)
@@ -419,7 +420,7 @@ class Command(BaseCommand):
                 year_data.set(month, data.get(key, 0))
             year_data.save()
 
-    
+
     @transaction.commit_manually
     @catch
     def bookkeep_company(self):
@@ -428,15 +429,15 @@ class Command(BaseCommand):
                                           date__lte=self.end_date,
                                           date__gte=self.start_date,
                                           labels__name=Expense.VALID)
-        
+
         expenses_data = self.primary.account.year_data(YearData.EXPENSES, self.cutoff.year)
         expenses_data.reset()
         for e in expenses:
-            expenses_data.add(e.date.month, e.amount) 
+            expenses_data.add(e.date.month, e.amount)
         expenses_data.save()
-        
+
         # Calculate bad debts
-        bad_debts = Bill.objects.filter(supplier=self.primary, 
+        bad_debts = Bill.objects.filter(supplier=self.primary,
                                         labels__date__gte=self.start_date,
                                         labels__date__lte=self.end_date,
                                         labels__name=Bill.BAD)
@@ -444,13 +445,13 @@ class Command(BaseCommand):
         for d in bad_debts:
             writeoff += d.outstanding()
 
-        self.primary.account.data(CompanyAccount.YEAR_BAD_DEBTS, 
-                     self.cutoff, 
+        self.primary.account.data(CompanyAccount.YEAR_BAD_DEBTS,
+                     self.cutoff,
                      writeoff)
-        
+
         transaction.commit()
-    
-    
+
+
     def handle(self, *args, **options):
         user = User.objects.get(username__exact=options['username'])
         if not user.is_superuser:
@@ -458,7 +459,7 @@ class Command(BaseCommand):
             return
         self.primary = user.account.company
         year = options['year']
-        
+
         self.cutoff = self.primary.account.current_cutoff_date().replace(year=int(year))
         self.start_date = self.cutoff
         self.end_date = self.start_date + timedelta(days=365)
@@ -466,32 +467,29 @@ class Command(BaseCommand):
 
         start_time = datetime.now()
         logger.info("Bookkeeping Start {}".format(year))
-        
+
         logger.info("Costing Start")
         self.context = Costing(self.primary.id, self.end_date)
         logger.info("Costing End")
-        
+
         logger.info("Accounts Start")
         self.bookkeep_accounts()
         logger.info("Accounts End")
-        
+
         logger.info("Company Start")
         self.bookkeep_company()
         logger.info("Company End")
-        
+
         # only do this if it's the current year
         if self.start_date.year == datetime.today().year:
             # value of inventory
             logger.info("Inventory Start")
             self.bookkeep_inventory()
             logger.info("Inventory End")
-        
+
             logger.info("Aging Start")
             self.bookkeep_aging()
             logger.info("Aging End")
-    
+
         elapsed_time = datetime.now() - start_time
         logger.info("Bookkeeping Complete. Total Time: {}".format(elapsed_time))
-            
-            
-        

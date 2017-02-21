@@ -7,6 +7,8 @@ from datetime import datetime, timedelta
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from django.db import transaction, connection
+from django.db.models import Sum
+
 import logging
 from optparse import make_option
 import sys
@@ -17,7 +19,7 @@ from catalog.models import Product, Service
 from company.models import TradeAccount, ItemAccount, CompanyAccount, YearData, \
     AccountData
 from inventory.models import AdjustmentItem, Physical, Adjustment
-from trade.models import OrderTransferItem, OrderTransfer
+from trade.models import OrderTransferItem, OrderTransfer, Order, OrderItem
 
 
 logger = logging.getLogger(__name__)
@@ -25,6 +27,8 @@ logger = logging.getLogger(__name__)
 
 class Costing():
     cache = {}
+    last_known_cache = {}
+    default_cache = {}
 
     def __init__(self, primary_id, end_date):
         self.primary_id = primary_id
@@ -51,23 +55,21 @@ class Costing():
         for key in quantities.keys():
             self.cache[key] = values[key] / quantities[key]
 
+        orders = OrderItem.objects.filter(order__labels__name=Order.CLOSED,
+                                          order__customer__id=self.primary_id,
+                                          info_type=Product.content_type(),
+                                          order__date__lte=self.end_date).order_by('order__date')
+        for o in orders:
+            self.last_known_cache[o.info.id] = o.price
+
+        self.default_cache = dict(ItemAccount.objects.filter(item_type=Product.content_type(),
+                                                             owner__id=self.primary_id).values_list('item_id', 'cost'))
+
     def get_last(self, product):
-        try:
-            last = OrderTransferItem.objects.filter(transfer__labels__name=OrderTransfer.VALID,
-                                                    order__info_id=product.id,
-                                                    order__info_type=product.content_type(),
-                                                    transfer__order__customer__id=self.primary_id,
-                                                    transfer__date__lte=self.end_date).latest('transfer__date')
-        except OrderTransferItem.DoesNotExist:
-            return 0
-        return last.order.price
+        return self.last_known_cache.get(product.id, 0)
 
     def get_default(self, product):
-        account = ItemAccount.objects.get(item_type=product.content_type(),
-                                          item_id=product.id,
-                                          owner__id=self.primary_id)
-        cost = account.cost
-        return cost
+        return self.default_cache.get(product.id, 0)
 
     def estimate(self, item):
         # no cost for services
@@ -165,32 +167,51 @@ class Command(BaseCommand):
     @transaction.commit_manually
     @catch
     def bookkeep_inventory(self):
+        logger.info("Updating stock...")
+        stocks = dict(Product.objects.filter(stocks__location__in=self.primary.locations.all()).annotate(total_stock=Sum('stocks__quantity')).values_list('id', 'total_stock'))
+        accounts = ItemAccount.objects.filter(owner=self.primary)
+        for account in accounts:
+            account.stock = stocks[account.item.id]
+            account.save()
+        transaction.commit()
+        logger.info("Done.")
+
+        logger.info("Ensuring account data integrity...")
+        data = AccountData.objects.filter(account_type=ItemAccount.content_type(),
+                                          label=ItemAccount.YEAR_AVERAGE_COST,
+                                          date=self.cutoff)
+        for d in data:
+            if d.account == None:
+                d.delete()
+        transaction.commit()
+
+        has_data = AccountData.objects.filter(account_type=ItemAccount.content_type().id,
+                                             label=ItemAccount.YEAR_AVERAGE_COST,
+                                             date=self.cutoff).values_list('account_id', flat=True)
+        all_items = ItemAccount.objects.filter(owner=self.primary).values_list('id', flat=True)
+        no_data = set(all_items) - set(has_data)
+        for d in no_data:
+            AccountData.objects.create(account_type=ItemAccount.content_type(),
+                                       account_id=d,
+                                       label=ItemAccount.YEAR_AVERAGE_COST,
+                                       date=self.cutoff)
+        transaction.commit()
+        logger.info("Done.")
+
+        logger.info("Updating item costs...")
         inventory = 0
-        affected = []
         data = AccountData.objects.filter(account_type=ItemAccount.content_type().id,
                                           label=ItemAccount.YEAR_AVERAGE_COST,
                                           date=self.cutoff)
         for d in data:
-            affected.append(d.account_id)
-            if d.account == None:
-                d.delete()
-            else:
-                cost = self.context.estimate(d.account.item)
-                d.value = cost
-                d.save()
-                d.account.assess()
-                inventory += d.account.stock * cost
-
-        accounts = ItemAccount.objects.filter(owner=self.primary).exclude(id__in=affected)
-        for account in accounts:
             # average cost
-            cost = self.context.estimate(account.item)
-            account.data(ItemAccount.YEAR_AVERAGE_COST, self.cutoff, cost)
-            account.assess()
-            inventory += account.stock * cost
-
+            cost = self.context.estimate(d.account.item)
+            d.value = cost
+            d.save()
+            inventory += d.account.stock * cost
         self.primary.account.data(CompanyAccount.YEAR_INVENTORY, self.cutoff, inventory)
         transaction.commit()
+        logger.info("Done.")
 
     @transaction.commit_manually
     @catch

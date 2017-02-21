@@ -368,79 +368,98 @@ class Command(BaseCommand):
         transaction.commit()
 
     def update_item_data(self, data, label, year):
+        # delete orphans
         year_data = YearData.objects.filter(account_type=ItemAccount.content_type(),
                                             label=label,
                                             year=year)
-        affected = set()
+        has_data = set()
         for d in year_data:
+            has_data.add(d.account.id)
             if d.account == None:
                 d.delete()
-                continue
-            affected.add(d.account.id)
+        transaction.commit()
+
+        # make sure all accounts have year data
+        all_items = set(ItemAccount.objects.filter(owner=self.primary).values_list('id', flat=True))
+        no_data = all_items - has_data
+        for account_id in no_data:
+            YearData.objects.create(label=label, year=year, account_type=ItemAccount.content_type(), account_id=account_id)
+        transaction.commit()
+
+        # update
+        year_data = YearData.objects.filter(account_type=ItemAccount.content_type(),
+                                            label=label,
+                                            year=year)
+        for d in year_data:
             for month in range(1, 13):
                 key = (d.account.item_id, d.account.item_type.id, month)
                 d.set(month, data.get(key, 0))
             d.save()
-
-        accounts = ItemAccount.objects.filter(owner=self.primary).exclude(id__in=affected)
-        for a in accounts:
-            year_data = a.year_data(label=label, year=year)
-            for month in range(1, 13):
-                key = (a.item_id, a.item_type.id, month)
-                year_data.set(month, data.get(key, 0))
-            year_data.save()
         transaction.commit()
 
-
     def update_supplier_data(self, data, label, year):
+        # delete orphans
         year_data = YearData.objects.filter(account_type=TradeAccount.content_type(),
                                             label=label,
                                             year=year)
-        affected = set()
+
+        has_data = set()
         for d in year_data:
+            has_data.add(d.account.id)
             if d.account == None:
                 d.delete()
-                continue
-            elif d.account.customer == self.primary:
-                affected.add(d.account.id)
+        transaction.commit()
+
+        # ensure all accounts have year data
+        all_items = set(TradeAccount.objects.filter(customer=self.primary).values_list('id', flat=True))
+        no_data = all_items - has_data
+        for account_id in no_data:
+            YearData.objects.create(label=label, year=year, account_type=TradeAccount.content_type(), account_id=account_id)
+        transaction.commit()
+
+        # update
+        year_data = YearData.objects.filter(account_type=TradeAccount.content_type(),
+                                            label=label,
+                                            year=year)
+        for d in year_data:
+            if d.account.customer == self.primary:
                 for month in range(1, 13):
                     key = (d.account.supplier.id, month)
                     d.set(month, data.get(key, 0))
                 d.save()
-
-        accounts = TradeAccount.objects.filter(customer=self.primary).exclude(id__in=affected)
-        for a in accounts:
-            year_data = a.year_data(label=label, year=year)
-            for month in range(1, 13):
-                key = (a.supplier.id, month)
-                year_data.set(month, data.get(key, 0))
-            year_data.save()
-
+        transaction.commit()
 
     def update_customer_data(self, data, label, year):
+        # delete orphans
         year_data = YearData.objects.filter(account_type=TradeAccount.content_type(),
                                             label=label,
                                             year=year)
-        affected = set()
+
+        has_data = set()
         for d in year_data:
+            has_data.add(d.account.id)
             if d.account == None:
                 d.delete()
-                continue
-            elif d.account.supplier == self.primary:
-                affected.add(d.account.id)
+        transaction.commit()
+
+        # ensure all accounts have year data
+        all_items = set(TradeAccount.objects.filter(supplier=self.primary).values_list('id', flat=True))
+        no_data = all_items - has_data
+        for account_id in no_data:
+            YearData.objects.create(label=label, year=year, account_type=TradeAccount.content_type(), account_id=account_id)
+        transaction.commit()
+
+        # update
+        year_data = YearData.objects.filter(account_type=TradeAccount.content_type(),
+                                            label=label,
+                                            year=year)
+        for d in year_data:
+            if d.account.supplier == self.primary:
                 for month in range(1, 13):
                     key = (d.account.customer.id, month)
                     d.set(month, data.get(key, 0))
                 d.save()
-
-        accounts = TradeAccount.objects.filter(supplier=self.primary).exclude(id__in=affected)
-        for a in accounts:
-            year_data = a.year_data(label=label, year=year)
-            for month in range(1, 13):
-                key = (a.customer.id, month)
-                year_data.set(month, data.get(key, 0))
-            year_data.save()
-
+        transaction.commit()
 
     @transaction.commit_manually
     @catch

@@ -374,9 +374,10 @@ class Command(BaseCommand):
                                             year=year)
         has_data = set()
         for d in year_data:
-            has_data.add(d.account.id)
             if d.account == None:
                 d.delete()
+            else:
+                has_data.add(d.account.id)
         transaction.commit()
 
         # make sure all accounts have year data
@@ -405,9 +406,10 @@ class Command(BaseCommand):
 
         has_data = set()
         for d in year_data:
-            has_data.add(d.account.id)
             if d.account == None:
                 d.delete()
+            else:
+                has_data.add(d.account.id)
         transaction.commit()
 
         # ensure all accounts have year data
@@ -437,9 +439,10 @@ class Command(BaseCommand):
 
         has_data = set()
         for d in year_data:
-            has_data.add(d.account.id)
             if d.account == None:
                 d.delete()
+            else:
+                has_data.add(d.account.id)
         transaction.commit()
 
         # ensure all accounts have year data

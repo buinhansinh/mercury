@@ -48,7 +48,7 @@
 #price-content div.label {
 	width: 130px;
 	text-align: left;
-} 
+}
 #price-content div.price {
 	width: 150px;
 	text-align: right;
@@ -157,8 +157,8 @@ $(function() {
 	// setup ul.tabs to work as tabs for each div directly under div.panes
 	$("#tabs-section ul.tabs").tabs("#tabs-section div.pane");
 	$("#about-section ul.tabs").tabs("#about-section div.pane");
-	$("#transaction-tabs").tabs("#transaction-section > div.pane");	
-	
+	$("#transaction-tabs").tabs("#transaction-section > div.pane");
+
 	$("#details-section .toggler").collapse();
 
 	// Search Transactions
@@ -174,16 +174,16 @@ $(function() {
 			});
 	}
 	searchTransactions();
-	
+
 	// Search Releases
 	var searchReleases = function() {
 		var date = $('#release-date').val();
 		$.get("{% url 'catalog.views.product.ordertransfers' %}",
-			{ date: date, product_id: {{product.id}} }, 
+			{ date: date, product_id: {{product.id}} },
 			function(data) {
 				$('#release-table li.body').remove();
 				$('#release-table').append(data);
-			});		
+			});
 	}
 	$('#release-date').change(searchReleases);
 	searchReleases();
@@ -192,11 +192,11 @@ $(function() {
 	var searchTransfers = function() {
 		var date = $('#transfer-date').val();
 		$.get("{% url 'catalog.views.product.stocktransfers' %}",
-			{ date: date, product_id: {{product.id}} }, 
+			{ date: date, product_id: {{product.id}} },
 			function(data) {
 				$('#transfer-table li.body').remove();
 				$('#transfer-table').append(data);
-			});		
+			});
 	}
 	$('#transfer-date').change(searchTransfers);
 	searchTransfers();
@@ -207,7 +207,7 @@ $(function() {
 {% block main-title %}
 <span class='iconic box'></span> {{ product.name }} </span>
 {% endblock main-title %}
- 
+
 {% block context-menu %}
 <div id='more-dropdown' class='dropdown'>
     <div class='button'><a><span class='iconic dropdown'></span> </a></div>
@@ -218,7 +218,7 @@ $(function() {
 	</ul>
 </div>
 {% endblock context-menu %}
- 
+
 {% block content %}
 <div id="left" class='column'>
 	<div class='title'>
@@ -242,33 +242,37 @@ $(function() {
     	</div>
     </div>
     <div class='title'><a href="#product-details" class='toggler'>Details</a></div>
-    <div id='product-details' class='content'>{{ product.description|default:"None" }}</div>    
+    <div id='product-details' class='content'>{{ product.description|default:"None" }}</div>
     <div class='title'><a href="#price-content" class='toggler'>Prices</a></div>
     <div id='price-content'>
     	<ul id='price-table' class='table'>
-	    	<li class='header'> 
+	    	<li class='header'>
 	    		<div class='label'>Account</div>
 	    		<div class='price'></div>
 	    		<div class='actions'></div>
 	    	</li>
-	    	<li> 
+	    	<li>
 	    		<div class='label'>List Price</div>
 	    		<div class='price'><a href="#">{{account.price|floatformat:2}}</a></div>
 	    		<div class='actions'>
 	    			<a id='edit-price' class='iconic pen trigger' href="{% url 'company.views.item.price' account.id %}"></a>
-	    		</div> 
+	    		</div>
 	    	</li>
-	    	<li> 
+			{% if 'accounting' in request.user.account.groups or 'management' in request.user.account.groups or request.user.is_superuser %}
+	    	<li>
 	    		<div class='label'>Default Cost</div>
 	    		<div class='price'><a href="#">{{account.cost|floatformat:2}}</a></div>
 	    		<div class='actions'>
 	    			<a id='edit-cost' class='iconic pen trigger' href="{% url 'company.views.item.cost' account.id %}"></a>
-	    		</div> 
+	    		</div>
 	    	</li>
+			{% endif %}
     	</ul>
+		{% if 'accounting' in request.user.account.groups or 'management' in request.user.account.groups or request.user.is_superuser %}
     	{% with item=account %}
 		{% include 'company/price_table.html' %}
 		{% endwith %}
+		{% endif %}
 	</div>
 	<div class='clear' style="height:15px"></div>
 </div>
@@ -302,9 +306,9 @@ $(function() {
 					<div class='partner'>Partner</div>
 					<div class='quantity'>Qty</div>
 					<div class='status'>Status</div>
-				</li>		
-			</ul>	    
-	    </div>	
+				</li>
+			</ul>
+	    </div>
 	    <div class="pane">
 			<div class='toolbar'>
 				<input id='transfer-date' class="date" readonly='readonly' placeholder='Today'/>
@@ -316,8 +320,8 @@ $(function() {
 					<div class='direction'>Direction</div>
 					<div class='quantity'>Qty</div>
 					<div class='status'>Status</div>
-				</li>		
-			</ul>	    
+				</li>
+			</ul>
 	    </div>
 	    <div class="pane">
 			<ul id='transaction-table' class='table'>
@@ -326,10 +330,10 @@ $(function() {
 				    <div class='quantity'>Quantity</div>
 				    <div class='type'>Type</div>
 				    <div class='url'>Document</div>
-			    </li>		
+			    </li>
 			</ul>
 	    </div>
-	</div>	
+	</div>
 </div>
 <div class="clear"></div>
 {% endblock content %}

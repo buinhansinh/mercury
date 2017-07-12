@@ -268,11 +268,9 @@ $(function() {
 	    	</li>
 			{% endif %}
     	</ul>
-		{% if 'accounting' in request.user.account.groups or 'management' in request.user.account.groups or request.user.is_superuser %}
     	{% with item=account %}
 		{% include 'company/price_table.html' %}
 		{% endwith %}
-		{% endif %}
 	</div>
 	<div class='clear' style="height:15px"></div>
 </div>

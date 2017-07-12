@@ -44,6 +44,7 @@
 		</div>
 	</li>
 	<li class='spacing'></li>
+	{% if 'accounting' in request.user.account.groups or 'management' in request.user.account.groups or request.user.is_superuser %}
 	<li class='header'>
 		<div class='label'>Purchases</div>
 		<div class='price'></div>
@@ -64,7 +65,7 @@
 		</div>
 	</li>
 	<li>
-		<div class='label'>Year Low:</div> 
+		<div class='label'>Year Low:</div>
 		<div class='price'>
 			<a class="price" href="#">{{ item.year_low_purchase.price|floatformat:2|default:'None' }}</a>
 		</div>
@@ -88,5 +89,6 @@
 			</a>
 			{% endif %}
 		</div>
-	</li>			
+	</li>
+	{% endif %}
 </ul>

@@ -109,10 +109,11 @@ $(document).ready(function(){
 	});	
 	
 	var load_a = function(el) {
+		var parent = $(el).parent();
 		$.ajax({
 			url: $(el).attr('href'), 
 			success: function(data){
-				$(el).parent().replaceWith(data);
+				parent.replaceWith(data);
 			},
 			context: $(el),
 		});
@@ -133,6 +134,7 @@ $(document).ready(function(){
 		$("a.scrollloader").each(function(i) {
 			if (elementInViewport(this)) {
 				load_a(this);
+				$(this).removeClass('scrollloader');
 			}
 		});
 	});

@@ -5,5 +5,5 @@
 	<div class='customer'><a href="{{ result.customer.get_view_url }}">{{result.customer}}</a></div>
 	<div class='supplier'><a href="{{ result.supplier.get_view_url }}">{{result.supplier}}</a></div>
 	<div class='date'>{{result.date|date:'Y-m-d'}}</div>
-	<div class='amount'>{{result.total|floatformat:2}}</div>
+	<div class='amount'>{{result.available|floatformat:2}}</div>
 {% endblock columns %}

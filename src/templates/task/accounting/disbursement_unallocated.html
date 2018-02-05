@@ -8,7 +8,7 @@
 		<div class='customer'>Customer</div>
 		<div class='supplier'>Supplier</div>
 		<div class='date'>Date</div>
-		<div class='amount'>Amount</div>
+		<div class='amount'>Available</div>
 	</li>
 	<a class='autoloader' href="{% url 'task.views.billing.payments' %}?customer_id={{ request.user.account.company.id }}&status=UNALLOCATED">Loading...</a>
 </ul>

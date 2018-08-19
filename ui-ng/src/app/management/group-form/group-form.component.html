@@ -1,3 +1,7 @@
-<p>
-  group-form works!
-</p>
+<h3 mat-dialog-title>Group Create</h3>
+<form [formGroup]="groupForm" class="group-form">
+  <mat-form-field>
+      <input type="text" matInput formControlName="groupName" placeholder="GROUP NAME" (keyup.enter)="onCreateGroup()">
+  </mat-form-field>
+  <button mat-flat-button [disabled]="groupForm.invalid" mat-dialog-close>Create</button>
+</form>

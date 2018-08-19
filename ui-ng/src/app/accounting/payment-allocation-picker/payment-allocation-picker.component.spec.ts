@@ -1,16 +1,15 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { PaymentAllocationPickerComponent } from './payment-allocation-picker.component';
+import { PaymentAllocationPickerComponent } from "./payment-allocation-picker.component";
 
-describe('PaymentAllocationPickerComponent', () => {
+describe("PaymentAllocationPickerComponent", () => {
   let component: PaymentAllocationPickerComponent;
   let fixture: ComponentFixture<PaymentAllocationPickerComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ PaymentAllocationPickerComponent ]
-    })
-    .compileComponents();
+      declarations: [PaymentAllocationPickerComponent]
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -19,7 +18,7 @@ describe('PaymentAllocationPickerComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

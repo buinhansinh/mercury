@@ -1,16 +1,15 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { PaymentFormComponent } from './payment-form.component';
+import { PaymentFormComponent } from "./payment-form.component";
 
-describe('PaymentFormComponent', () => {
+describe("PaymentFormComponent", () => {
   let component: PaymentFormComponent;
   let fixture: ComponentFixture<PaymentFormComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ PaymentFormComponent ]
-    })
-    .compileComponents();
+      declarations: [PaymentFormComponent]
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -19,7 +18,7 @@ describe('PaymentFormComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

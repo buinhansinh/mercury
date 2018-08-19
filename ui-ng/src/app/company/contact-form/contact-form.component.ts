@@ -9,30 +9,42 @@ import { clone } from "../../app-common/util";
   styleUrls: ["./contact-form.component.css"]
 })
 export class ContactFormComponent implements OnInit {
-  @Input() contact: Contact;
-  @Output() contactSaved = new EventEmitter<Contact>();  
+  @Input()
+  contact: Contact;
+  @Output()
+  contactSaved = new EventEmitter<Contact>();
 
   form: FormGroup;
 
-  constructor(private formBuilder: FormBuilder) {
-
-  }
+  constructor(private formBuilder: FormBuilder) {}
 
   ngOnInit() {
     this.contact = this.contact ? this.contact : clone(EMPTY_CONTACT);
     this.form = this.formBuilder.group(this.contact);
-    this.form.setControl('numbers', this.formBuilder.array(this.contact.numbers.map(num =>
-      this.formBuilder.control(num)
-    )));
-    this.form.setControl('addresses', this.formBuilder.array(this.contact.addresses.map(num =>
-      this.formBuilder.control(num)
-    )));
-    this.form.setControl('emails', this.formBuilder.array(this.contact.emails.map(num =>
-      this.formBuilder.control(num)
-    )));
-    this.form.setControl('links', this.formBuilder.array(this.contact.links.map(num =>
-      this.formBuilder.control(num)
-    )));            
+    this.form.setControl(
+      "numbers",
+      this.formBuilder.array(
+        this.contact.numbers.map(num => this.formBuilder.control(num))
+      )
+    );
+    this.form.setControl(
+      "addresses",
+      this.formBuilder.array(
+        this.contact.addresses.map(num => this.formBuilder.control(num))
+      )
+    );
+    this.form.setControl(
+      "emails",
+      this.formBuilder.array(
+        this.contact.emails.map(num => this.formBuilder.control(num))
+      )
+    );
+    this.form.setControl(
+      "links",
+      this.formBuilder.array(
+        this.contact.links.map(num => this.formBuilder.control(num))
+      )
+    );
   }
 
   onSave() {

@@ -9,8 +9,10 @@ import { clone } from "../../app-common/util";
   styleUrls: ["./service-form.component.css"]
 })
 export class ServiceFormComponent implements OnInit {
-  @Input() offer: Offer;
-  @Output() offerSaved = new EventEmitter<Offer>();
+  @Input()
+  offer: Offer;
+  @Output()
+  offerSaved = new EventEmitter<Offer>();
 
   form: FormGroup;
 
@@ -35,7 +37,7 @@ export class ServiceFormComponent implements OnInit {
       id: this.form.value.id,
       type: this.offer.type,
       properties: props,
-      description: Object.values(props).join(' '),
+      description: Object.values(props).join(" ")
     };
 
     this.offerSaved.emit(this.offer);

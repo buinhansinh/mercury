@@ -1,16 +1,15 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { RefundFormComponent } from './refund-form.component';
+import { RefundFormComponent } from "./refund-form.component";
 
-describe('RefundFormComponent', () => {
+describe("RefundFormComponent", () => {
   let component: RefundFormComponent;
   let fixture: ComponentFixture<RefundFormComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ RefundFormComponent ]
-    })
-    .compileComponents();
+      declarations: [RefundFormComponent]
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -19,7 +18,7 @@ describe('RefundFormComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

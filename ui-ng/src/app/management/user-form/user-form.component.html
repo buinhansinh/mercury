@@ -1,3 +1,18 @@
-<p>
-  user-form works!
-</p>
+<h3 mat-dialog-title>User Create</h3>
+<form [formGroup]="userForm" class="user-form">
+  <mat-form-field>
+      <input type="text" matInput formControlName="username" placeholder="USER NAME">
+  </mat-form-field>
+  <mat-form-field>
+      <input type="text" matInput formControlName="fullname" placeholder="FULL NAME">
+  </mat-form-field>
+  <div formGroupName="passwordGroup" class="user-form">
+      <mat-form-field>
+          <input type="text" matInput formControlName="password" placeholder="PASSWORD" >
+      </mat-form-field>
+      <mat-form-field>
+          <input type="text" matInput formControlName="passwordVerify" placeholder="PASSWORD VERIFY">
+      </mat-form-field>
+  </div>
+  <button mat-flat-button [disabled]="userForm.invalid" mat-dialog-close>Create</button>
+</form>

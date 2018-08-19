@@ -1,3 +1,1 @@
-class Logger {
-
-}
+class Logger {}

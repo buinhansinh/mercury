@@ -47,8 +47,10 @@ export class PaymentAllocationPickerComponent implements OnInit {
   dataSource: MatTableDataSource<Allocatable>;
   selection = new SelectionModel<Allocatable>(true, []);
 
-  @ViewChild(MatPaginator) paginator: MatPaginator;
-  @ViewChild(MatSort) sort: MatSort;
+  @ViewChild(MatPaginator)
+  paginator: MatPaginator;
+  @ViewChild(MatSort)
+  sort: MatSort;
 
   constructor() {
     // Assign the data to the data source for the table to render

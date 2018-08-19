@@ -26,7 +26,7 @@ export class OrderTransferFormComponent implements OnInit {
       id: null,
       date: null,
       ref_no: null,
-      status: null,
+      status: null
     });
     const quantities = this.formBuilder.array(
       this.model.quantities.map(q =>

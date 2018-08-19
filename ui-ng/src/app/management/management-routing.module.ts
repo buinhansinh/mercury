@@ -41,7 +41,7 @@ const routes: Routes = [
       {
         path: "locations",
         component: LocationsComponent
-      },      
+      },
       {
         path: "location",
         component: LocationFormComponent
@@ -52,8 +52,8 @@ const routes: Routes = [
       },
       {
         path: "reports",
-        component: ReportsComponent,
-      },      
+        component: ReportsComponent
+      }
     ]
   }
 ];

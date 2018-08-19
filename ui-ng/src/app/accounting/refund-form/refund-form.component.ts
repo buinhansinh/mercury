@@ -1,15 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit } from "@angular/core";
 
 @Component({
-  selector: 'app-refund-form',
-  templateUrl: './refund-form.component.html',
-  styleUrls: ['./refund-form.component.css']
+  selector: "app-refund-form",
+  templateUrl: "./refund-form.component.html",
+  styleUrls: ["./refund-form.component.css"]
 })
 export class RefundFormComponent implements OnInit {
+  constructor() {}
 
-  constructor() { }
-
-  ngOnInit() {
-  }
-
+  ngOnInit() {}
 }

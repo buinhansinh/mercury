@@ -17,5 +17,5 @@ export const EMPTY_ORDER_TRANSFER: OrderTransfer = {
   date: null,
   ref_no: null,
   status: OrderTransferStatus.NEW,
-  quantities: null,
-}
+  quantities: null
+};

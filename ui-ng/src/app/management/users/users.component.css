@@ -1,0 +1,11 @@
+.text-left {
+    text-align: left;
+}
+
+.text-right{
+    text-align: right;
+}
+
+.search-field{
+    margin-right: 16px;
+}

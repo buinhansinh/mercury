@@ -36,5 +36,4 @@ export class PaymentAllocationComponent implements OnInit {
       console.log(`Dialog result: ${result}`);
     });
   }
-
 }

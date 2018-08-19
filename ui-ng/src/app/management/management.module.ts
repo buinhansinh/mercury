@@ -8,7 +8,7 @@ import { GroupsComponent } from "./groups/groups.component";
 import { LocationsComponent } from "./locations/locations.component";
 import { AppCommonModule } from "../app-common/app-common.module";
 import { ManagementRoutingModule } from "./management-routing.module";
-import { ReportsComponent } from './reports/reports.component';
+import { ReportsComponent } from "./reports/reports.component";
 
 @NgModule({
   imports: [AppCommonModule, ManagementRoutingModule],

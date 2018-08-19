@@ -2,35 +2,34 @@ import { Offer } from "./offer.model";
 import { Document } from "./document.model";
 
 export interface Location {
-    id: string;
-    name: string;
+  id: string;
+  name: string;
 }
 
 export interface Stock {
-    location_id: string;
-    location_name: string;
-    quantity: number;
+  location_id: string;
+  location_name: string;
+  quantity: number;
 }
 
 export enum OrderTransferStatus {
-    PLACED = 0,
-    CANCELED,
+  PLACED = 0,
+  CANCELED
 }
 
 export interface OrderTransfer extends Document {
-    content: {
-        location: Location;
-        items: number[];
-    }
+  content: {
+    location: Location;
+    items: number[];
+  };
 }
 
 export interface LocationTransferItem {
-    offer: Offer;
-
+  offer: Offer;
 }
 
 export interface LocationTransfer {
-    origin: Location;
-    destination: Location;
-    items: LocationTransferItem;
+  origin: Location;
+  destination: Location;
+  items: LocationTransferItem;
 }

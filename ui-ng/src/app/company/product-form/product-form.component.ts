@@ -9,8 +9,10 @@ import { clone, capitalize } from "../../app-common/util";
   styleUrls: ["./product-form.component.css"]
 })
 export class ProductFormComponent implements OnInit {
-  @Input() offer: Offer;
-  @Output() offerSaved = new EventEmitter<Offer>();
+  @Input()
+  offer: Offer;
+  @Output()
+  offerSaved = new EventEmitter<Offer>();
 
   form: FormGroup;
   properties: FormArray;
@@ -63,7 +65,7 @@ export class ProductFormComponent implements OnInit {
       id: this.form.value.id,
       type: this.offer.type,
       properties: props,
-      description: Object.values(props).join(' '),
+      description: Object.values(props).join(" ")
     };
 
     this.offerSaved.emit(this.offer);

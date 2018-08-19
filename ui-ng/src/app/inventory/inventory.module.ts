@@ -3,8 +3,8 @@ import { OrderTransferFormComponent } from "./order-transfer-form/order-transfer
 import { InventoryComponent } from "./inventory.component";
 import { InventoryRoutingModule } from "./inventory-routing.module";
 import { AppCommonModule } from "../app-common/app-common.module";
-import { LocationTransferFormComponent } from './location-transfer-form/location-transfer-form.component';
-import { LocationAdjustmentFormComponent } from './location-adjustment-form/location-adjustment-form.component';
+import { LocationTransferFormComponent } from "./location-transfer-form/location-transfer-form.component";
+import { LocationAdjustmentFormComponent } from "./location-adjustment-form/location-adjustment-form.component";
 
 @NgModule({
   imports: [AppCommonModule, InventoryRoutingModule],
@@ -12,7 +12,7 @@ import { LocationAdjustmentFormComponent } from './location-adjustment-form/loca
     OrderTransferFormComponent,
     InventoryComponent,
     LocationTransferFormComponent,
-    LocationAdjustmentFormComponent,
+    LocationAdjustmentFormComponent
   ]
 })
 export class InventoryModule {}

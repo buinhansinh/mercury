@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { FormGroup, FormBuilder, FormArray } from '@angular/forms';
+import { Component, OnInit } from "@angular/core";
+import { FormGroup, FormBuilder, FormArray } from "@angular/forms";
 
 @Component({
   selector: "app-location-adjustment-form",

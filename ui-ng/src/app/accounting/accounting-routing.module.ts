@@ -19,7 +19,7 @@ const routes: Routes = [
       {
         path: "payables",
         component: InvoicesComponent
-      },            
+      },
       {
         path: "payment",
         component: PaymentFormComponent

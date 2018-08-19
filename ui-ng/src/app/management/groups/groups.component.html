@@ -1,3 +1,22 @@
-<p>
-  groups works!
-</p>
+<div class="container">
+    <div class="toolbar">
+      <span class="title">Group Management</span>
+      <span class="spacer"></span>
+      <button mat-flat-button (click)="onOpenAddGroupForm()">
+        <mat-icon>add</mat-icon>
+        <span>Add Group</span>
+      </button>
+    </div>
+  
+    <mat-divider></mat-divider>
+    <mat-list>
+        <mat-list-item *ngFor="let group of (groups$ | async)" class="toolbar" > 
+          <span>{{group.name}}  </span>
+          <span class="spacer"></span>
+          <button mat-icon-button   [disableRipple]="'true'"> 
+            <mat-icon>delete</mat-icon>
+          </button>
+        </mat-list-item>
+      
+     </mat-list>
+  </div>

@@ -12,7 +12,8 @@ import { ORDERS } from "../../db/order.mock";
   styleUrls: ["./order-form.component.css"]
 })
 export class OrderFormComponent implements OnInit {
-  @Input() order: Order;
+  @Input()
+  order: Order;
 
   form: FormGroup;
   item_array: FormArray;

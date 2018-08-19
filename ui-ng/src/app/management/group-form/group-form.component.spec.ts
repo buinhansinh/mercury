@@ -1,16 +1,15 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { GroupFormComponent } from './group-form.component';
+import { GroupFormComponent } from "./group-form.component";
 
-describe('GroupFormComponent', () => {
+describe("GroupFormComponent", () => {
   let component: GroupFormComponent;
   let fixture: ComponentFixture<GroupFormComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ GroupFormComponent ]
-    })
-    .compileComponents();
+      declarations: [GroupFormComponent]
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -19,7 +18,7 @@ describe('GroupFormComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

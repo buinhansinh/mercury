@@ -1,4 +1,4 @@
 export interface SearchResult {
-    id: string;
-    text: string;
+  id: string;
+  text: string;
 }

@@ -1,16 +1,15 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { OrderTransferFormComponent } from './order-transfer-form.component';
+import { OrderTransferFormComponent } from "./order-transfer-form.component";
 
-describe('OrderTransferFormComponent', () => {
+describe("OrderTransferFormComponent", () => {
   let component: OrderTransferFormComponent;
   let fixture: ComponentFixture<OrderTransferFormComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ OrderTransferFormComponent ]
-    })
-    .compileComponents();
+      declarations: [OrderTransferFormComponent]
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -19,7 +18,7 @@ describe('OrderTransferFormComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

@@ -9,6 +9,6 @@
   margin-left: 5%;
 }
 
-input[type=number] {
-  text-align: right
+input[type="number"] {
+  text-align: right;
 }

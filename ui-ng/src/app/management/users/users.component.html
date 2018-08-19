@@ -13,33 +13,31 @@
     </div>
   
     <mat-divider></mat-divider>
-    <mat-list>
-        <table mat-table [dataSource]="users$ | async" matSort>
+    <table mat-table [dataSource]="users$ | async" matSort>
 
-            <!-- ID Column -->
-            <ng-container matColumnDef="name">
-              <th mat-header-cell *matHeaderCellDef class="text-left"> Username </th>
-              <td mat-cell *matCellDef="let row" class="text-left"> {{row.name}} </td>
-            </ng-container>
-    
-            <ng-container matColumnDef="display_name">
-              <th mat-header-cell *matHeaderCellDef class="text-left"> Full Name </th>
-              <td mat-cell *matCellDef="let row" class="text-left"> {{row.display_name}} </td>
-            </ng-container>
-            <ng-container matColumnDef="toolbox">
-                <th mat-header-cell *matHeaderCellDef>  </th>
-                <td mat-cell *matCellDef="let row" class="text-right"> 
-                    <button mat-icon-button   [disableRipple]="'true'"> 
-                        <mat-icon>edit</mat-icon>
-                    </button>
-                    <button mat-icon-button   [disableRipple]="'true'"> 
-                        <mat-icon>delete</mat-icon>
-                    </button>
-                </td>
-              </ng-container>
-       
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-          </table>
-     </mat-list>
+        <!-- ID Column -->
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef class="text-left"> Username </th>
+          <td mat-cell *matCellDef="let row" class="text-left"> {{row.name}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="display_name">
+          <th mat-header-cell *matHeaderCellDef class="text-left"> Full Name </th>
+          <td mat-cell *matCellDef="let row" class="text-left"> {{row.display_name}} </td>
+        </ng-container>
+        <ng-container matColumnDef="toolbox">
+            <th mat-header-cell *matHeaderCellDef>  </th>
+            <td mat-cell *matCellDef="let row" class="text-right"> 
+                <button mat-icon-button   [disableRipple]="'true'" [routerLink]="['../user', row.id]"> 
+                    <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button   [disableRipple]="'true'"> 
+                    <mat-icon>delete</mat-icon>
+                </button>
+            </td>
+          </ng-container>
+   
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
   </div>

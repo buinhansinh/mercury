@@ -9,6 +9,7 @@ import { GroupsComponent } from "./groups/groups.component";
 import { LocationsComponent } from "./locations/locations.component";
 import { ReportsComponent } from "./reports/reports.component";
 import { GroupModifyComponent } from "./group-modify/group-modify.component";
+import { UserModifyComponent } from "./user-modify/user-modify.component";
 
 const routes: Routes = [
   {
@@ -25,7 +26,7 @@ const routes: Routes = [
       },
       {
         path: "user/:id",
-        component: UserFormComponent
+        component: UserModifyComponent
       },
       {
         path: "groups",

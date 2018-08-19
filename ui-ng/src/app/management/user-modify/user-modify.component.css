@@ -1,0 +1,35 @@
+.container {
+  padding-bottom: 24px;
+}
+.form {
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.form-w-350px {
+  width: 350px;
+}
+
+.save-button {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.group-list {
+  max-width: 600px;
+}
+
+.section-header {
+  font-weight: 700;
+  font-size: 1.2em;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}

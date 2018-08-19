@@ -1,3 +1,88 @@
-<p>
-  user-modify works!
-</p>
+<div class="container">
+  <div class="toolbar">
+    <span class="title">User Modify</span>
+    <span class="spacer"></span>
+    <button mat-icon-button [matMenuTriggerFor]="menu">
+      <mat-icon>more_vert</mat-icon>
+      <span></span>
+    </button>
+    <mat-menu #menu="matMenu" yPosition="below" xPosition="before"
+      [overlapTrigger]="false">
+      <div mat-menu-item>
+        <button mat-flat-button color="warn">
+          <mat-icon>delete</mat-icon>
+          <span>Delete</span>
+        </button>
+      </div>
+    </mat-menu>
+  </div>
+
+  <mat-divider></mat-divider>
+  <div class="main-form">
+    <div class="form-w-350px">
+      <form [formGroup]="userForm" class="form">
+        <mat-form-field>
+          <input type="text" matInput formControlName="username"
+            placeholder="USERNAME">
+
+        </mat-form-field>
+        <mat-form-field>
+          <input type="text" matInput formControlName="fullname"
+            placeholder="PASSWORD">
+        </mat-form-field>
+        <div class="save-button">
+          <button mat-flat-button>Save</button>
+        </div>
+      </form>
+
+    </div>
+    <mat-divider></mat-divider>
+    <div class="form-w-350px">
+      <form [formGroup]="passwordForm" class="form">
+        <mat-form-field>
+          <input type="text" matInput formControlName="password"
+            placeholder="PASSWORD">
+
+        </mat-form-field>
+        <mat-form-field>
+          <input type="text" matInput formControlName="passwordVerify"
+            placeholder="PASSWORD VERIFY">
+        </mat-form-field>
+        <div class="save-button">
+          <button mat-flat-button>Update</button>
+        </div>
+      </form>
+    </div>
+    <mat-divider></mat-divider>
+    <div class="form form-w-350px">
+      <mat-form-field>
+        <mat-select placeholder="Add Group To User">
+          <mat-option *ngFor="let group of (groups$ | async)">{{group.name}}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+    <mat-divider></mat-divider>
+    <div class="group-list">
+      <table mat-table [dataSource]="groups$ | async">
+          <ng-container matColumnDef="name">
+              <th mat-header-cell *matHeaderCellDef> Group </th>
+              <td mat-cell *matCellDef="let group" class="text-left"> {{group.name}} </td>
+            </ng-container>
+    
+            <!-- Name Column -->
+            <ng-container matColumnDef="toolbar">
+              <th mat-header-cell *matHeaderCellDef> </th>
+              <td mat-cell *matCellDef="let group" class="text-right">
+                <button mat-button color="warn">
+                  <span>Remove</span>
+                </button></td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="groupColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: groupColumns;"></tr>
+      </table>
+       
+      
+    </div>
+
+
+  </div>

@@ -26,6 +26,7 @@ import {
   MatInputModule,
   MatAutocompleteModule,
   MatCheckboxModule,
+  MatSelectModule,
 
   // popups
   MatSnackBarModule,
@@ -82,6 +83,7 @@ const materialModules: any = [
   MatFormFieldModule,
   MatDatepickerModule,
   MatNativeDateModule,
+  MatSelectModule,
 
   // tables
   MatTableModule,

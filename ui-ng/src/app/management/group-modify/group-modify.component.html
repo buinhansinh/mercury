@@ -1,0 +1,58 @@
+<div class="container">
+  <div class="toolbar">
+    <span class="title">Group Modify</span>
+    <span class="spacer"></span>
+    <button mat-icon-button [matMenuTriggerFor]="menu">
+      <mat-icon>more_vert</mat-icon>
+      <span></span>
+    </button>
+    <mat-menu #menu="matMenu" yPosition="below" xPosition="before"
+      [overlapTrigger]="false">
+      <div mat-menu-item>
+        <button mat-flat-button color="warn">
+          <mat-icon>delete</mat-icon>
+          <span>Delete</span>
+        </button>
+      </div>
+    </mat-menu>
+  </div>
+
+  <mat-divider></mat-divider>
+  <div class="main-form">
+    <section>
+      <form [formGroup]="groupForm">
+        <mat-form-field class="w-300px">
+          <input type="text" matInput formControlName="groupName"
+            placeholder="GROUP NAME">
+
+        </mat-form-field>
+
+      </form>
+      <button mat-flat-button>Save</button>
+    </section>
+    <div class="toolbar">
+        <span class="title">Permission</span>
+        <span class="spacer"></span>
+        <mat-form-field class="w-300px">
+            <mat-select placeholder="Add Permission">
+                <mat-option *ngFor="let permission of (permissions$ | async)">
+                    {{permission.name}}
+                </mat-option>
+              </mat-select>
+        </mat-form-field>
+      </div>
+    
+    <mat-divider></mat-divider>
+    <form [formGroup]="permissionForm">
+        <mat-list>
+          <mat-list-item *ngFor="let permission of permissionsForGroup">
+            <span>{{permission.name}}</span>
+            <span class="spacer"></span>
+            <button mat-button color="warn">
+              <span>Remove</span>
+            </button>
+          </mat-list-item>
+        </mat-list>
+    </form>
+
+</div>

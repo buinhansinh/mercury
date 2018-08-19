@@ -13,6 +13,9 @@
         <mat-list-item *ngFor="let group of (groups$ | async)" class="toolbar" > 
           <span>{{group.name}}  </span>
           <span class="spacer"></span>
+          <button mat-icon-button   [disableRipple]="'true'" [routerLink]="['../group',group.id]"> 
+              <mat-icon>edit</mat-icon>
+            </button>
           <button mat-icon-button   [disableRipple]="'true'"> 
             <mat-icon>delete</mat-icon>
           </button>

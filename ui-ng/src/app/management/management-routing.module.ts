@@ -8,6 +8,7 @@ import { UsersComponent } from "./users/users.component";
 import { GroupsComponent } from "./groups/groups.component";
 import { LocationsComponent } from "./locations/locations.component";
 import { ReportsComponent } from "./reports/reports.component";
+import { GroupModifyComponent } from "./group-modify/group-modify.component";
 
 const routes: Routes = [
   {
@@ -36,7 +37,7 @@ const routes: Routes = [
       },
       {
         path: "group/:id",
-        component: GroupFormComponent
+        component: GroupModifyComponent
       },
       {
         path: "locations",
